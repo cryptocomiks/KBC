@@ -7,6 +7,8 @@ import DataTable, { type Column } from "./DataTable";
 interface Props {
   investigation: Investigation;
   onSelect: (id: string) => void;
+  activeTab?: string;
+  onTabChange?: (tab: string) => void;
 }
 
 const link = (url: unknown) =>
@@ -40,7 +42,7 @@ const urls = (r: Row) => {
   return list.length ? <span className="flex gap-2">{list.map((u) => <span key={u}>{link(u)}</span>)}</span> : "—";
 };
 
-export default function TablesSection({ investigation: inv, onSelect }: Props) {
+export default function TablesSection({ investigation: inv, onSelect, activeTab, onTabChange }: Props) {
   const t = inv.tables;
   const subject = inv.entities.find((e) => e.id === inv.subject_id)!;
   const slug = subject.name.replace(/[^a-z0-9]+/gi, "_").toLowerCase();
@@ -284,11 +286,13 @@ export default function TablesSection({ investigation: inv, onSelect }: Props) {
       ],
     },
   ];
-  const [active, setActive] = useState(tabs[0].key);
+  const [localActive, setLocalActive] = useState(tabs[0].key);
+  const active = activeTab && tabs.some((x) => x.key === activeTab) ? activeTab : localActive;
+  const setActive = (key: string) => (onTabChange ? onTabChange(key) : setLocalActive(key));
   const tab = tabs.find((x) => x.key === active)!;
 
   return (
-    <div className="card p-4">
+    <div id="tables" className="card p-4">
       <div className="mb-3 flex flex-wrap gap-1 border-b border-slate-200 dark:border-slate-800">
         {tabs.map((x) => (
           <button

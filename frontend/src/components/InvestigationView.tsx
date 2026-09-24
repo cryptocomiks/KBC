@@ -5,6 +5,7 @@ import { countryName, fmtDate } from "../lib/format";
 import type { Theme } from "../lib/theme";
 import type { Investigation } from "../types";
 import EntityPanel from "./EntityPanel";
+import BriefCard from "./BriefCard";
 import KeyFindings from "./KeyFindings";
 import Timeline from "./Timeline";
 import GraphView, { GraphLegend, type GraphFilters, type GraphHandle, type GraphLayout } from "./GraphView";
@@ -26,6 +27,7 @@ export default function InvestigationView({ investigation: inv, theme, refreshin
   const [selected, setSelected] = useState<string | null>(null);
   const [pdfState, setPdfState] = useState<"idle" | "busy" | "error">("idle");
   const [reference, setReference] = useState("");
+  const [tableTab, setTableTab] = useState<string | undefined>(undefined);
   const subject = inv.entities.find((e) => e.id === inv.subject_id)!;
 
   const select = (id: string | null) => {
@@ -115,7 +117,22 @@ export default function InvestigationView({ investigation: inv, theme, refreshin
         </div>
       )}
 
-      <KeyFindings investigation={inv} onSelect={select} />
+      <BriefCard
+        investigation={inv}
+        onSelect={select}
+        onOpenTab={(t) => {
+          setTableTab(t);
+          setTimeout(() => document.getElementById("tables")?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
+        }}
+      />
+      <details className="group card">
+        <summary className="cursor-pointer select-none px-4 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-300">
+          Detailed findings ({inv.summary?.length ?? 0}) — full reading of the network, with sources
+        </summary>
+        <div className="border-t border-slate-200 dark:border-slate-800">
+          <KeyFindings investigation={inv} onSelect={select} />
+        </div>
+      </details>
 
       {/* Graph + details */}
       <div id="graph-card" className="card grid overflow-hidden lg:grid-cols-[1fr_380px]">
@@ -171,7 +188,7 @@ export default function InvestigationView({ investigation: inv, theme, refreshin
 
       <RiskPanel investigation={inv} onSelect={select} />
       <Timeline investigation={inv} onSelect={select} />
-      <TablesSection investigation={inv} onSelect={select} />
+      <TablesSection investigation={inv} onSelect={select} activeTab={tableTab} onTabChange={setTableTab} />
     </div>
   );
 }

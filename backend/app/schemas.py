@@ -7,6 +7,7 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
+from app.brief import Brief
 from app.graph.expander import QueryLog
 from app.insights import Finding, TimelineEvent
 from app.models import Entity, Relationship, ScreeningHit, SearchCandidate
@@ -60,3 +61,4 @@ class Investigation(BaseModel):
     stats: dict[str, int]
     summary: list[Finding] = Field(default_factory=list)
     timeline: list[TimelineEvent] = Field(default_factory=list)
+    brief: Brief | None = None

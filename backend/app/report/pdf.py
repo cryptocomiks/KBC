@@ -291,7 +291,72 @@ def build_pdf(
     )
     summary.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "TOP")]))
     story.append(Paragraph("1. Executive summary", st["h2"]))
+    b = inv.brief
+    if b:
+        verdict_color = {"critical": "#991b1b", "high": "#9a3412", "medium": "#92400e"}.get(
+            b.level, "#065f46"
+        )
+        story.append(
+            Paragraph(f"<font color='{verdict_color}'><b>{_esc(b.headline)}</b></font>", st["body"])
+        )
+        story.append(
+            Paragraph(
+                " · ".join(f"<b>{_esc(f.label)}</b>: {_esc(f.value)}" for f in b.figures),
+                st["small"],
+            )
+        )
     story.append(summary)
+    if b and b.owners:
+        story.append(
+            Paragraph(
+                "What the subject controls" if b.subject_type == "person" else "Ultimate owners",
+                st["h3"],
+            )
+        )
+        story.append(
+            _table(
+                [
+                    {
+                        "name": o.name,
+                        "pct": f"{o.pct:.1f}%",
+                        "path": " → ".join(o.path),
+                        "flags": ", ".join(o.flags),
+                    }
+                    for o in b.owners
+                ],
+                [
+                    ("name", "Name", 2),
+                    ("pct", "Effective %", 0.8),
+                    ("path", "Chain", 5),
+                    ("flags", "Flags", 1.2),
+                ],
+                st,
+                "",
+            )
+        )
+    if b and b.flags:
+        story.append(Paragraph("Red flags and next steps", st["h3"]))
+        story.append(
+            _table(
+                [
+                    {
+                        "title": f.title,
+                        "points": f"+{f.points:.0f}",
+                        "evidence": f.evidence[0] if f.evidence else "",
+                        "next": f.next_step or "",
+                    }
+                    for f in b.flags
+                ],
+                [
+                    ("title", "Red flag", 2),
+                    ("points", "Pts", 0.5),
+                    ("evidence", "Evidence", 4),
+                    ("next", "Next step", 4),
+                ],
+                st,
+                "",
+            )
+        )
     if inv.summary:
         marks = {"critical": "#b91c1c", "warning": "#b45309", "info": "#475569"}
         story.append(Paragraph("Key findings", st["h3"]))

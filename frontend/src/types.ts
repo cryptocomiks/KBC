@@ -164,6 +164,18 @@ export interface Investigation {
   stats: Record<string, number>;
   summary: Finding[];
   timeline: TimelineEvent[];
+  brief: Brief | null;
+}
+
+export interface Brief {
+  subject_type: "person" | "company" | "wallet" | "address";
+  level: RiskLevel;
+  score: number;
+  headline: string;
+  figures: { key: string; label: string; value: string; tone: "neutral" | "good" | "warning" | "critical"; hint: string | null; tab: string | null }[];
+  flags: { key: string; title: string; severity: "critical" | "warning" | "info"; points: number; evidence: string[]; next_step: string | null; entity_ids: string[] }[];
+  owners: { entity_id: string; name: string; kind: string; pct: number; path: string[]; flags: string[] }[];
+  coverage: string;
 }
 
 export interface Finding {

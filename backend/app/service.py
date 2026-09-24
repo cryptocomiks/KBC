@@ -7,6 +7,7 @@ import json
 from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 
+from app.brief import build_brief
 from app.cache import get_cache
 from app.connectors.base import ConnectorError
 from app.connectors.crypto_util import detect_chain
@@ -177,6 +178,7 @@ class KbcService:
             tables=build_tables(net, risk),
             summary=build_summary(net, risk, get_jurisdictions().name),
             timeline=build_timeline(net),
+            brief=build_brief(net, risk, get_jurisdictions().name),
             queries=net.queries,
             merges=net.merges,
             warnings=net.warnings,
