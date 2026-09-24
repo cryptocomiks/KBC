@@ -212,4 +212,71 @@ export interface Meta {
   disclaimer: string;
   max_depth: number;
   max_nodes_limit: number;
+  cases?: CasesStatus;
+}
+
+export interface CasesStatus {
+  enabled: boolean;
+  auth_required: boolean;
+  storage: string | null;
+  message: string | null;
+}
+
+export interface CaseRecord {
+  id: string;
+  title: string;
+  subject_name: string;
+  subject_type: string;
+  record_ids: string[];
+  depth: number;
+  max_nodes: number;
+  demo: boolean;
+  status: "open" | "closed";
+  monitor: boolean;
+  notes: string;
+  risk_score: number | null;
+  risk_level: RiskLevel | null;
+  countries: string[];
+  created_at: string;
+  updated_at: string;
+  last_run_at: string | null;
+  unseen_changes?: number;
+}
+
+export interface CaseChange {
+  id?: string;
+  case_id?: string;
+  case_title?: string;
+  run_at?: string;
+  kind: string;
+  severity: "critical" | "warning" | "info";
+  description: string;
+  seen?: number;
+}
+
+export type DecisionValue = "confirmed" | "false_positive" | "to_review";
+
+export interface Decision {
+  case_id: string;
+  item_key: string;
+  item_label: string;
+  decision: DecisionValue;
+  comment: string;
+  author: string;
+  decided_at: string;
+}
+
+export interface CaseView {
+  case: CaseRecord;
+  investigation: Investigation;
+  decisions: Decision[];
+  changes: CaseChange[];
+}
+
+export interface Dashboard {
+  cases: CaseRecord[];
+  by_level: Record<string, number>;
+  by_country: { code: string; country: string; cases: number }[];
+  recent_changes: CaseChange[];
+  to_review: number;
 }

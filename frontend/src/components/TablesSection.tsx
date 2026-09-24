@@ -1,7 +1,7 @@
 import { ExternalLink } from "lucide-react";
 import { useState } from "react";
 import { countryName, ENTITY_COLORS, ENTITY_LEVEL_LABEL, fmtDate, fmtPct, flag, scoreClass } from "../lib/format";
-import type { Investigation, RiskLevel, Row } from "../types";
+import type { Decision, DecisionValue, Investigation, RiskLevel, Row } from "../types";
 import DataTable, { type Column } from "./DataTable";
 
 interface Props {
@@ -9,7 +9,18 @@ interface Props {
   onSelect: (id: string) => void;
   activeTab?: string;
   onTabChange?: (tab: string) => void;
+  /** In a case: analyst decisions on hits, keyed like the backend (hit|entity|dataset|name). */
+  decisions?: Record<string, Decision>;
+  onDecide?: (key: string, label: string, decision: DecisionValue | "none") => void;
 }
+
+export const hitKey = (r: Row) => `hit|${String(r.entity)}|${String(r.dataset)}|${String(r.matched_name)}`;
+
+const DECISION_STYLE: Record<string, string> = {
+  confirmed: "border-red-300 bg-red-50 text-red-800 dark:border-red-800 dark:bg-red-950/40 dark:text-red-200",
+  false_positive: "border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200",
+  to_review: "border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200",
+};
 
 const link = (url: unknown) =>
   url ? (
@@ -42,7 +53,34 @@ const urls = (r: Row) => {
   return list.length ? <span className="flex gap-2">{list.map((u) => <span key={u}>{link(u)}</span>)}</span> : "—";
 };
 
-export default function TablesSection({ investigation: inv, onSelect, activeTab, onTabChange }: Props) {
+export default function TablesSection({ investigation: inv, onSelect, activeTab, onTabChange, decisions, onDecide }: Props) {
+  const decisionColumn: Column[] = onDecide
+    ? [
+        {
+          key: "decision",
+          label: "Analyst decision",
+          value: (r) => decisions?.[hitKey(r)]?.decision ?? "",
+          render: (r) => {
+            const d = decisions?.[hitKey(r)];
+            return (
+              <span className="flex flex-col gap-0.5" onClick={(e) => e.stopPropagation()}>
+                <select
+                  className={`rounded border px-1 py-0.5 text-[11px] ${d ? DECISION_STYLE[d.decision] : "border-slate-300 dark:border-slate-600 dark:bg-slate-900"}`}
+                  value={d?.decision ?? "none"}
+                  onChange={(e) => onDecide(hitKey(r), `${String(r.entity)} ≈ ${String(r.matched_name)} (${String(r.dataset)})`, e.target.value as DecisionValue | "none")}
+                >
+                  <option value="none">— undecided</option>
+                  <option value="confirmed">Confirmed match</option>
+                  <option value="false_positive">False positive</option>
+                  <option value="to_review">To review</option>
+                </select>
+                {d?.comment && <span className="max-w-[180px] truncate text-[10px] text-slate-500" title={d.comment}>“{d.comment}”</span>}
+              </span>
+            );
+          },
+        },
+      ]
+    : [];
   const t = inv.tables;
   const subject = inv.entities.find((e) => e.id === inv.subject_id)!;
   const slug = subject.name.replace(/[^a-z0-9]+/gi, "_").toLowerCase();
@@ -122,6 +160,7 @@ export default function TablesSection({ investigation: inv, onSelect, activeTab,
       click: "entity_id",
       empty: "No sanctions, PEP or watchlist hit.",
       columns: [
+        ...decisionColumn,
         { key: "entity", label: "Network entity" },
         { key: "matched_name", label: "Listed name" },
         { key: "list_type", label: "List", render: (r) => <span className="font-semibold uppercase">{String(r.list_type)}</span> },
@@ -141,6 +180,7 @@ export default function TablesSection({ investigation: inv, onSelect, activeTab,
       click: "entity_id",
       empty: "No appearance in leak datasets.",
       columns: [
+        ...decisionColumn,
         { key: "entity", label: "Network entity" },
         { key: "matched_name", label: "Name in dataset" },
         { key: "score", label: "Confidence", render: scoreBadge },

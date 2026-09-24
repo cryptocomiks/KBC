@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CheckCircle2, Database, Moon, Plug, Sun, Trash2, XCircle } from "lucide-react";
+import { CheckCircle2, Database, FolderOpen, Moon, Plug, Sun, Trash2, XCircle } from "lucide-react";
 import { useState } from "react";
 import { api } from "../api";
 import type { Theme } from "../lib/theme";
@@ -10,9 +10,11 @@ interface Props {
   theme: Theme;
   onToggleTheme: () => void;
   onHome: () => void;
+  onCases: () => void;
+  casesActive: boolean;
 }
 
-export default function Header({ meta, theme, onToggleTheme, onHome }: Props) {
+export default function Header({ meta, theme, onToggleTheme, onHome, onCases, casesActive }: Props) {
   const [open, setOpen] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const qc = useQueryClient();
@@ -46,6 +48,9 @@ export default function Header({ meta, theme, onToggleTheme, onHome }: Props) {
         )}
         <div className="ml-auto flex items-center gap-1">
           {notice && <span className="mr-2 text-xs text-green-700 dark:text-green-400">{notice}</span>}
+          <button className={`btn-ghost ${casesActive ? "text-brand-600" : ""}`} onClick={onCases}>
+            <FolderOpen className="h-4 w-4" /> Cases
+          </button>
           <div className="relative">
             <button className="btn-ghost" onClick={() => setOpen((o) => !o)} aria-expanded={open}>
               <Plug className="h-4 w-4" /> Sources

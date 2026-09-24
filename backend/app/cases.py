@@ -163,11 +163,13 @@ def apply_decisions(inv: Investigation, decisions: list[dict[str, Any]]) -> Inve
     )
     risk = RiskEngine().assess(net)
     jur = get_jurisdictions().name
+    # Tables keep every hit (the analyst can see and undo a decision); score, brief and
+    # findings ignore the rejected ones.
+    full = net.model_copy(update={"hits": inv.hits})
     return inv.model_copy(
         update={
-            "hits": net.hits,
             "risk": risk,
-            "tables": build_tables(net, risk),
+            "tables": build_tables(full, risk),
             "summary": build_summary(net, risk, jur),
             "timeline": build_timeline(net),
             "brief": build_brief(net, risk, jur),

@@ -1,7 +1,9 @@
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
-import { api } from "./api";
+import { api, auth, AuthError } from "./api";
+import CaseScreen from "./components/CaseScreen";
+import Dashboard from "./components/Dashboard";
 import CandidateList from "./components/CandidateList";
 import Disclaimer from "./components/Disclaimer";
 import Header from "./components/Header";
@@ -16,6 +18,10 @@ export default function App() {
   const [theme, toggleTheme] = useTheme();
   const [search, setSearch] = useState<SearchParams | null>(null);
   const [target, setTarget] = useState<InvestigationParams | null>(null);
+  const [page, setPage] = useState<"main" | "cases">("main");
+  const [caseId, setCaseId] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const qc = useQueryClient();
 
   const meta = useQuery({ queryKey: ["meta"], queryFn: api.meta, staleTime: Infinity });
   const connectors = useQuery({ queryKey: ["connectors"], queryFn: api.connectors });
@@ -38,17 +44,61 @@ export default function App() {
     },
   });
 
+  const casesStatus = meta.data?.cases;
   const home = () => {
     setSearch(null);
     setTarget(null);
+    setCaseId(null);
+    setPage("main");
   };
+  const openCase = (id: string) => {
+    setCaseId(id);
+    setPage("cases");
+  };
+  const saveCase = useMutation({
+    mutationFn: (p: InvestigationParams) => api.createCase(p),
+    onSuccess: (c) => {
+      setSaveError(null);
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+      openCase(c.id);
+    },
+    onError: (e, params) => {
+      if (e instanceof AuthError) {
+        const pw = window.prompt("Password for cases (APP_PASSWORD):");
+        if (pw) {
+          auth.set(pw);
+          saveCase.mutate(params);
+          return;
+        }
+      }
+      setSaveError(e instanceof AuthError ? "Password required to save cases." : (e as Error).message);
+    },
+  });
 
   return (
     <div className="flex min-h-full flex-col">
-      <Header meta={meta.data} theme={theme} onToggleTheme={toggleTheme} onHome={home} />
+      <Header
+        meta={meta.data}
+        theme={theme}
+        onToggleTheme={toggleTheme}
+        onHome={home}
+        onCases={() => {
+          setCaseId(null);
+          setPage("cases");
+        }}
+        casesActive={page === "cases"}
+      />
       <Disclaimer text={meta.data?.disclaimer} />
       <main className="mx-auto w-full max-w-[1600px] flex-1 space-y-5 px-4 py-5">
-        {!target && (
+        {page === "cases" && !caseId && <Dashboard status={casesStatus} onOpenCase={openCase} />}
+        {page === "cases" && caseId && (
+          <CaseScreen
+            caseId={caseId}
+            theme={theme}
+            onBack={() => setCaseId(null)}
+          />
+        )}
+        {page === "main" && !target && (
           <>
             {!search && (
               <div className="mx-auto max-w-3xl pt-8 text-center">
@@ -78,7 +128,7 @@ export default function App() {
           </>
         )}
 
-        {target && (
+        {page === "main" && target && (
           <>
             {investigation.isLoading && (
               <div className="flex items-center justify-center gap-2 py-24 text-slate-500">
@@ -93,6 +143,7 @@ export default function App() {
                 </button>
               </div>
             )}
+            {saveError && <div className="text-sm text-red-600">Could not save the case: {saveError}</div>}
             {investigation.data && (
               <InvestigationView
                 investigation={investigation.data}
@@ -100,6 +151,8 @@ export default function App() {
                 refreshing={investigation.isFetching}
                 onBack={() => setTarget(null)}
                 onDepthChange={(depth) => setTarget({ ...target, depth })}
+                onSaveCase={casesStatus?.enabled ? () => saveCase.mutate(investigation.data!.params) : undefined}
+                saving={saveCase.isPending}
               />
             )}
           </>

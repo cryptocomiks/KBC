@@ -1,9 +1,9 @@
-import { AlertTriangle, ArrowLeft, FileDown, Loader2, Maximize2, Network, RefreshCw, Workflow } from "lucide-react";
+import { AlertTriangle, ArrowLeft, FileDown, FolderPlus, Loader2, Maximize2, Network, RefreshCw, Workflow } from "lucide-react";
 import { useRef, useState } from "react";
 import { api } from "../api";
 import { countryName, fmtDate } from "../lib/format";
 import type { Theme } from "../lib/theme";
-import type { Investigation } from "../types";
+import type { Decision, DecisionValue, Investigation } from "../types";
 import EntityPanel from "./EntityPanel";
 import BriefCard from "./BriefCard";
 import KeyFindings from "./KeyFindings";
@@ -17,10 +17,28 @@ interface Props {
   theme: Theme;
   refreshing: boolean;
   onBack: () => void;
-  onDepthChange: (depth: number) => void;
+  onDepthChange?: (depth: number) => void;
+  /** Set when the investigation is shown inside a saved case. */
+  caseId?: string;
+  decisions?: Record<string, Decision>;
+  onDecide?: (key: string, label: string, decision: DecisionValue | "none") => void;
+  /** Offered when cases are enabled and this investigation is not saved yet. */
+  onSaveCase?: () => void;
+  saving?: boolean;
 }
 
-export default function InvestigationView({ investigation: inv, theme, refreshing, onBack, onDepthChange }: Props) {
+export default function InvestigationView({
+  investigation: inv,
+  theme,
+  refreshing,
+  onBack,
+  onDepthChange,
+  caseId,
+  decisions,
+  onDecide,
+  onSaveCase,
+  saving,
+}: Props) {
   const graph = useRef<GraphHandle>(null);
   const [layout, setLayout] = useState<GraphLayout>("hierarchy");
   const [filters, setFilters] = useState<GraphFilters>({ crypto: true, addresses: true, officers: true, ended: true });
@@ -39,7 +57,7 @@ export default function InvestigationView({ investigation: inv, theme, refreshin
     setPdfState("busy");
     try {
       const png = graph.current?.exportPng() ?? undefined;
-      await api.downloadPdf({ ...inv.params, graph_png: png, reference: reference || undefined });
+      await api.downloadPdf({ ...inv.params, graph_png: png, reference: reference || undefined, case_id: caseId });
       setPdfState("idle");
     } catch {
       setPdfState("error");
@@ -54,7 +72,7 @@ export default function InvestigationView({ investigation: inv, theme, refreshin
       <div className="card flex flex-wrap items-center gap-x-8 gap-y-4 p-4">
         <div className="min-w-[260px] flex-1">
           <button onClick={onBack} className="mb-1 inline-flex items-center gap-1 text-xs text-slate-500 hover:text-brand-600">
-            <ArrowLeft className="h-3 w-3" /> Back to candidates
+            <ArrowLeft className="h-3 w-3" /> {caseId ? "Back to cases" : "Back to candidates"}
           </button>
           <h1 className="flex items-center gap-2 text-xl font-bold tracking-tight">
             {subject.name}
@@ -85,7 +103,13 @@ export default function InvestigationView({ investigation: inv, theme, refreshin
             <label className="label mb-1 block" htmlFor="inv-depth">
               Depth
             </label>
-            <select id="inv-depth" className="input py-1.5" value={inv.params.depth} onChange={(e) => onDepthChange(Number(e.target.value))} disabled={refreshing}>
+            <select
+              id="inv-depth"
+              className="input py-1.5"
+              value={inv.params.depth}
+              onChange={(e) => onDepthChange?.(Number(e.target.value))}
+              disabled={refreshing || !onDepthChange}
+            >
               <option value={1}>1 level</option>
               <option value={2}>2 levels</option>
               <option value={3}>3 levels</option>
@@ -98,6 +122,12 @@ export default function InvestigationView({ investigation: inv, theme, refreshin
             </label>
             <input id="ref" className="input w-36 py-1.5" placeholder="optional" value={reference} onChange={(e) => setReference(e.target.value)} />
           </div>
+          {onSaveCase && (
+            <button className="btn-outline h-[34px]" onClick={onSaveCase} disabled={saving}>
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <FolderPlus className="h-4 w-4" />}
+              Save as case
+            </button>
+          )}
           <button className="btn-primary h-[34px]" onClick={exportPdf} disabled={pdfState === "busy"}>
             {pdfState === "busy" ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileDown className="h-4 w-4" />}
             PDF report
@@ -188,7 +218,14 @@ export default function InvestigationView({ investigation: inv, theme, refreshin
 
       <RiskPanel investigation={inv} onSelect={select} />
       <Timeline investigation={inv} onSelect={select} />
-      <TablesSection investigation={inv} onSelect={select} activeTab={tableTab} onTabChange={setTableTab} />
+      <TablesSection
+        investigation={inv}
+        onSelect={select}
+        activeTab={tableTab}
+        onTabChange={setTableTab}
+        decisions={decisions}
+        onDecide={onDecide}
+      />
     </div>
   );
 }
