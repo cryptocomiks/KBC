@@ -1,0 +1,49 @@
+# ---------------------------------------------------------------------------
+# Risk scoring configuration — fully transparent, EDIT TO MATCH YOUR POLICY.
+#
+# Global score = sum over triggered factors of
+#     weight x proximity_multiplier(distance of the closest affected entity)
+# capped at 100. Each factor is counted once (its evidence lists every
+# affected entity), so the score cannot be inflated by sheer volume.
+# ---------------------------------------------------------------------------
+
+weights:
+  sanctions_match: 45          # confirmed-level name match on a sanctions list
+  sanctions_possible_match: 15 # weaker match that still needs to be ruled out
+  pep_match: 20
+  pep_possible_match: 6
+  leak_appearance: 12          # Offshore Leaks / Aleph leak collections
+  fatf_blacklist: 30
+  fatf_greylist: 10
+  eu_tax_blacklist: 10
+  offshore_jurisdiction: 8
+  circular_ownership: 15
+  long_ownership_chain: 10
+  shared_domiciliation: 6
+  recent_incorporation: 4
+  dissolved_company: 3
+  missing_accounts: 5
+  nominee_director: 5          # one person sitting on many boards at one address
+
+# Distance (in hops) between the investigated subject and the affected entity.
+proximity_multiplier:
+  0: 1.0
+  1: 0.8
+  2: 0.6
+  3: 0.45
+  default: 0.35
+
+thresholds:
+  strong_match_score: 85       # >= : counted as a match
+  possible_match_score: 70     # >= : counted as a possible match, below : ignored
+  long_chain_min_layers: 3     # number of corporate layers above a company
+  shared_address_min_companies: 3
+  recent_incorporation_months: 18
+  accounts_overdue_months: 18
+  nominee_min_mandates: 4
+
+levels:                        # global score -> level (lower bound inclusive)
+  low: 0
+  medium: 20
+  high: 45
+  critical: 70

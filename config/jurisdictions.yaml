@@ -1,0 +1,49 @@
+# ---------------------------------------------------------------------------
+# High-risk jurisdictions — EDIT THIS FILE to follow your institution's policy.
+#
+# Lists are ISO 3166-1 alpha-2 codes. They are a *starting point* compiled
+# from public sources and MUST be reviewed against the latest publications:
+#   - FATF "black" and "grey" lists: https://www.fatf-gafi.org/en/countries/black-and-grey-lists.html
+#   - EU list of non-cooperative jurisdictions for tax purposes (Annex I)
+#   - Your own internal country-risk matrix
+# ---------------------------------------------------------------------------
+as_of: "2025-06 (FATF June 2025 plenary; EU Annex I February 2025) — verify before use"
+
+# FATF — High-risk jurisdictions subject to a call for action
+fatf_blacklist: [KP, IR, MM]
+
+# FATF — Jurisdictions under increased monitoring
+fatf_greylist:
+  [DZ, AO, BO, BG, BF, CM, CI, HR, CD, HT, KE, LA, LB, MC, MZ, NA, NP, NG, ZA, SS, SY, VE, VN, VG, YE]
+
+# EU list of non-cooperative jurisdictions for tax purposes (Annex I)
+eu_tax_blacklist: [AS, AI, FJ, GU, PW, PA, RU, WS, TT, VI, VU]
+
+# Offshore financial centres / secrecy-friendly incorporation hubs.
+# Entities incorporated here are drawn with the "offshore" shape in the graph.
+offshore_centres:
+  [VG, KY, BM, BS, JE, GG, IM, PA, SC, BZ, MU, LI, MH, WS, VU, AI, TC, GI, CW, AE, CY, MT, LB, BB, KN, AG, LC, VC, NR, CK, NU, LR]
+
+names:
+  AE: United Arab Emirates
+  AI: Anguilla
+  BG: Bulgaria
+  CH: Switzerland
+  CY: Cyprus
+  DE: Germany
+  FR: France
+  GB: United Kingdom
+  IT: Italy
+  KY: Cayman Islands
+  LB: Lebanon
+  LU: Luxembourg
+  MA: Morocco
+  MC: Monaco
+  MT: Malta
+  NL: Netherlands
+  PA: Panama
+  RS: Serbia
+  RU: Russia
+  SC: Seychelles
+  SO: Somalia
+  VG: British Virgin Islands
