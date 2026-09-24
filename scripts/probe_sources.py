@@ -1,17 +1,18 @@
 """One-off probe of candidate open sources (formats + reachability from a cloud runner)."""
 
-import json
+import re
 
 import httpx
 
-UA = {"User-Agent": "KBC-corporate-mapping research (github.com/cryptocomiks/KBC)", "Accept": "*/*"}
-c = httpx.Client(headers=UA, timeout=30, follow_redirects=True)
+SEC_UA = {"User-Agent": "KBC Corporate Mapping research-contact@kbc-mapping.org", "Accept-Encoding": "gzip, deflate"}
+UA = {"User-Agent": "Mozilla/5.0 (compatible; KBC-corporate-mapping/0.1)"}
+c = httpx.Client(timeout=30, follow_redirects=True)
 
 
-def show(label, method, url, n=1500, **kw):
+def show(label, method, url, n=1500, headers=UA, **kw):
     print(f"\n===== {label}\n{method} {url}")
     try:
-        r = c.request(method, url, **kw)
+        r = c.request(method, url, headers=headers, **kw)
         print("status", r.status_code, r.headers.get("content-type"), "len", len(r.content))
         print(r.text[:n].replace("\n", " "))
         return r
@@ -19,54 +20,50 @@ def show(label, method, url, n=1500, **kw):
         print("ERROR", type(e).__name__, e)
 
 
-# France: finances + beneficial owners flags in recherche-entreprises
-r = show("annuaire finances", "GET", "https://recherche-entreprises.api.gouv.fr/search?q=danone&per_page=1", 300)
-if r is not None and r.status_code == 200:
-    res = r.json()["results"][0]
-    print("keys", sorted(res))
-    print("finances", res.get("finances"))
-    print("complements", res.get("complements"))
-    print("dirigeants sample", res.get("dirigeants", [])[:2])
-
-# SEC EDGAR
-show("sec tickers", "GET", "https://www.sec.gov/files/company_tickers.json", 300)
-show("sec full-text 13G", "GET", "https://efts.sec.gov/LATEST/search-index?q=%22TotalEnergies%22&forms=SC%2013G,SC%2013D", 1500)
-show("sec efts search", "GET", "https://efts.sec.gov/LATEST/search-index?keysTyped=Tesla", 800)
-show("sec submissions", "GET", "https://data.sec.gov/submissions/CIK0001318605.json", 1500)
-r = show("sec companyfacts", "GET", "https://data.sec.gov/api/xbrl/companyfacts/CIK0001318605.json", 200)
+# SEC with a declared user agent
+show("sec tickers", "GET", "https://www.sec.gov/files/company_tickers.json", 300, headers=SEC_UA)
+r = show("sec efts 13G", "GET", "https://efts.sec.gov/LATEST/search-index?q=%22Tesla%22&forms=SC%2013G,SC%2013D,SCHEDULE%2013G,SCHEDULE%2013D", 2500, headers=SEC_UA)
+show("sec efts full text", "GET", "https://efts.sec.gov/LATEST/search-index?q=%22Tesla%2C%20Inc.%22&dateRange=custom&forms=SCHEDULE%2013G", 1500, headers=SEC_UA)
+r = show("sec companyfacts", "GET", "https://data.sec.gov/api/xbrl/companyfacts/CIK0001318605.json", 200, headers=SEC_UA)
 if r is not None and r.status_code == 200:
     f = r.json()["facts"]
-    print("taxonomies", list(f))
-    for k in ("Revenues", "RevenueFromContractWithCustomerExcludingAssessedTax", "NetIncomeLoss", "Assets"):
+    for k in ("Revenues", "RevenueFromContractWithCustomerExcludingAssessedTax", "NetIncomeLoss", "Assets", "StockholdersEquity"):
         v = f.get("us-gaap", {}).get(k, {}).get("units", {}).get("USD", [])
         print(k, [x for x in v if x.get("form") == "10-K" and x.get("fp") == "FY"][-2:])
-    print("dei", {k: v.get("units") and list(v["units"].values())[0][-1] for k, v in f.get("dei", {}).items()})
-show("sec browse company", "GET", "https://www.sec.gov/cgi-bin/browse-edgar?company=tesla&type=&dateb=&owner=include&count=10&action=getcompany&output=atom", 1500)
+    print("dei", {k: list(v["units"].values())[0][-1] for k, v in f.get("dei", {}).items()})
+r = show("sec submissions", "GET", "https://data.sec.gov/submissions/CIK0001318605.json", 1200, headers=SEC_UA)
+if r is not None and r.status_code == 200:
+    j = r.json()
+    rec = j["filings"]["recent"]
+    print({k: j.get(k) for k in ("name", "sic", "sicDescription", "stateOfIncorporation", "addresses", "formerNames", "ein", "category")})
+    print([(rec["form"][i], rec["filingDate"][i], rec["accessionNumber"][i], rec["primaryDocument"][i]) for i in range(8)])
 
-# Zefix (Switzerland)
-show("zefix web search", "POST", "https://www.zefix.admin.ch/ZefixREST/api/v1/firm/search.json",
-     3000, json={"name": "Nestlé", "languageKey": "en", "maxEntries": 5, "searchType": "exact", "deletedFirms": True})
-show("zefix public rest (no auth)", "POST", "https://www.zefix.admin.ch/ZefixPublicREST/api/v1/company/search",
-     500, json={"name": "Nestlé", "activeOnly": False})
-show("zefix firm detail", "GET", "https://www.zefix.admin.ch/ZefixREST/api/v1/firm/CHE-105.909.036.json", 3000)
-show("zefix sogc", "GET", "https://www.zefix.admin.ch/ZefixREST/api/v1/firm/CHE105909036/withoutShabPub.json", 800)
+# Zefix detail
+for path in ("firm/126286.json", "firm/126286/withoutShabPub.json", "firm/126286/shabPub.json", "sogc/firm/126286/publications.json"):
+    show(f"zefix {path}", "GET", f"https://www.zefix.admin.ch/ZefixREST/api/v1/{path}", 3000)
+show("zefix legal forms", "GET", "https://www.zefix.admin.ch/ZefixREST/api/v1/legalForm.json", 1200)
+show("zefix person search", "POST", "https://www.zefix.admin.ch/ZefixREST/api/v1/firm/search.json", 800,
+     json={"name": "Nestlé", "languageKey": "en", "maxEntries": 2, "offset": 0})
 
-# Open Ownership
-show("oo bods data", "GET", "https://bods-data.openownership.org/", 1500)
-show("oo register api", "GET", "https://register.openownership.org/entities.json?q=tesco", 800)
-show("oo bods index json", "GET", "https://bods-data.openownership.org/source/index.json", 1500)
-show("oo datasets", "GET", "https://bods-data.openownership.org/source/", 1500)
+# Basel AML Index: look for embedded data
+r = show("basel ranking", "GET", "https://index.baselgovernance.org/ranking", 100)
+if r is not None:
+    t = r.text
+    for m in re.finditer(r"Switzerland|Luxembourg|Haiti", t):
+        print("ctx:", t[max(0, m.start() - 300): m.start() + 300].replace("\n", " "))
+        break
+    print("scripts:", re.findall(r'src="([^"]+\.js)"', t)[:10])
+    print("api hints:", sorted(set(re.findall(r'https?://[a-z0-9.-]*baselgovernance[^"\' ]*', t)))[:20])
+    print("json-ish:", re.findall(r'"(?:score|overall_score|rank)"\s*:\s*[0-9.]+', t)[:10])
 
-# Country risk
-show("owid cpi", "GET", "https://ourworldindata.org/grapher/ti-corruption-perception-index.csv?v=1&csvType=full&useColumnShortNames=true", 600)
-show("wb wgi cc", "GET", "https://api.worldbank.org/v2/country/all/indicator/CC.EST?format=json&date=2023&per_page=5", 1200)
-show("wb wgi cc 2022", "GET", "https://api.worldbank.org/v2/country/all/indicator/GOV_WGI_CC.EST?format=json&date=2023&per_page=3&source=3", 1200)
-show("basel ranking", "GET", "https://index.baselgovernance.org/ranking", 1500)
-show("basel api", "GET", "https://index.baselgovernance.org/api/v1/ranking", 1500)
-show("fsi", "GET", "https://fsi.taxjustice.net/", 1500)
-show("fsi data", "GET", "https://fsi.taxjustice.net/fsi2022/data/FSI-2022-DATA.csv", 800)
-show("cpi ti xlsx page", "GET", "https://www.transparency.org/en/cpi/2024", 600)
+# FSI downloads
+r = show("fsi", "GET", "https://fsi.taxjustice.net/", 100)
+if r is not None:
+    print("links:", sorted(set(l for l in re.findall(r'href="([^"]+)"', r.text) if re.search(r"(xlsx|csv|download|data|ranking)", l, re.I)))[:30])
+r = show("fsi ranking", "GET", "https://fsi.taxjustice.net/fsi2025/ranking", 100)
+r = show("tjn data portal", "GET", "https://data.taxjustice.net/", 600)
 
-# Lux
-show("lbr", "GET", "https://www.lbr.lu/mjrcs/jsp/webapp/static/mjrcs/en/mjrcs/pdf/index.html", 300)
-print(json.dumps({"done": True}))
+# Open Ownership bulk datasets
+r = show("oo index", "GET", "https://bods-data.openownership.org/", 100)
+if r is not None:
+    print("links:", sorted(set(re.findall(r'href="([^"]+)"', r.text)))[:60])

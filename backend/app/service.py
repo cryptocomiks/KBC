@@ -14,6 +14,7 @@ from app.connectors.registry import ConnectorRegistry
 from app.graph.expander import Network, NetworkExpander
 from app.graph.ownership import indirect_stakes, ownership_graph
 from app.graph.resolver import EntityResolver
+from app.insights import build_summary, build_timeline
 from app.matching.matcher import match_name
 from app.models import Entity, EntityType, ListType, RelationType, SearchCandidate, utcnow
 from app.risk.config import get_jurisdictions, get_risk_config
@@ -174,6 +175,8 @@ class KbcService:
             hits=net.hits,
             risk=risk,
             tables=build_tables(net, risk),
+            summary=build_summary(net, risk, get_jurisdictions().name),
+            timeline=build_timeline(net),
             queries=net.queries,
             merges=net.merges,
             warnings=net.warnings,
