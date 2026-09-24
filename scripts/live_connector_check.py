@@ -153,6 +153,15 @@ def check_crypto() -> None:
     for address, (_, _, chain) in _INDEX.wallets.items():
         by_chain.setdefault(chain or "?", address)
     print(f"      OFAC crypto addresses indexed: {len(_INDEX.wallets)}; sample: {by_chain}")
+    # Reference list for manual testing: ETH addresses of North Korea-related designations.
+    dprk = [
+        (address, _INDEX.entries[idx])
+        for address, (idx, _, chain) in _INDEX.wallets.items()
+        if chain == "ETH" and "DPRK" in (_INDEX.entries[idx].program or "").upper()
+    ]
+    print(f"      DPRK-related ETH addresses on the SDN list: {len(dprk)}")
+    for address, entry in dprk[:15]:
+        print(f"        {address} | {entry.entity.name} | {entry.program}")
     expect("OFAC crypto addresses extracted", len(_INDEX.wallets) > 50)
 
     for conn, sample in ((BitcoinConnector(settings), by_chain.get("BTC")),
