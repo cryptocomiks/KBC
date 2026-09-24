@@ -29,21 +29,22 @@ def best_name_score(query: str, candidate: Entity, kind: str) -> tuple[float, li
     return best
 
 
-def _dob_compare(a: str | None, b: str | None) -> tuple[int, str | None]:
+def _dob_compare(a: str | None, b: str | None) -> tuple[int, str | None, str | None]:
+    """Returns (score delta, explanation, signal)."""
     if not a or not b:
-        return 0, None
+        return 0, None, None
     common = min(len(a), len(b))
     if a[:common] == b[:common]:
         if common >= 10:
-            return DOB_EXACT_BONUS, f"same date of birth ({a[:common]})"
-        return DOB_YEAR_BONUS, f"compatible date of birth ({a[:common]}, partial)"
+            return DOB_EXACT_BONUS, f"same date of birth ({a[:common]})", "match"
+        return DOB_YEAR_BONUS, f"compatible date of birth ({a[:common]}, partial)", "partial"
     try:
         gap = abs(int(a[:4]) - int(b[:4]))
     except ValueError:
-        return 0, None
+        return 0, None, None
     if gap <= 1:
-        return -DOB_NEAR_PENALTY, f"date of birth differs slightly ({a} vs {b})"
-    return -DOB_CONFLICT_PENALTY, f"date of birth conflict ({a} vs {b})"
+        return -DOB_NEAR_PENALTY, f"date of birth differs slightly ({a} vs {b})", "near"
+    return -DOB_CONFLICT_PENALTY, f"date of birth conflict ({a} vs {b})", "conflict"
 
 
 def match_entities(query: Entity, candidate: Entity) -> MatchResult:
@@ -63,6 +64,7 @@ def match_entities(query: Entity, candidate: Entity) -> MatchResult:
         return MatchResult(
             score=100,
             explanation=[f"same registration number {query.registration_number}"],
+            signals={"identifier": "match"},
         )
 
     score, notes, _ = max(
@@ -70,9 +72,10 @@ def match_entities(query: Entity, candidate: Entity) -> MatchResult:
         key=lambda r: r[0],
     )
     explanation = [f"name {score:.0f}%" + (f" ({'; '.join(notes)})" if notes else "")]
+    signals: dict[str, object] = {"name": score}
 
     if kind == "person":
-        delta, note = _dob_compare(query.birth_date, candidate.birth_date)
+        delta, note, signals["dob"] = _dob_compare(query.birth_date, candidate.birth_date)
         score += delta
         if note:
             explanation.append(f"{note} [{delta:+d}]")
@@ -80,7 +83,9 @@ def match_entities(query: Entity, candidate: Entity) -> MatchResult:
         if qn and cn:
             if qn & cn:
                 score += NATIONALITY_BONUS
-                explanation.append(f"shared nationality {', '.join(sorted(qn & cn))} [+{NATIONALITY_BONUS}]")
+                explanation.append(
+                    f"shared nationality {', '.join(sorted(qn & cn))} [+{NATIONALITY_BONUS}]"
+                )
             else:
                 score -= NATIONALITY_CONFLICT_PENALTY
                 explanation.append(
@@ -88,14 +93,20 @@ def match_entities(query: Entity, candidate: Entity) -> MatchResult:
                     f" [-{NATIONALITY_CONFLICT_PENALTY}]"
                 )
     else:
-        if query.jurisdiction and candidate.jurisdiction and query.jurisdiction != candidate.jurisdiction:
+        if (
+            query.jurisdiction
+            and candidate.jurisdiction
+            and query.jurisdiction != candidate.jurisdiction
+        ):
             score -= JURISDICTION_CONFLICT_PENALTY
             explanation.append(
                 f"different jurisdictions ({query.jurisdiction} vs {candidate.jurisdiction})"
                 f" [-{JURISDICTION_CONFLICT_PENALTY}]"
             )
 
-    return MatchResult(score=round(max(0.0, min(100.0, score)), 1), explanation=explanation)
+    return MatchResult(
+        score=round(max(0.0, min(100.0, score)), 1), explanation=explanation, signals=signals
+    )
 
 
 def match_name(query: str, candidate: Entity) -> MatchResult:

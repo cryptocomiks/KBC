@@ -73,7 +73,9 @@ class Entity(BaseModel):
     is_offshore: bool = False
     demo: bool = False  # fictitious record (demo dataset)
 
-    record_ids: list[str] = Field(default_factory=list)  # raw source records merged into this entity
+    record_ids: list[str] = Field(
+        default_factory=list
+    )  # raw source records merged into this entity
     sources: list[Provenance] = Field(default_factory=list)
     extra: dict[str, Any] = Field(default_factory=dict)
 
@@ -126,6 +128,8 @@ class ScreeningHit(BaseModel):
 class MatchResult(BaseModel):
     score: float
     explanation: list[str]
+    #: structured signals behind the score, e.g. {"dob": "match" | "partial" | "conflict"}
+    signals: dict[str, Any] = Field(default_factory=dict)
 
 
 class SearchCandidate(BaseModel):

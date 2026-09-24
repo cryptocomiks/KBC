@@ -80,6 +80,9 @@ class BaseConnector(ABC):
     def get_company_details(self, company_id: str) -> Entity | None:
         return None
 
+    def get_person_details(self, person_id: str) -> Entity | None:
+        return None
+
     def get_officers(self, company_id: str) -> list[LinkedEntity]:
         """People/companies holding a position in the company (incl. past ones)."""
         return []

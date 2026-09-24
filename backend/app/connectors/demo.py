@@ -108,7 +108,9 @@ class DemoRegistryConnector(_DemoBase):
             sources=[self.provenance(rid, f"{self.base_url}/company/{rel['to']}#{rel['type']}")],
         )
 
-    def _links(self, *, to: str | None = None, frm: str | None = None, types: set[str]) -> list[LinkedEntity]:
+    def _links(
+        self, *, to: str | None = None, frm: str | None = None, types: set[str]
+    ) -> list[LinkedEntity]:
         out = []
         for idx, rel in enumerate(self.data["relationships"]):
             if rel["type"] not in types:
@@ -142,6 +144,9 @@ class DemoRegistryConnector(_DemoBase):
 
     def get_company_details(self, company_id: str) -> Entity | None:
         return self._get(self.native_id(company_id))
+
+    def get_person_details(self, person_id: str) -> Entity | None:
+        return self._get(self.native_id(person_id))
 
     def get_officers(self, company_id: str) -> list[LinkedEntity]:
         return self._links(to=self.native_id(company_id), types={"officer"})
@@ -189,7 +194,11 @@ class DemoScreeningConnector(_DemoBase):
                     details={
                         **rec.get("details", {}),
                         **({"birth_date": rec["birth_date"]} if rec.get("birth_date") else {}),
-                        **({"nationalities": rec["nationalities"]} if rec.get("nationalities") else {}),
+                        **(
+                            {"nationalities": rec["nationalities"]}
+                            if rec.get("nationalities")
+                            else {}
+                        ),
                     },
                     provenance=listed.sources[0],
                 )
@@ -224,4 +233,9 @@ class DemoLeaks(DemoScreeningConnector):
     filename = "leaks.json"
 
 
-DEMO_CONNECTORS: list[type[BaseConnector]] = [DemoFrRegistry, DemoIntlRegistry, DemoSanctions, DemoLeaks]
+DEMO_CONNECTORS: list[type[BaseConnector]] = [
+    DemoFrRegistry,
+    DemoIntlRegistry,
+    DemoSanctions,
+    DemoLeaks,
+]

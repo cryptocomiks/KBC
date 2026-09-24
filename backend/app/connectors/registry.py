@@ -24,7 +24,9 @@ class ConnectorRegistry:
         return list(self.connectors.values())
 
     def enabled(self, kind: str | None = None) -> list[BaseConnector]:
-        return [c for c in self.connectors.values() if c.enabled and (kind is None or c.kind == kind)]
+        return [
+            c for c in self.connectors.values() if c.enabled and (kind is None or c.kind == kind)
+        ]
 
     def for_record(self, record_id: str) -> BaseConnector | None:
         prefix = record_id.split(":", 1)[0]
