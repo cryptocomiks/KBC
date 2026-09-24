@@ -28,6 +28,7 @@ from app.risk.config import (
     get_jurisdictions,
     get_risk_config,
 )
+from app.risk.crosscheck import cross_checks
 
 FACTOR_LABELS = {
     "sanctions_match": "Sanctions list match",
@@ -54,6 +55,13 @@ FACTOR_LABELS = {
     "adverse_media": "Adverse media (press mentions with risk keywords)",
     "high_risk_country": "High-risk country (Basel AML Index / corruption perception)",
     "shell_company_indicators": "Shell-company indicator (large balance sheet, no revenue)",
+    "formation_agent": "Offshore formation agent / corporate service provider",
+    "corporate_director": "Company acting as director or secretary",
+    "multi_jurisdiction_officer": "Positions in many jurisdictions",
+    "possible_same_person": "Possibly the same person in two registers",
+    "batch_incorporation": "Companies incorporated in a batch",
+    "pre_event_resignation": "Officer left shortly before a liquidation / insolvency",
+    "officer_turnover": "High officer turnover",
 }
 
 
@@ -318,6 +326,9 @@ class RiskEngine:
                 n = int(e.extra.get("active_mandates", 0))
                 if n >= t["nominee_min_mandates"]:
                     flag("nominee_director", eid, f"{e.name} holds {n} active board mandates")
+
+        # 5. Service providers and timing (cross-checks between the parties)
+        cross_checks(net, t, flag)
 
         # Assemble factors (each counted once, weighted by proximity).
         factors = []

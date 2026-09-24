@@ -51,6 +51,33 @@ DATASETS = {
     # Professional bans and regulator warnings
     "gb_coh_disqualified": ("UK disqualified directors (Companies House)", ListType.ADVERSE),
     "ch_finma_warnings": ("Swiss FINMA warning list (unauthorised firms)", ListType.ADVERSE),
+    # More sanctions regimes (Belgium, New Zealand, Baltic Magnitsky, Navalny list)
+    "be_fod_sanctions": ("Belgian financial sanctions (FPS Finance)", ListType.SANCTION),
+    "nz_russia_sanctions": ("New Zealand Russia sanctions", ListType.SANCTION),
+    "lv_magnitsky_list": ("Latvia Magnitsky law sanctions", ListType.SANCTION),
+    "ru_navalny35": ("Navalny 35 — individuals proposed for sanctions", ListType.ADVERSE),
+    # Development-bank and EU debarments (fraud, corruption in funded projects)
+    "afdb_sanctions": ("African Development Bank debarments", ListType.ADVERSE),
+    "adb_sanctions": ("Asian Development Bank sanctions", ListType.ADVERSE),
+    "iadb_sanctions": ("Inter-American Development Bank sanctions", ListType.ADVERSE),
+    "ebrd_ineligible": ("EBRD ineligible entities", ListType.ADVERSE),
+    "eu_edes": ("EU Early Detection and Exclusion System (EDES)", ListType.ADVERSE),
+    # Financial regulators: enforcement and warnings (CH, LU, FR, EU, US)
+    "lu_administrative_sanctions": ("Luxembourg CSSF administrative sanctions", ListType.ADVERSE),
+    "ch_finma_rulings": ("Swiss FINMA final rulings", ListType.ADVERSE),
+    "fr_amf_regulatory_sanctions": ("France AMF regulatory sanctions", ListType.ADVERSE),
+    "fr_illegal_financial_services": ("France AMF blacklist (illegal financial services)", ListType.ADVERSE),
+    "eu_esma_sanctions": ("EU ESMA sanctions", ListType.ADVERSE),
+    "us_sec_pause": ("US SEC public alert: unregistered soliciting entities", ListType.ADVERSE),
+    "no_nbim_exclusions": ("Norway sovereign fund (NBIM) exclusions (ethics, corruption)", ListType.ADVERSE),
+    # Public officials (French HATVP declarations of interests and assets)
+    "fr_hatvp_declarations": ("France HATVP — declarations of interests of public officials", ListType.PEP),
+    # Law enforcement
+    "eu_europol_wanted": ("Europol — Europe's most wanted", ListType.ADVERSE),
+    "gb_nca_most_wanted": ("UK National Crime Agency most wanted", ListType.ADVERSE),
+    "gb_nca_press_releases": ("UK National Crime Agency press releases (convictions)", ListType.ADVERSE),
+    "us_fbi_most_wanted": ("US FBI most wanted", ListType.ADVERSE),
+    "de_bka_wanted": ("Germany BKA wanted fugitives", ListType.ADVERSE),
 }
 SKIPPED_SCHEMAS = {"Vessel", "Airplane", "CryptoWallet", "Address", "Security"}
 

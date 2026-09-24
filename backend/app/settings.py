@@ -61,7 +61,12 @@ class Settings(BaseSettings):
     open_datasets: str = (
         "eu_fsf,gb_fcdo_sanctions,ch_seco_sanctions,ca_dfatd_sema_sanctions,au_dfat_sanctions,"
         "jp_mof_sanctions,worldbank_debarred,interpol_red_notices,"
-        "ru_acf_bribetakers,ua_war_sanctions,wd_oligarchs,gb_coh_disqualified,ch_finma_warnings"
+        "ru_acf_bribetakers,ua_war_sanctions,wd_oligarchs,gb_coh_disqualified,ch_finma_warnings,"
+        "be_fod_sanctions,nz_russia_sanctions,lv_magnitsky_list,ru_navalny35,afdb_sanctions,"
+        "adb_sanctions,iadb_sanctions,ebrd_ineligible,eu_edes,lu_administrative_sanctions,"
+        "ch_finma_rulings,fr_amf_regulatory_sanctions,fr_illegal_financial_services,eu_esma_sanctions,"
+        "us_sec_pause,no_nbim_exclusions,fr_hatvp_declarations,eu_europol_wanted,gb_nca_most_wanted,"
+        "gb_nca_press_releases,us_fbi_most_wanted,de_bka_wanted"
     )
     icij_db_path: str = str(REPO_ROOT / "data" / "icij_offshore_leaks.db")
 

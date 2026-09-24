@@ -21,6 +21,13 @@ STRONG = 85.0
 
 # What an analyst does about each red flag (usual KYC / AML practice; adapt to your policy).
 NEXT_STEPS = {
+    "formation_agent": "Ask who instructed the service provider and obtain its KYC on the beneficial owners (certificate of incumbency, register of members).",
+    "corporate_director": "Identify the natural persons behind the corporate director and the reason for this arrangement.",
+    "multi_jurisdiction_officer": "Ask for the economic rationale of the cross-border positions; check each country's register.",
+    "possible_same_person": "Compare dates of birth, nationalities and addresses in both registers before linking the two records.",
+    "batch_incorporation": "Ask for the purpose of each company created together and who ordered their incorporation.",
+    "pre_event_resignation": "Ask the officer about the circumstances of the departure; check the liquidator's report for liabilities.",
+    "officer_turnover": "Obtain the history of officers and the reasons for the changes.",
     "sanctions_match": "Confirm identity with official documents (date of birth, nationality, registration number). "
     "If confirmed: do not onboard, freeze and report to the financial intelligence unit.",
     "sanctions_possible_match": "Rule the match out with date of birth or registration number and record the decision.",
