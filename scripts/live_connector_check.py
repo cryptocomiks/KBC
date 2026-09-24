@@ -20,8 +20,11 @@ os.environ.setdefault("CACHE_PATH", ":memory:")
 
 from app.connectors.aleph import AlephConnector  # noqa: E402
 from app.connectors.annuaire_fr import AnnuaireEntreprisesConnector  # noqa: E402
+from app.connectors.bodacc import BodaccConnector  # noqa: E402
 from app.connectors.companies_house import CompaniesHouseConnector  # noqa: E402
+from app.connectors.gleif import GleifConnector  # noqa: E402
 from app.connectors.icij import RECONCILE, IcijReconcileConnector  # noqa: E402
+from app.connectors.official_sanctions import OfficialSanctionsConnector  # noqa: E402
 from app.connectors.opencorporates import OpenCorporatesConnector  # noqa: E402
 from app.connectors.opensanctions import OpenSanctionsConnector  # noqa: E402
 from app.connectors.pappers import PappersConnector  # noqa: E402
@@ -97,6 +100,49 @@ def check_icij() -> None:
            ", ".join(f"{h.matched_name}: {h.score}" for h in related))
 
 
+def check_gleif() -> None:
+    conn = GleifConnector(settings)
+    found = conn.search_company("Danone")
+    expect("LEI search returns results", bool(found),
+           ", ".join(f"{c.name} [{c.jurisdiction}] reg={c.registration_number}" for c in found[:3]))
+    parents = []
+    for c in found[:5]:
+        parents = conn.get_shareholders(c.id)
+        if parents:
+            print(f"      parent of {c.name}: {parents[0].entity.name}")
+            break
+    expect("a parent company is returned for a Danone subsidiary", bool(parents))
+    top = next((c for c in found if c.name.upper() == "DANONE"), found[0])
+    children = conn.get_subsidiaries(top.id)
+    expect("children returned for the group head", bool(children),
+           f"{len(children)}: " + ", ".join(ch.entity.name for ch in children[:4]))
+
+
+def check_bodacc() -> None:
+    danone = Entity(id="check:danone", type=EntityType.COMPANY, name="DANONE", jurisdiction="FR",
+                    registration_number="552032534")
+    docs = BodaccConnector(settings).get_documents(danone)
+    for d in docs[:4]:
+        print(f"      {d.date} | {d.title} | {d.summary} | {d.url}")
+    expect("legal notices returned for Danone", bool(docs), f"{len(docs)} notices")
+    expect("notices are dated and linked", all(d.date and d.url for d in docs))
+    expect("accounts filings recognised", any(d.kind == "accounts" for d in docs),
+           ", ".join(sorted({d.kind for d in docs})))
+
+
+def check_official_sanctions() -> None:
+    conn = OfficialSanctionsConnector(settings)
+    hits = conn.screen(person("Vladimir Putin", "1952-10-07"))
+    for h in hits[:3]:
+        print(f"      hit: {h.matched_name} | {h.dataset} | {h.score} | {h.details.get('program')}")
+    expect("OFAC SDN: sanctioned reference person found", any(h.score >= 85 and "OFAC" in h.dataset for h in hits))
+    un_hits = conn.screen(person("Ayman al-Zawahiri"))
+    expect("UN list: reference person found", any("UN" in h.dataset for h in un_hits),
+           "; ".join(f"{h.matched_name} ({h.score})" for h in un_hits[:3]))
+    from app.connectors.official_sanctions import _INDEX
+    print(f"      index: {len(_INDEX.entries)} listed entries; load errors: {_INDEX.errors}")
+
+
 def check_opensanctions() -> None:
     conn = OpenSanctionsConnector(settings)
     hits = conn.screen_many([person("Vladimir Putin", "1952-10-07")])
@@ -134,6 +180,9 @@ def check_aleph() -> None:
 
 guarded("Annuaire des Entreprises (data.gouv.fr)", check_annuaire)
 guarded("ICIJ Offshore Leaks reconcile API", check_icij)
+guarded("GLEIF (LEI + parent companies)", check_gleif)
+guarded("BODACC legal announcements", check_bodacc)
+guarded("Official sanctions lists (OFAC SDN + UN)", check_official_sanctions)
 for key, title, fn in [
     ("OPENSANCTIONS_API_KEY", "OpenSanctions", check_opensanctions),
     ("COMPANIES_HOUSE_API_KEY", "Companies House", check_companies_house),

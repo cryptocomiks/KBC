@@ -66,6 +66,7 @@ explained, and every fact carries **its source, its URL and the time it was retr
 | **Interactive graph** | Cytoscape.js with distinct shapes for persons / companies / offshore entities / addresses, ownership arrows labelled with percentages, colours by risk. Two views: a **hierarchical ownership chart** and a **free network view**. Click a node to open its details panel. |
 | **Tables** | Positions, related companies, shareholders & UBOs, effective ownership, sanctions/PEP hits, leak appearances, sources consulted, entity-resolution log. All sortable and filterable, with **CSV export**. |
 | **PDF report** | Due diligence report with summary, explained score, graph, all tables, sources with retrieval dates and methodology. Watermarked in demo mode. |
+| **Linked documents** | For each company: dated legal notices and filings (BODACC, demo registries), plus direct links to the registers holding the documents themselves: INPI (deeds, articles, filed accounts), Companies House filing history, GLEIF record, BODACC, OpenCorporates. These appear in the details panel, a *Documents & filings* table and the PDF report. A published insolvency proceeding raises a red flag. |
 | **Traceability** | `Provenance {source, record_id, url, retrieved_at}` is attached to every entity, relationship and screening hit. |
 | **Privacy** | Personal data is stored only in a local SQLite cache, which a **"Clear cache"** button wipes. |
 
@@ -320,6 +321,9 @@ a *Demo · fictitious* or *Real public data* badge.
 | Source | Coverage | Key | Env variable |
 |---|---|---|---|
 | **Annuaire des Entreprises** (data.gouv.fr) | FR companies, officers with partial date of birth, status, published financial years | none, public API | — |
+| **GLEIF** (LEI index) | Legal entities worldwide, registration numbers, **direct parents and subsidiaries** (accounting consolidation) | none, public API | — |
+| **BODACC** (DILA) | French legal announcements: registrations, changes, **filed accounts**, **insolvency proceedings**, deregistrations. Each notice is a linked document | none, open data | — |
+| **Official sanctions lists** | **OFAC SDN** (US Treasury) and **UN Security Council** consolidated list, downloaded from the issuers and indexed in memory | none | — |
 | **ICIJ Offshore Leaks** | Panama, Paradise, Pandora Papers, Bahamas Leaks, Offshore Leaks. One batched query per investigation, so each hit is attributed to its leak | none, public API | — |
 | ICIJ Offshore Leaks, local copy | Full bulk dataset, offline (`python scripts/import_icij.py`) | none | `ICIJ_DB_PATH` |
 | **Pappers** | FR declared beneficial owners (%), officers, filed accounts | [pappers.fr/api](https://www.pappers.fr/api) (credits) | `PAPPERS_API_KEY` |

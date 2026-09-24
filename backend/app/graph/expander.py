@@ -25,6 +25,7 @@ from pydantic import BaseModel, Field
 
 from app.connectors.base import BaseConnector, ConnectorError
 from app.connectors.registry import ConnectorRegistry
+from app.graph.links import register_links
 from app.graph.resolver import EntityResolver, address_entity
 from app.models import (
     Entity,
@@ -327,6 +328,7 @@ class NetworkExpander:
                 f"Node limit of {self.max_nodes} reached: the network was truncated. "
                 "Increase the limit or reduce the depth to see more."
             )
+        self._collect_documents()
         hits = self._screen()
         return Network(
             subject_id=subject_id,
@@ -343,6 +345,41 @@ class NetworkExpander:
         )
 
     # ---------------------------------------------------------- screening
+    def _collect_documents(self) -> None:
+        """Linked documents (legal notices, filings, register pages) for every company."""
+        companies = [e for e in self.entities.values() if e.type == EntityType.COMPANY]
+        providers = [
+            c
+            for c in self.registry.enabled(demo=self.demo_realm)
+            if type(c).get_documents is not BaseConnector.get_documents
+        ]
+        tasks = [(conn, e) for e in companies for conn in providers if conn.covers(e.jurisdiction)]
+
+        def run(task: tuple[BaseConnector, Entity]) -> tuple[Entity, list]:
+            conn, entity = task
+            return entity, self._call(
+                conn, "get_documents", entity.name, conn.get_documents, entity
+            ) or []
+
+        found: dict[str, list] = {e.id: [] for e in companies}
+        if tasks:
+            workers = max(1, min(self.registry.settings.screening_workers, len(tasks)))
+            with ThreadPoolExecutor(max_workers=workers) as pool:
+                for entity, docs in pool.map(run, tasks):
+                    found[entity.id].extend(docs)
+        for entity in companies:
+            seen: set[tuple] = set()
+            merged = []
+            for doc in [*found[entity.id], *register_links(entity)]:
+                key = (doc.url, doc.title)
+                if key not in seen:
+                    seen.add(key)
+                    merged.append(doc)
+            # Dated records first (most recent on top), then register links.
+            entity.documents = sorted(
+                merged, key=lambda d: (d.date is None, -(d.date.toordinal() if d.date else 0))
+            )
+
     def _screen(self) -> list[ScreeningHit]:
         """Screen every person/company against sanctions, PEP and leak sources, in parallel."""
         entities = [e for e in self.entities.values() if e.type != EntityType.ADDRESS]

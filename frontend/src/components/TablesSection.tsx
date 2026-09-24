@@ -143,6 +143,38 @@ export default function TablesSection({ investigation: inv, onSelect }: Props) {
       ],
     },
     {
+      key: "documents",
+      label: "Documents & filings",
+      rows: t.documents ?? [],
+      click: "entity_id",
+      empty: "No linked document.",
+      columns: [
+        { key: "entity", label: "Entity" },
+        { key: "date", label: "Date", render: (r) => fmtDate(r.date) },
+        {
+          key: "title",
+          label: "Document",
+          render: (r) =>
+            r.url ? (
+              <a href={String(r.url)} target="_blank" rel="noreferrer" className="text-brand-600 hover:underline" onClick={(e) => e.stopPropagation()}>
+                {String(r.title)}
+              </a>
+            ) : (
+              String(r.title)
+            ),
+        },
+        { key: "kind", label: "Type" },
+        { key: "summary", label: "Summary" },
+        {
+          key: "flags",
+          label: "Flags",
+          render: (r) =>
+            r.flags ? <span className="rounded bg-red-100 px-1.5 py-0.5 font-semibold text-red-800 dark:bg-red-900/40 dark:text-red-300">{String(r.flags)}</span> : "",
+        },
+        { key: "source", label: "Source" },
+      ],
+    },
+    {
       key: "sources",
       label: "Sources consulted",
       rows: t.sources,

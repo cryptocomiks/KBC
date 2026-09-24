@@ -491,8 +491,33 @@ def build_pdf(
         )
     )
 
+    dated = [d for d in t.get("documents", []) if d.get("date") or d.get("flags")]
+    story.append(Paragraph("11. Linked documents (legal notices, filings)", st["h2"]))
+    story.append(
+        Paragraph(
+            "Dated records from the sources; links to the official registers holding deeds, "
+            "articles and filed accounts are listed in the application.",
+            st["muted"],
+        )
+    )
+    story.append(
+        _table(
+            dated[:80],
+            [
+                ("entity", "Entity", 2),
+                ("date", "Date", 0.8),
+                ("title", "Document", 2.6),
+                ("summary", "Summary", 3.6),
+                ("flags", "Flags", 0.8),
+                ("url", "Link", 2.4),
+            ],
+            st,
+            "No dated document.",
+        )
+    )
+
     if inv.merges:
-        story.append(Paragraph("11. Cross-source entity resolution", st["h2"]))
+        story.append(Paragraph("11b. Cross-source entity resolution", st["h2"]))
         story.append(
             _table(
                 [{**m, "explanation": "; ".join(m["explanation"])} for m in inv.merges],

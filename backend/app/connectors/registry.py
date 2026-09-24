@@ -9,9 +9,12 @@ from app.settings import Settings, get_settings
 def _connector_classes() -> list[type[BaseConnector]]:
     from app.connectors.aleph import AlephConnector
     from app.connectors.annuaire_fr import AnnuaireEntreprisesConnector
+    from app.connectors.bodacc import BodaccConnector
     from app.connectors.companies_house import CompaniesHouseConnector
     from app.connectors.demo import DEMO_CONNECTORS
+    from app.connectors.gleif import GleifConnector
     from app.connectors.icij import IcijLocalConnector, IcijReconcileConnector
+    from app.connectors.official_sanctions import OfficialSanctionsConnector
     from app.connectors.opencorporates import OpenCorporatesConnector
     from app.connectors.opensanctions import OpenSanctionsConnector
     from app.connectors.pappers import PappersConnector
@@ -21,10 +24,13 @@ def _connector_classes() -> list[type[BaseConnector]]:
     return [
         *DEMO_CONNECTORS,
         AnnuaireEntreprisesConnector,
+        BodaccConnector,
+        GleifConnector,
         PappersConnector,
         CompaniesHouseConnector,
         OpenCorporatesConnector,
         OpenSanctionsConnector,
+        OfficialSanctionsConnector,
         IcijReconcileConnector,
         IcijLocalConnector,
         AlephConnector,

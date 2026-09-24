@@ -352,8 +352,30 @@ def build_tables(net: Network, risk: RiskAssessment) -> dict[str, list[dict[str,
         row["last_retrieved"] = max(row["last_retrieved"], q.retrieved_at)
     sources = list(by_source.values())
 
+    documents = [
+        {
+            "entity_id": e.id,
+            "entity": e.name,
+            "title": d.title,
+            "kind": d.kind,
+            "date": d.date,
+            "summary": d.summary,
+            "flags": ", ".join(d.flags),
+            "source": d.source,
+            "url": d.url,
+            "depth": net.depth.get(e.id),
+        }
+        for e in ents.values()
+        for d in e.documents
+    ]
+    documents.sort(
+        key=lambda r: (r["depth"] or 0, r["entity"], r["date"] is None, str(r["date"] or "")),
+        reverse=False,
+    )
+
     return {
         "mandates": mandates,
+        "documents": documents,
         "companies": companies,
         "shareholders": shareholders,
         "ownership": ownership,

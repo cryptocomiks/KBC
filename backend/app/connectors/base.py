@@ -19,7 +19,7 @@ from typing import Any, ClassVar
 import httpx
 
 from app.cache import get_cache
-from app.models import Entity, LinkedEntity, Provenance, ScreeningHit, utcnow
+from app.models import Document, Entity, LinkedEntity, Provenance, ScreeningHit, utcnow
 from app.settings import Settings, get_settings
 
 log = logging.getLogger(__name__)
@@ -103,6 +103,10 @@ class BaseConnector(ABC):
 
     def get_subsidiaries(self, company_id: str) -> list[LinkedEntity]:
         """Companies in which the company holds shares."""
+        return []
+
+    def get_documents(self, entity: Entity) -> list[Document]:
+        """Documents / official records about an entity (filings, legal notices...)."""
         return []
 
     def search_address(self, address: str) -> list[Entity]:

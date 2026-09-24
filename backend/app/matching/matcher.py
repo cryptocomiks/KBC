@@ -13,6 +13,9 @@ from app.models import Entity, EntityType, MatchResult
 DOB_EXACT_BONUS = 8
 DOB_YEAR_BONUS = 4
 DOB_CONFLICT_PENALTY = 30
+# A conflicting date of birth is strong evidence of a different person: whatever the
+# name similarity, the candidate can at most be displayed for review, never counted.
+DOB_CONFLICT_CAP = 65
 DOB_NEAR_PENALTY = 10
 NATIONALITY_BONUS = 4
 NATIONALITY_CONFLICT_PENALTY = 8
@@ -104,6 +107,9 @@ def match_entities(query: Entity, candidate: Entity) -> MatchResult:
                 f" [-{JURISDICTION_CONFLICT_PENALTY}]"
             )
 
+    if signals.get("dob") == "conflict" and score > DOB_CONFLICT_CAP:
+        score = DOB_CONFLICT_CAP
+        explanation.append(f"capped at {DOB_CONFLICT_CAP}: conflicting dates of birth")
     return MatchResult(
         score=round(max(0.0, min(100.0, score)), 1), explanation=explanation, signals=signals
     )

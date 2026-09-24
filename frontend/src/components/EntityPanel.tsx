@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowRight, Building2, ExternalLink, Flag, Landmark, MapPin, User } from "lucide-react";
+import { ArrowLeft, ArrowRight, Building2, ExternalLink, FileText, Flag, Landmark, MapPin, User } from "lucide-react";
 import { countryName, ENTITY_COLORS, ENTITY_LEVEL_LABEL, fmtDate, fmtPct, flag, scoreClass } from "../lib/format";
 import type { Entity, Investigation, RiskLevel } from "../types";
 
@@ -160,6 +160,41 @@ export default function EntityPanel({ investigation: inv, entityId, onSelect }: 
               {outgoing.map((r) =>
                 relRow(byId.get(r.target_id), `${REL_LABEL[r.type]} of`, [r.role, r.share_pct != null ? fmtPct(r.share_pct) : ""].filter(Boolean).join(" · "), "out", !!r.end_date, r.id),
               )}
+            </ul>
+          </section>
+        )}
+
+        {e.documents?.length > 0 && (
+          <section>
+            <div className="label mb-1.5 flex items-center gap-1">
+              <FileText className="h-3 w-3" /> Documents & filings ({e.documents.length})
+            </div>
+            <ul className="space-y-1.5 text-xs">
+              {e.documents.map((d, i) => (
+                <li
+                  key={`${d.url}-${i}`}
+                  className={`rounded-md border p-2 ${
+                    d.flags.includes("insolvency")
+                      ? "border-red-300 bg-red-50 dark:border-red-900 dark:bg-red-950/40"
+                      : "border-slate-200 dark:border-slate-700"
+                  }`}
+                >
+                  <div className="flex items-start gap-2">
+                    <span className="font-medium">
+                      {d.url ? (
+                        <a href={d.url} target="_blank" rel="noreferrer" className="inline-flex items-start gap-1 text-brand-600 hover:underline">
+                          {d.title} <ExternalLink className="mt-0.5 h-3 w-3 shrink-0" />
+                        </a>
+                      ) : (
+                        d.title
+                      )}
+                    </span>
+                    {d.date && <span className="ml-auto shrink-0 text-slate-500">{d.date}</span>}
+                  </div>
+                  {d.summary && <div className="mt-0.5 text-slate-600 dark:text-slate-400">{d.summary}</div>}
+                  <div className="mt-0.5 text-[10px] text-slate-400">{d.source}</div>
+                </li>
+              ))}
             </ul>
           </section>
         )}

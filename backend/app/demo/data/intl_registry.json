@@ -1,62 +1,416 @@
 {
-  "_comment": "FICTITIOUS DATA for demonstration purposes only. Any resemblance to real persons or companies is coincidental. Dates starting with '@' are relative to today (e.g. '@-10m').",
-  "source": {
-    "name": "demo_intl_registry",
-    "label": "Demo Global Registry (OpenCorporates-like, fictitious)",
-    "base_url": "https://example.org/kbc-demo/global-registry",
-    "jurisdictions": null
+ "_comment": "FICTITIOUS DATA for demonstration purposes only. Any resemblance to real persons or companies is coincidental. Dates starting with '@' are relative to today (e.g. '@-10m').",
+ "source": {
+  "name": "demo_intl_registry",
+  "label": "Demo Global Registry (OpenCorporates-like, fictitious)",
+  "base_url": "https://example.org/kbc-demo/global-registry",
+  "jurisdictions": null
+ },
+ "entities": [
+  {
+   "id": "OP-1001",
+   "type": "person",
+   "name": "Mohamed Qadrani",
+   "birth_date": "1966-05",
+   "nationalities": [
+    "FR"
+   ]
   },
-  "entities": [
-    {"id": "OP-1001", "type": "person", "name": "Mohamed Qadrani", "birth_date": "1966-05", "nationalities": ["FR"]},
-    {"id": "OP-1002", "type": "person", "name": "Henri Castelnau", "birth_date": "1955-02", "nationalities": ["FR"], "address": "Luxembourg"},
-    {"id": "OP-1003", "type": "person", "name": "Dragan Vukotić-Lazar", "birth_date": "1961-08-19", "nationalities": ["RS"]},
-    {"id": "OP-1004", "type": "person", "name": "Ruslan Terekhov", "birth_date": "1962-01-27", "nationalities": ["RU", "CY"]},
-    {"id": "OP-1005", "type": "person", "name": "Andreas Kyriakides", "birth_date": "1977-10", "nationalities": ["CY"]},
-    {"id": "OP-1006", "type": "person", "name": "Maxamed Qadraani", "birth_date": "1979-04", "nationalities": ["GB", "SO"], "address": "Birmingham, United Kingdom"},
-
-    {"id": "lu/B198765", "type": "company", "name": "Meridian Capital Holdings S.à r.l.", "jurisdiction": "LU", "registration_number": "B198765", "legal_form": "Société à responsabilité limitée", "status": "active", "incorporation_date": "2016-06-01", "last_accounts_date": "@-9m", "activity": "Holding and financing company (SOPARFI)", "address": "7 rue des Hêtres-Blancs, L-1835 Luxembourg", "extra": {"share_capital": "EUR 12,000"}},
-    {"id": "fr/900100101", "type": "company", "name": "QADRANY INVESTISSEMENTS", "jurisdiction": "FR", "registration_number": "900 100 101", "status": "active", "address": "22 RUE HELENE VASSEUR 75008 PARIS"},
-    {"id": "fr/900100202", "type": "company", "name": "SCI MERIDIAN PATRIMOINE", "jurisdiction": "FR", "registration_number": "900 100 202", "status": "active", "address": "22 RUE HELENE VASSEUR 75008 PARIS"},
-    {"id": "gb/15873344", "type": "company", "name": "Aurelia Trading Ltd", "jurisdiction": "GB", "registration_number": "15873344", "legal_form": "Private limited company", "status": "active", "incorporation_date": "@-10m", "activity": "Wholesale of metals and metal ores (SIC 46720)", "address": "Suite 4, 71 Kingsway Crescent, London WC2B 6XX", "extra": {"accounts": "First accounts not yet filed"}},
-    {"id": "vg/1874412", "type": "company", "name": "Northgate Maritime Holdings Ltd", "jurisdiction": "VG", "registration_number": "1874412", "legal_form": "BVI Business Company", "status": "active", "incorporation_date": "2012-09-17", "address": "Pelican House, Wickhams Cay III, Road Town, Tortola, British Virgin Islands", "extra": {"registered_agent": "Pacific Crest Corporate Services Ltd"}},
-    {"id": "cy/HE345678", "type": "company", "name": "Solenne Holdings Ltd", "jurisdiction": "CY", "registration_number": "HE345678", "legal_form": "Private company limited by shares", "status": "active", "incorporation_date": "2015-02-10", "last_accounts_date": "2021-12-31", "activity": "Investment holding", "address": "9 Odos Thalassinis, 3036 Limassol, Cyprus"},
-    {"id": "lu/B201001", "type": "company", "name": "Albion Nord S.A.", "jurisdiction": "LU", "registration_number": "B201001", "legal_form": "Société anonyme", "status": "active", "incorporation_date": "2017-03-02", "last_accounts_date": "@-9m", "address": "7 rue des Hêtres-Blancs, L-1835 Luxembourg"},
-    {"id": "lu/B201002", "type": "company", "name": "Veridia Invest S.A.", "jurisdiction": "LU", "registration_number": "B201002", "legal_form": "Société anonyme", "status": "active", "incorporation_date": "2018-11-20", "last_accounts_date": "@-9m", "address": "7 rue des Hêtres-Blancs, L-1835 Luxembourg"},
-    {"id": "lu/B201003", "type": "company", "name": "Kestrel Partners S.à r.l.", "jurisdiction": "LU", "registration_number": "B201003", "legal_form": "Société à responsabilité limitée", "status": "active", "incorporation_date": "2019-05-14", "last_accounts_date": "@-33m", "address": "7 rue des Hêtres-Blancs, L-1835 Luxembourg"},
-    {"id": "lu/B201004", "type": "company", "name": "Orsini Participations S.à r.l.", "jurisdiction": "LU", "registration_number": "B201004", "legal_form": "Société à responsabilité limitée", "status": "active", "incorporation_date": "2020-01-08", "last_accounts_date": "@-9m", "address": "7 rue des Hêtres-Blancs, L-1835 Luxembourg"},
-    {"id": "lu/B150010", "type": "company", "name": "Castelnau Corporate Services S.A.", "jurisdiction": "LU", "registration_number": "B150010", "legal_form": "Société anonyme", "status": "active", "incorporation_date": "2009-10-01", "last_accounts_date": "@-9m", "activity": "Domiciliation agent (licensed corporate services provider)", "address": "7 rue des Hêtres-Blancs, L-1835 Luxembourg"},
-    {"id": "gb/11223344", "type": "company", "name": "Qadraani Logistics Ltd", "jurisdiction": "GB", "registration_number": "11223344", "legal_form": "Private limited company", "status": "active", "incorporation_date": "2018-02-26", "last_accounts_date": "@-7m", "activity": "Freight transport by road (SIC 49410)", "address": "Unit 12, Tyseley Park, Birmingham B11 2XX"}
-  ],
-  "relationships": [
-    {"type": "shareholder", "from": "fr/900100101", "to": "lu/B198765", "share_pct": 51},
-    {"type": "shareholder", "from": "vg/1874412", "to": "lu/B198765", "share_pct": 49},
-    {"type": "officer", "from": "OP-1001", "to": "lu/B198765", "role": "Manager (gérant)", "start_date": "2016-06-01"},
-    {"type": "officer", "from": "OP-1002", "to": "lu/B198765", "role": "Manager (gérant)", "start_date": "2016-06-01"},
-    {"type": "beneficial_owner", "from": "OP-1001", "to": "lu/B198765", "role": "Declared beneficial owner (RBE)", "share_pct": 30.6},
-
-    {"type": "shareholder", "from": "lu/B198765", "to": "fr/900100202", "share_pct": 100},
-
-    {"type": "shareholder", "from": "lu/B198765", "to": "gb/15873344", "share_pct": 75},
-    {"type": "shareholder", "from": "OP-1003", "to": "gb/15873344", "share_pct": 25},
-    {"type": "officer", "from": "OP-1003", "to": "gb/15873344", "role": "Director", "start_date": "@-10m"},
-    {"type": "beneficial_owner", "from": "OP-1003", "to": "gb/15873344", "role": "PSC: ownership of shares 25% to 50%", "share_pct": 25},
-
-    {"type": "shareholder", "from": "lu/B198765", "to": "cy/HE345678", "share_pct": 30},
-    {"type": "shareholder", "from": "OP-1004", "to": "cy/HE345678", "share_pct": 70},
-    {"type": "officer", "from": "OP-1002", "to": "cy/HE345678", "role": "Director", "start_date": "2016-07-15"},
-    {"type": "officer", "from": "OP-1005", "to": "cy/HE345678", "role": "Director & Secretary", "start_date": "2015-02-10"},
-
-    {"type": "shareholder", "from": "cy/HE345678", "to": "vg/1874412", "share_pct": 100},
-    {"type": "officer", "from": "OP-1005", "to": "vg/1874412", "role": "Director (nominee)", "start_date": "2012-09-17"},
-
-    {"type": "officer", "from": "OP-1002", "to": "lu/B201001", "role": "Director (administrateur)", "start_date": "2017-03-02"},
-    {"type": "officer", "from": "OP-1002", "to": "lu/B201002", "role": "Director (administrateur)", "start_date": "2018-11-20"},
-    {"type": "officer", "from": "OP-1002", "to": "lu/B201003", "role": "Manager (gérant)", "start_date": "2019-05-14"},
-    {"type": "officer", "from": "OP-1002", "to": "lu/B201004", "role": "Manager (gérant)", "start_date": "2020-01-08"},
-    {"type": "officer", "from": "OP-1002", "to": "lu/B150010", "role": "Managing director (administrateur délégué)", "start_date": "2009-10-01"},
-    {"type": "shareholder", "from": "OP-1002", "to": "lu/B150010", "share_pct": 100},
-
-    {"type": "officer", "from": "OP-1006", "to": "gb/11223344", "role": "Director", "start_date": "2018-02-26"},
-    {"type": "shareholder", "from": "OP-1006", "to": "gb/11223344", "share_pct": 100}
-  ]
+  {
+   "id": "OP-1002",
+   "type": "person",
+   "name": "Henri Castelnau",
+   "birth_date": "1955-02",
+   "nationalities": [
+    "FR"
+   ],
+   "address": "Luxembourg"
+  },
+  {
+   "id": "OP-1003",
+   "type": "person",
+   "name": "Dragan Vukotić-Lazar",
+   "birth_date": "1961-08-19",
+   "nationalities": [
+    "RS"
+   ]
+  },
+  {
+   "id": "OP-1004",
+   "type": "person",
+   "name": "Ruslan Terekhov",
+   "birth_date": "1962-01-27",
+   "nationalities": [
+    "RU",
+    "CY"
+   ]
+  },
+  {
+   "id": "OP-1005",
+   "type": "person",
+   "name": "Andreas Kyriakides",
+   "birth_date": "1977-10",
+   "nationalities": [
+    "CY"
+   ]
+  },
+  {
+   "id": "OP-1006",
+   "type": "person",
+   "name": "Maxamed Qadraani",
+   "birth_date": "1979-04",
+   "nationalities": [
+    "GB",
+    "SO"
+   ],
+   "address": "Birmingham, United Kingdom"
+  },
+  {
+   "id": "lu/B198765",
+   "type": "company",
+   "name": "Meridian Capital Holdings S.à r.l.",
+   "jurisdiction": "LU",
+   "registration_number": "B198765",
+   "legal_form": "Société à responsabilité limitée",
+   "status": "active",
+   "incorporation_date": "2016-06-01",
+   "last_accounts_date": "@-9m",
+   "activity": "Holding and financing company (SOPARFI)",
+   "address": "7 rue des Hêtres-Blancs, L-1835 Luxembourg",
+   "extra": {
+    "share_capital": "EUR 12,000"
+   }
+  },
+  {
+   "id": "fr/900100101",
+   "type": "company",
+   "name": "QADRANY INVESTISSEMENTS",
+   "jurisdiction": "FR",
+   "registration_number": "900 100 101",
+   "status": "active",
+   "address": "22 RUE HELENE VASSEUR 75008 PARIS"
+  },
+  {
+   "id": "fr/900100202",
+   "type": "company",
+   "name": "SCI MERIDIAN PATRIMOINE",
+   "jurisdiction": "FR",
+   "registration_number": "900 100 202",
+   "status": "active",
+   "address": "22 RUE HELENE VASSEUR 75008 PARIS"
+  },
+  {
+   "id": "gb/15873344",
+   "type": "company",
+   "name": "Aurelia Trading Ltd",
+   "jurisdiction": "GB",
+   "registration_number": "15873344",
+   "legal_form": "Private limited company",
+   "status": "active",
+   "incorporation_date": "@-10m",
+   "activity": "Wholesale of metals and metal ores (SIC 46720)",
+   "address": "Suite 4, 71 Kingsway Crescent, London WC2B 6XX",
+   "extra": {
+    "accounts": "First accounts not yet filed"
+   }
+  },
+  {
+   "id": "vg/1874412",
+   "type": "company",
+   "name": "Northgate Maritime Holdings Ltd",
+   "jurisdiction": "VG",
+   "registration_number": "1874412",
+   "legal_form": "BVI Business Company",
+   "status": "active",
+   "incorporation_date": "2012-09-17",
+   "address": "Pelican House, Wickhams Cay III, Road Town, Tortola, British Virgin Islands",
+   "extra": {
+    "registered_agent": "Pacific Crest Corporate Services Ltd"
+   }
+  },
+  {
+   "id": "cy/HE345678",
+   "type": "company",
+   "name": "Solenne Holdings Ltd",
+   "jurisdiction": "CY",
+   "registration_number": "HE345678",
+   "legal_form": "Private company limited by shares",
+   "status": "active",
+   "incorporation_date": "2015-02-10",
+   "last_accounts_date": "2021-12-31",
+   "activity": "Investment holding",
+   "address": "9 Odos Thalassinis, 3036 Limassol, Cyprus"
+  },
+  {
+   "id": "lu/B201001",
+   "type": "company",
+   "name": "Albion Nord S.A.",
+   "jurisdiction": "LU",
+   "registration_number": "B201001",
+   "legal_form": "Société anonyme",
+   "status": "active",
+   "incorporation_date": "2017-03-02",
+   "last_accounts_date": "@-9m",
+   "address": "7 rue des Hêtres-Blancs, L-1835 Luxembourg"
+  },
+  {
+   "id": "lu/B201002",
+   "type": "company",
+   "name": "Veridia Invest S.A.",
+   "jurisdiction": "LU",
+   "registration_number": "B201002",
+   "legal_form": "Société anonyme",
+   "status": "active",
+   "incorporation_date": "2018-11-20",
+   "last_accounts_date": "@-9m",
+   "address": "7 rue des Hêtres-Blancs, L-1835 Luxembourg"
+  },
+  {
+   "id": "lu/B201003",
+   "type": "company",
+   "name": "Kestrel Partners S.à r.l.",
+   "jurisdiction": "LU",
+   "registration_number": "B201003",
+   "legal_form": "Société à responsabilité limitée",
+   "status": "active",
+   "incorporation_date": "2019-05-14",
+   "last_accounts_date": "@-33m",
+   "address": "7 rue des Hêtres-Blancs, L-1835 Luxembourg"
+  },
+  {
+   "id": "lu/B201004",
+   "type": "company",
+   "name": "Orsini Participations S.à r.l.",
+   "jurisdiction": "LU",
+   "registration_number": "B201004",
+   "legal_form": "Société à responsabilité limitée",
+   "status": "active",
+   "incorporation_date": "2020-01-08",
+   "last_accounts_date": "@-9m",
+   "address": "7 rue des Hêtres-Blancs, L-1835 Luxembourg"
+  },
+  {
+   "id": "lu/B150010",
+   "type": "company",
+   "name": "Castelnau Corporate Services S.A.",
+   "jurisdiction": "LU",
+   "registration_number": "B150010",
+   "legal_form": "Société anonyme",
+   "status": "active",
+   "incorporation_date": "2009-10-01",
+   "last_accounts_date": "@-9m",
+   "activity": "Domiciliation agent (licensed corporate services provider)",
+   "address": "7 rue des Hêtres-Blancs, L-1835 Luxembourg"
+  },
+  {
+   "id": "gb/11223344",
+   "type": "company",
+   "name": "Qadraani Logistics Ltd",
+   "jurisdiction": "GB",
+   "registration_number": "11223344",
+   "legal_form": "Private limited company",
+   "status": "active",
+   "incorporation_date": "2018-02-26",
+   "last_accounts_date": "@-7m",
+   "activity": "Freight transport by road (SIC 49410)",
+   "address": "Unit 12, Tyseley Park, Birmingham B11 2XX"
+  }
+ ],
+ "relationships": [
+  {
+   "type": "shareholder",
+   "from": "fr/900100101",
+   "to": "lu/B198765",
+   "share_pct": 51
+  },
+  {
+   "type": "shareholder",
+   "from": "vg/1874412",
+   "to": "lu/B198765",
+   "share_pct": 49
+  },
+  {
+   "type": "officer",
+   "from": "OP-1001",
+   "to": "lu/B198765",
+   "role": "Manager (gérant)",
+   "start_date": "2016-06-01"
+  },
+  {
+   "type": "officer",
+   "from": "OP-1002",
+   "to": "lu/B198765",
+   "role": "Manager (gérant)",
+   "start_date": "2016-06-01"
+  },
+  {
+   "type": "beneficial_owner",
+   "from": "OP-1001",
+   "to": "lu/B198765",
+   "role": "Declared beneficial owner (RBE)",
+   "share_pct": 30.6
+  },
+  {
+   "type": "shareholder",
+   "from": "lu/B198765",
+   "to": "fr/900100202",
+   "share_pct": 100
+  },
+  {
+   "type": "shareholder",
+   "from": "lu/B198765",
+   "to": "gb/15873344",
+   "share_pct": 75
+  },
+  {
+   "type": "shareholder",
+   "from": "OP-1003",
+   "to": "gb/15873344",
+   "share_pct": 25
+  },
+  {
+   "type": "officer",
+   "from": "OP-1003",
+   "to": "gb/15873344",
+   "role": "Director",
+   "start_date": "@-10m"
+  },
+  {
+   "type": "beneficial_owner",
+   "from": "OP-1003",
+   "to": "gb/15873344",
+   "role": "PSC: ownership of shares 25% to 50%",
+   "share_pct": 25
+  },
+  {
+   "type": "shareholder",
+   "from": "lu/B198765",
+   "to": "cy/HE345678",
+   "share_pct": 30
+  },
+  {
+   "type": "shareholder",
+   "from": "OP-1004",
+   "to": "cy/HE345678",
+   "share_pct": 70
+  },
+  {
+   "type": "officer",
+   "from": "OP-1002",
+   "to": "cy/HE345678",
+   "role": "Director",
+   "start_date": "2016-07-15"
+  },
+  {
+   "type": "officer",
+   "from": "OP-1005",
+   "to": "cy/HE345678",
+   "role": "Director & Secretary",
+   "start_date": "2015-02-10"
+  },
+  {
+   "type": "shareholder",
+   "from": "cy/HE345678",
+   "to": "vg/1874412",
+   "share_pct": 100
+  },
+  {
+   "type": "officer",
+   "from": "OP-1005",
+   "to": "vg/1874412",
+   "role": "Director (nominee)",
+   "start_date": "2012-09-17"
+  },
+  {
+   "type": "officer",
+   "from": "OP-1002",
+   "to": "lu/B201001",
+   "role": "Director (administrateur)",
+   "start_date": "2017-03-02"
+  },
+  {
+   "type": "officer",
+   "from": "OP-1002",
+   "to": "lu/B201002",
+   "role": "Director (administrateur)",
+   "start_date": "2018-11-20"
+  },
+  {
+   "type": "officer",
+   "from": "OP-1002",
+   "to": "lu/B201003",
+   "role": "Manager (gérant)",
+   "start_date": "2019-05-14"
+  },
+  {
+   "type": "officer",
+   "from": "OP-1002",
+   "to": "lu/B201004",
+   "role": "Manager (gérant)",
+   "start_date": "2020-01-08"
+  },
+  {
+   "type": "officer",
+   "from": "OP-1002",
+   "to": "lu/B150010",
+   "role": "Managing director (administrateur délégué)",
+   "start_date": "2009-10-01"
+  },
+  {
+   "type": "shareholder",
+   "from": "OP-1002",
+   "to": "lu/B150010",
+   "share_pct": 100
+  },
+  {
+   "type": "officer",
+   "from": "OP-1006",
+   "to": "gb/11223344",
+   "role": "Director",
+   "start_date": "2018-02-26"
+  },
+  {
+   "type": "shareholder",
+   "from": "OP-1006",
+   "to": "gb/11223344",
+   "share_pct": 100
+  }
+ ],
+ "documents": [
+  {
+   "entity": "lu/B198765",
+   "title": "Beneficial owner declaration (RBE extract)",
+   "kind": "register",
+   "date": "2019-03-01",
+   "summary": "Declared beneficial owner: Mohamed Qadrani, 30.6% (fictitious)"
+  },
+  {
+   "entity": "lu/B198765",
+   "title": "Filed annual accounts",
+   "kind": "accounts",
+   "date": "@-9m",
+   "summary": "Abridged balance sheet (fictitious)"
+  },
+  {
+   "entity": "gb/15873344",
+   "title": "Incorporation certificate",
+   "kind": "filing",
+   "date": "@-10m",
+   "summary": "Private limited company incorporated; first accounts not yet due (fictitious)"
+  },
+  {
+   "entity": "cy/HE345678",
+   "title": "Annual return — last filed",
+   "kind": "filing",
+   "date": "2022-03-30",
+   "summary": "No filing since 2022 (fictitious)"
+  },
+  {
+   "entity": "vg/1874412",
+   "title": "Registered agent certificate",
+   "kind": "register",
+   "date": "2012-09-17",
+   "summary": "Registered agent: Pacific Crest Corporate Services Ltd (fictitious)"
+  }
+ ]
 }

@@ -11,6 +11,16 @@ export interface Provenance {
   retrieved_at: string;
 }
 
+export interface DocumentRef {
+  title: string;
+  kind: string;
+  date: string | null;
+  url: string | null;
+  summary: string | null;
+  source: string;
+  flags: string[];
+}
+
 export interface Entity {
   id: string;
   type: EntityType;
@@ -30,6 +40,7 @@ export interface Entity {
   identifiers: Record<string, string>;
   is_offshore: boolean;
   demo: boolean;
+  documents: DocumentRef[];
   record_ids: string[];
   sources: Provenance[];
   extra: Record<string, unknown>;
@@ -129,7 +140,7 @@ export interface Investigation {
   hits: ScreeningHit[];
   risk: RiskAssessment;
   tables: Record<
-    "mandates" | "companies" | "shareholders" | "ownership" | "screening" | "leaks" | "sources",
+    "mandates" | "companies" | "shareholders" | "ownership" | "screening" | "leaks" | "sources" | "documents",
     Row[]
   >;
   queries: QueryLog[];

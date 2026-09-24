@@ -18,6 +18,7 @@ from app.matching.matcher import match_entities, match_name
 from app.matching.names import tokenize
 from app.models import (
     CompanyStatus,
+    Document,
     Entity,
     EntityType,
     LinkedEntity,
@@ -161,6 +162,18 @@ class DemoRegistryConnector(_DemoBase):
 
     def get_subsidiaries(self, company_id: str) -> list[LinkedEntity]:
         return self._links(frm=self.native_id(company_id), types={"shareholder"})
+
+    def get_documents(self, entity: Entity) -> list[Document]:
+        natives = {self.native_id(r) for r in entity.record_ids if r.startswith(f"{self.name}:")}
+        return [
+            Document(
+                **{k: resolve_date(v) if k == "date" else v for k, v in d.items() if k != "entity"},
+                url=f"{self.base_url}/documents/{d['entity']}/{i}",
+                source=self.label,
+            )
+            for i, d in enumerate(self.data.get("documents", []))
+            if d["entity"] in natives
+        ]
 
     def search_address(self, address: str) -> list[Entity]:
         key = _norm_address(address)

@@ -48,6 +48,21 @@ class Provenance(BaseModel):
     retrieved_at: datetime = Field(default_factory=utcnow)
 
 
+_Date = date  # alias: the Document.date field would shadow the type
+
+
+class Document(BaseModel):
+    """A linked document / official record about an entity (filing, legal notice, register page)."""
+
+    title: str
+    kind: str  # "legal_notice", "filing", "register", "leak", "deeds", "accounts"...
+    date: _Date | None = None
+    url: str | None = None
+    summary: str | None = None
+    source: str  # connector label, or "Official register link"
+    flags: list[str] = Field(default_factory=list)  # e.g. ["insolvency"]
+
+
 class Entity(BaseModel):
     id: str  # "<connector>:<native id>" for raw records, canonical id once resolved
     type: EntityType
@@ -73,9 +88,9 @@ class Entity(BaseModel):
     is_offshore: bool = False
     demo: bool = False  # fictitious record (demo dataset)
 
-    record_ids: list[str] = Field(
-        default_factory=list
-    )  # raw source records merged into this entity
+    documents: list[Document] = Field(default_factory=list)  # linked filings / notices / registers
+    # raw source records merged into this entity
+    record_ids: list[str] = Field(default_factory=list)
     sources: list[Provenance] = Field(default_factory=list)
     extra: dict[str, Any] = Field(default_factory=dict)
 

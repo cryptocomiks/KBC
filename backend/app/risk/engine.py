@@ -41,6 +41,7 @@ FACTOR_LABELS = {
     "missing_accounts": "No recent accounts filed",
     "nominee_director": "Possible nominee / professional director",
     "ubo_discrepancy": "Undeclared beneficial owner (computed vs declared)",
+    "insolvency_proceedings": "Insolvency proceedings (legal notice)",
 }
 
 
@@ -119,6 +120,15 @@ class RiskEngine:
             if code in self.jur.offshore_centres:
                 flag("offshore_jurisdiction", eid, label)
 
+            for doc in e.documents:
+                if "insolvency" in doc.flags:
+                    when = f" on {doc.date}" if doc.date else ""
+                    flag(
+                        "insolvency_proceedings",
+                        eid,
+                        f"{e.name}: {doc.title}{when}"
+                        + (f" — {doc.summary}" if doc.summary else ""),
+                    )
             if e.status == CompanyStatus.DISSOLVED:
                 when = f" on {e.dissolution_date}" if e.dissolution_date else ""
                 flag("dissolved_company", eid, f"{e.name} dissolved{when}")

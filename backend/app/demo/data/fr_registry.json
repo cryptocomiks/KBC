@@ -1,41 +1,267 @@
 {
-  "_comment": "FICTITIOUS DATA for demonstration purposes only. Any resemblance to real persons or companies is coincidental. Dates starting with '@' are relative to today (e.g. '@-10m').",
-  "source": {
-    "name": "demo_fr_registry",
-    "label": "Demo FR Registry (Pappers-like, fictitious)",
-    "base_url": "https://example.org/kbc-demo/fr-registry",
-    "jurisdictions": ["FR"]
-  },
-  "entities": [
-    {"id": "P-001", "type": "person", "name": "Mohammed Qadrany", "birth_date": "1966-05-02", "nationalities": ["FR", "MA"], "address": "Paris (75), France"},
-    {"id": "P-002", "type": "person", "name": "Sofia Marchetti", "birth_date": "1971-09", "nationalities": ["IT", "FR"]},
-    {"id": "P-003", "type": "person", "name": "Mohamed Kadrani", "birth_date": "1984-11", "nationalities": ["FR"], "address": "Lyon (69), France"},
-    {"id": "P-004", "type": "person", "name": "Claire Dubreuil", "birth_date": "1979-03", "nationalities": ["FR"]},
-
-    {"id": "900100101", "type": "company", "name": "Qadrany Investissements SAS", "jurisdiction": "FR", "registration_number": "900100101", "legal_form": "Société par actions simplifiée", "status": "active", "incorporation_date": "2014-03-11", "last_accounts_date": "@-9m", "activity": "Activities of holding companies (NAF 64.20Z)", "address": "22 rue Hélène-Vasseur, 75008 Paris, France", "extra": {"share_capital": "EUR 1,500,000", "employees": "0"}},
-    {"id": "900100202", "type": "company", "name": "SCI Meridian Patrimoine", "jurisdiction": "FR", "registration_number": "900100202", "legal_form": "Société civile immobilière", "status": "active", "incorporation_date": "2017-09-04", "last_accounts_date": "@-9m", "activity": "Rental of own real estate (NAF 68.20B)", "address": "22 rue Hélène-Vasseur, 75008 Paris, France", "extra": {"share_capital": "EUR 1,000"}},
-    {"id": "900100303", "type": "company", "name": "Batiprest Rénovation SARL", "jurisdiction": "FR", "registration_number": "900100303", "legal_form": "Société à responsabilité limitée", "status": "dissolved", "incorporation_date": "2011-01-17", "dissolution_date": "2021-06-30", "last_accounts_date": "2019-12-31", "activity": "Building renovation works (NAF 43.39Z)", "address": "5 impasse des Artisans-Unis, 93100 Montreuil, France"},
-    {"id": "900100404", "type": "company", "name": "Boulangerie Kadrani EURL", "jurisdiction": "FR", "registration_number": "900100404", "legal_form": "Entreprise unipersonnelle à responsabilité limitée", "status": "active", "incorporation_date": "2012-06-20", "last_accounts_date": "@-15m", "activity": "Bakery (NAF 10.71C)", "address": "3 place du Fournil, 69007 Lyon, France"},
-    {"id": "LU-B198765", "type": "company", "name": "MERIDIAN CAPITAL HOLDINGS SARL", "jurisdiction": "LU", "registration_number": "B198765", "address": "7 rue des Hêtres-Blancs, L-1835 Luxembourg"}
-  ],
-  "relationships": [
-    {"type": "officer", "from": "P-001", "to": "900100101", "role": "Président", "start_date": "2014-03-11"},
-    {"type": "shareholder", "from": "P-001", "to": "900100101", "share_pct": 60},
-    {"type": "shareholder", "from": "P-002", "to": "900100101", "share_pct": 40},
-    {"type": "officer", "from": "P-002", "to": "900100101", "role": "Directrice générale", "start_date": "2019-01-07"},
-    {"type": "beneficial_owner", "from": "P-001", "to": "900100101", "role": "Direct holding of 60% of shares and voting rights", "share_pct": 60},
-    {"type": "beneficial_owner", "from": "P-002", "to": "900100101", "role": "Direct holding of 40% of shares and voting rights", "share_pct": 40},
-
-    {"type": "shareholder", "from": "LU-B198765", "to": "900100202", "share_pct": 100},
-    {"type": "officer", "from": "P-001", "to": "900100202", "role": "Gérant", "start_date": "2017-09-04"},
-    {"type": "beneficial_owner", "from": "P-001", "to": "900100202", "role": "Indirect holding via Meridian Capital Holdings (declared 30.6%)", "share_pct": 30.6},
-
-    {"type": "officer", "from": "P-001", "to": "900100303", "role": "Gérant", "start_date": "2011-01-17", "end_date": "2021-06-30"},
-    {"type": "officer", "from": "P-004", "to": "900100303", "role": "Co-gérante", "start_date": "2011-01-17", "end_date": "2021-06-30"},
-    {"type": "shareholder", "from": "P-001", "to": "900100303", "share_pct": 50},
-    {"type": "shareholder", "from": "P-004", "to": "900100303", "share_pct": 50},
-
-    {"type": "officer", "from": "P-003", "to": "900100404", "role": "Gérant", "start_date": "2012-06-20"},
-    {"type": "shareholder", "from": "P-003", "to": "900100404", "share_pct": 100}
+ "_comment": "FICTITIOUS DATA for demonstration purposes only. Any resemblance to real persons or companies is coincidental. Dates starting with '@' are relative to today (e.g. '@-10m').",
+ "source": {
+  "name": "demo_fr_registry",
+  "label": "Demo FR Registry (Pappers-like, fictitious)",
+  "base_url": "https://example.org/kbc-demo/fr-registry",
+  "jurisdictions": [
+   "FR"
   ]
+ },
+ "entities": [
+  {
+   "id": "P-001",
+   "type": "person",
+   "name": "Mohammed Qadrany",
+   "birth_date": "1966-05-02",
+   "nationalities": [
+    "FR",
+    "MA"
+   ],
+   "address": "Paris (75), France"
+  },
+  {
+   "id": "P-002",
+   "type": "person",
+   "name": "Sofia Marchetti",
+   "birth_date": "1971-09",
+   "nationalities": [
+    "IT",
+    "FR"
+   ]
+  },
+  {
+   "id": "P-003",
+   "type": "person",
+   "name": "Mohamed Kadrani",
+   "birth_date": "1984-11",
+   "nationalities": [
+    "FR"
+   ],
+   "address": "Lyon (69), France"
+  },
+  {
+   "id": "P-004",
+   "type": "person",
+   "name": "Claire Dubreuil",
+   "birth_date": "1979-03",
+   "nationalities": [
+    "FR"
+   ]
+  },
+  {
+   "id": "900100101",
+   "type": "company",
+   "name": "Qadrany Investissements SAS",
+   "jurisdiction": "FR",
+   "registration_number": "900100101",
+   "legal_form": "Société par actions simplifiée",
+   "status": "active",
+   "incorporation_date": "2014-03-11",
+   "last_accounts_date": "@-9m",
+   "activity": "Activities of holding companies (NAF 64.20Z)",
+   "address": "22 rue Hélène-Vasseur, 75008 Paris, France",
+   "extra": {
+    "share_capital": "EUR 1,500,000",
+    "employees": "0"
+   }
+  },
+  {
+   "id": "900100202",
+   "type": "company",
+   "name": "SCI Meridian Patrimoine",
+   "jurisdiction": "FR",
+   "registration_number": "900100202",
+   "legal_form": "Société civile immobilière",
+   "status": "active",
+   "incorporation_date": "2017-09-04",
+   "last_accounts_date": "@-9m",
+   "activity": "Rental of own real estate (NAF 68.20B)",
+   "address": "22 rue Hélène-Vasseur, 75008 Paris, France",
+   "extra": {
+    "share_capital": "EUR 1,000"
+   }
+  },
+  {
+   "id": "900100303",
+   "type": "company",
+   "name": "Batiprest Rénovation SARL",
+   "jurisdiction": "FR",
+   "registration_number": "900100303",
+   "legal_form": "Société à responsabilité limitée",
+   "status": "dissolved",
+   "incorporation_date": "2011-01-17",
+   "dissolution_date": "2021-06-30",
+   "last_accounts_date": "2019-12-31",
+   "activity": "Building renovation works (NAF 43.39Z)",
+   "address": "5 impasse des Artisans-Unis, 93100 Montreuil, France"
+  },
+  {
+   "id": "900100404",
+   "type": "company",
+   "name": "Boulangerie Kadrani EURL",
+   "jurisdiction": "FR",
+   "registration_number": "900100404",
+   "legal_form": "Entreprise unipersonnelle à responsabilité limitée",
+   "status": "active",
+   "incorporation_date": "2012-06-20",
+   "last_accounts_date": "@-15m",
+   "activity": "Bakery (NAF 10.71C)",
+   "address": "3 place du Fournil, 69007 Lyon, France"
+  },
+  {
+   "id": "LU-B198765",
+   "type": "company",
+   "name": "MERIDIAN CAPITAL HOLDINGS SARL",
+   "jurisdiction": "LU",
+   "registration_number": "B198765",
+   "address": "7 rue des Hêtres-Blancs, L-1835 Luxembourg"
+  }
+ ],
+ "relationships": [
+  {
+   "type": "officer",
+   "from": "P-001",
+   "to": "900100101",
+   "role": "Président",
+   "start_date": "2014-03-11"
+  },
+  {
+   "type": "shareholder",
+   "from": "P-001",
+   "to": "900100101",
+   "share_pct": 60
+  },
+  {
+   "type": "shareholder",
+   "from": "P-002",
+   "to": "900100101",
+   "share_pct": 40
+  },
+  {
+   "type": "officer",
+   "from": "P-002",
+   "to": "900100101",
+   "role": "Directrice générale",
+   "start_date": "2019-01-07"
+  },
+  {
+   "type": "beneficial_owner",
+   "from": "P-001",
+   "to": "900100101",
+   "role": "Direct holding of 60% of shares and voting rights",
+   "share_pct": 60
+  },
+  {
+   "type": "beneficial_owner",
+   "from": "P-002",
+   "to": "900100101",
+   "role": "Direct holding of 40% of shares and voting rights",
+   "share_pct": 40
+  },
+  {
+   "type": "shareholder",
+   "from": "LU-B198765",
+   "to": "900100202",
+   "share_pct": 100
+  },
+  {
+   "type": "officer",
+   "from": "P-001",
+   "to": "900100202",
+   "role": "Gérant",
+   "start_date": "2017-09-04"
+  },
+  {
+   "type": "beneficial_owner",
+   "from": "P-001",
+   "to": "900100202",
+   "role": "Indirect holding via Meridian Capital Holdings (declared 30.6%)",
+   "share_pct": 30.6
+  },
+  {
+   "type": "officer",
+   "from": "P-001",
+   "to": "900100303",
+   "role": "Gérant",
+   "start_date": "2011-01-17",
+   "end_date": "2021-06-30"
+  },
+  {
+   "type": "officer",
+   "from": "P-004",
+   "to": "900100303",
+   "role": "Co-gérante",
+   "start_date": "2011-01-17",
+   "end_date": "2021-06-30"
+  },
+  {
+   "type": "shareholder",
+   "from": "P-001",
+   "to": "900100303",
+   "share_pct": 50
+  },
+  {
+   "type": "shareholder",
+   "from": "P-004",
+   "to": "900100303",
+   "share_pct": 50
+  },
+  {
+   "type": "officer",
+   "from": "P-003",
+   "to": "900100404",
+   "role": "Gérant",
+   "start_date": "2012-06-20"
+  },
+  {
+   "type": "shareholder",
+   "from": "P-003",
+   "to": "900100404",
+   "share_pct": 100
+  }
+ ],
+ "documents": [
+  {
+   "entity": "900100303",
+   "title": "Legal notice — Collective proceedings (judicial liquidation)",
+   "kind": "insolvency",
+   "date": "2020-11-16",
+   "summary": "Judgment opening a judicial liquidation — Commercial court of Bobigny (fictitious)",
+   "flags": [
+    "insolvency"
+   ]
+  },
+  {
+   "entity": "900100303",
+   "title": "Legal notice — Deregistration",
+   "kind": "legal_notice",
+   "date": "2021-07-12",
+   "summary": "Removal from the trade register after closure of the liquidation (fictitious)",
+   "flags": [
+    "deregistration"
+   ]
+  },
+  {
+   "entity": "900100101",
+   "title": "Filed annual accounts",
+   "kind": "accounts",
+   "date": "@-8m",
+   "summary": "Accounts for the last financial year, filed with the registry (fictitious)"
+  },
+  {
+   "entity": "900100101",
+   "title": "Articles of association (updated)",
+   "kind": "deeds",
+   "date": "2019-01-07",
+   "summary": "Amendment: appointment of a managing director (fictitious)"
+  },
+  {
+   "entity": "900100202",
+   "title": "Legal notice — Change of shareholder",
+   "kind": "legal_notice",
+   "date": "2017-09-04",
+   "summary": "100% of the shares held by Meridian Capital Holdings S.à r.l. (fictitious)"
+  }
+ ]
 }

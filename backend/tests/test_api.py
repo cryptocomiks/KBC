@@ -52,6 +52,7 @@ def test_investigation_payload(investigation):
         "screening",
         "leaks",
         "sources",
+        "documents",
     }
     for rel in inv["relationships"]:
         assert rel["sources"], rel  # traceability of every edge
