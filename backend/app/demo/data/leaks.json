@@ -1,0 +1,14 @@
+{
+  "_comment": "FICTITIOUS DATA for demonstration purposes only. 'Harbour Papers' is an invented leak.",
+  "source": {
+    "name": "demo_leaks",
+    "label": "Demo Leaks Archive (ICIJ / Aleph-like, fictitious)",
+    "base_url": "https://example.org/kbc-demo/leaks",
+    "kind": "leaks"
+  },
+  "entries": [
+    {"id": "HP-77120", "type": "company", "list_type": "leak", "name": "Northgate Maritime Holdings Limited", "jurisdiction": "VG", "dataset": "Harbour Papers (fictitious leak, 2021)", "details": {"role": "Offshore entity", "intermediary": "Pacific Crest Corporate Services Ltd (Seychelles)", "linked_to": "Ruslan Terekhov (beneficiary per leaked registry extract)", "incorporation": "2012-09-17"}},
+    {"id": "HP-77121", "type": "person", "list_type": "leak", "name": "Ruslan Terekhov", "birth_date": "1962", "nationalities": ["RU"], "dataset": "Harbour Papers (fictitious leak, 2021)", "details": {"role": "Beneficiary of Northgate Maritime Holdings Limited", "intermediary": "Pacific Crest Corporate Services Ltd (Seychelles)"}},
+    {"id": "AL-3391", "type": "person", "list_type": "leak", "name": "Henri Castelnau", "nationalities": ["FR"], "dataset": "Luxembourg court filings collection (fictitious, Aleph-like)", "details": {"role": "Named as director of 14 domiciled companies in a 2019 civil filing", "document": "Civil court filing no. 19/0452 (fictitious)"}}
+  ]
+}

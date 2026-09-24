@@ -8,7 +8,7 @@ __pycache__/
 
 # Env & local data
 .env
-data/
+/data/
 *.db
 *.sqlite3
 

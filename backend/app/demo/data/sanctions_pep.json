@@ -1,0 +1,16 @@
+{
+  "_comment": "FICTITIOUS DATA for demonstration purposes only. These are NOT real sanctions or PEP designations.",
+  "source": {
+    "name": "demo_sanctions",
+    "label": "Demo Sanctions & PEP Lists (OpenSanctions-like, fictitious)",
+    "base_url": "https://example.org/kbc-demo/sanctions",
+    "kind": "screening"
+  },
+  "entries": [
+    {"id": "SAN-0001", "type": "person", "list_type": "sanction", "name": "Ruslan Terekhov", "aliases": ["Руслан Терехов", "Rouslan Terekhov", "Ruslan Terekhoff"], "birth_date": "1962-01-27", "nationalities": ["RU"], "dataset": "Consolidated Financial Sanctions List (DEMO)", "details": {"program": "Fictitious Regulation 2099/001 — asset freeze", "listed_on": "2022-04-08", "authority": "Demo Sanctions Authority", "reason": "Fictitious designation created for demonstration purposes"}},
+    {"id": "SAN-0002", "type": "company", "list_type": "sanction", "name": "Terekhov Industrial Group JSC", "aliases": ["TIG JSC"], "jurisdiction": "RU", "dataset": "Consolidated Financial Sanctions List (DEMO)", "details": {"program": "Fictitious Regulation 2099/001", "listed_on": "2022-04-08"}},
+    {"id": "PEP-0101", "type": "person", "list_type": "pep", "name": "Dragan Vukotic Lazar", "aliases": ["Драган Вукотић-Лазар"], "birth_date": "1961-08-19", "nationalities": ["RS"], "dataset": "Politically Exposed Persons (DEMO)", "details": {"position": "Former State Secretary, Ministry of Infrastructure (fictitious)", "period": "2012 – 2020", "pep_category": "Senior government official"}},
+    {"id": "PEP-0102", "type": "person", "list_type": "pep", "name": "Mohammad Qadri", "birth_date": "1949-02-11", "nationalities": ["PK"], "dataset": "Politically Exposed Persons (DEMO)", "details": {"position": "Member of a regional assembly (fictitious)", "period": "2008 – 2013", "pep_category": "Legislator"}},
+    {"id": "PEP-0103", "type": "person", "list_type": "pep", "name": "Sofia Marcheti", "birth_date": "1948-01", "nationalities": ["IT"], "dataset": "Politically Exposed Persons (DEMO)", "details": {"position": "Former mayor of a municipality (fictitious)", "period": "1995 – 2004", "pep_category": "Local official"}}
+  ]
+}
