@@ -66,16 +66,28 @@ DATASETS = {
     "lu_administrative_sanctions": ("Luxembourg CSSF administrative sanctions", ListType.ADVERSE),
     "ch_finma_rulings": ("Swiss FINMA final rulings", ListType.ADVERSE),
     "fr_amf_regulatory_sanctions": ("France AMF regulatory sanctions", ListType.ADVERSE),
-    "fr_illegal_financial_services": ("France AMF blacklist (illegal financial services)", ListType.ADVERSE),
+    "fr_illegal_financial_services": (
+        "France AMF blacklist (illegal financial services)",
+        ListType.ADVERSE,
+    ),
     "eu_esma_sanctions": ("EU ESMA sanctions", ListType.ADVERSE),
     "us_sec_pause": ("US SEC public alert: unregistered soliciting entities", ListType.ADVERSE),
-    "no_nbim_exclusions": ("Norway sovereign fund (NBIM) exclusions (ethics, corruption)", ListType.ADVERSE),
+    "no_nbim_exclusions": (
+        "Norway sovereign fund (NBIM) exclusions (ethics, corruption)",
+        ListType.ADVERSE,
+    ),
     # Public officials (French HATVP declarations of interests and assets)
-    "fr_hatvp_declarations": ("France HATVP — declarations of interests of public officials", ListType.PEP),
+    "fr_hatvp_declarations": (
+        "France HATVP — declarations of interests of public officials",
+        ListType.PEP,
+    ),
     # Law enforcement
     "eu_europol_wanted": ("Europol — Europe's most wanted", ListType.ADVERSE),
     "gb_nca_most_wanted": ("UK National Crime Agency most wanted", ListType.ADVERSE),
-    "gb_nca_press_releases": ("UK National Crime Agency press releases (convictions)", ListType.ADVERSE),
+    "gb_nca_press_releases": (
+        "UK National Crime Agency press releases (convictions)",
+        ListType.ADVERSE,
+    ),
     "us_fbi_most_wanted": ("US FBI most wanted", ListType.ADVERSE),
     "de_bka_wanted": ("Germany BKA wanted fugitives", ListType.ADVERSE),
 }
