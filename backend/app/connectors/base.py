@@ -130,6 +130,10 @@ class BaseConnector(ABC):
         """Documents / official records about an entity (filings, legal notices...)."""
         return []
 
+    def get_by_identifier(self, ident: Any) -> Entity | None:
+        """Exact lookup by a company identifier (app.identifiers.Identifier). None if unsupported."""
+        return None
+
     def search_address(self, address: str) -> list[Entity]:
         """Companies registered at an address (detects domiciliation hubs)."""
         return []

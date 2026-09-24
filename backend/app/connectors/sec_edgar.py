@@ -224,6 +224,11 @@ class SecEdgarConnector(BaseConnector):
             )
         return out
 
+    def get_by_identifier(self, ident: Any) -> Entity | None:
+        return (
+            self.get_company_details(self.record_id(ident.value)) if ident.kind == "cik" else None
+        )
+
     def get_company_details(self, company_id: str) -> Entity | None:
         cik = _cik(self.native_id(company_id))
         sub = self._submissions(cik)

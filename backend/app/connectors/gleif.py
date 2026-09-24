@@ -98,6 +98,11 @@ class GleifConnector(BaseConnector):
                 out.append(self._company(rec))
         return out
 
+    def get_by_identifier(self, ident: Any) -> Entity | None:
+        return (
+            self.get_company_details(self.record_id(ident.value)) if ident.kind == "lei" else None
+        )
+
     def get_company_details(self, company_id: str) -> Entity | None:
         data = self._get(f"/lei-records/{self._lei(company_id)}") or {}
         return self._company(data["data"]) if data.get("data") else None

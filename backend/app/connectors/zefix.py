@@ -256,6 +256,15 @@ class ZefixConnector(BaseConnector):
         )
         return [self._company(r) for r in (data or {}).get("list", []) if r.get("ehraid")]
 
+    def get_by_identifier(self, ident: Any) -> Entity | None:
+        if ident.kind != "ch_uid":
+            return None
+        for query in (ident.value, ident.value.replace("-", "").replace(".", "")):
+            for c in self.search_company(query):
+                if c.registration_number == ident.value:
+                    return self.get_company_details(c.id) or c
+        return None
+
     def get_company_details(self, company_id: str) -> Entity | None:
         r = self._firm(company_id)
         return self._company(r) if r and r.get("ehraid") else None

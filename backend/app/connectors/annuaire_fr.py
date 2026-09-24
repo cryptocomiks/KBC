@@ -173,6 +173,11 @@ class AnnuaireEntreprisesConnector(BaseConnector):
     def search_company(self, name: str, **filters: Any) -> list[Entity]:
         return [self._company(r) for r in self._search(q=name)]
 
+    def get_by_identifier(self, ident: Any) -> Entity | None:
+        return (
+            self.get_company_details(self.record_id(ident.value)) if ident.kind == "siren" else None
+        )
+
     def get_company_details(self, company_id: str) -> Entity | None:
         siren = self.native_id(company_id)
         if siren.startswith("p:"):

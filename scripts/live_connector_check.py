@@ -440,6 +440,24 @@ def check_casino_secrets() -> None:
     expect("screening hit with link", any(h.score >= 85 and h.provenance.url for h in hits))
 
 
+def check_identifiers() -> None:
+    from app.service import KbcService
+
+    svc = KbcService()
+    for query, expected in (
+        ("552 032 534", "DANONE"),  # SIREN
+        ("CHE-105.909.036", "Nestlé AG"),  # Swiss UID
+        ("CIK 1318605", "Tesla, Inc."),  # SEC
+    ):
+        res = svc.search(query)
+        names = [c.entity.name for c in res.candidates]
+        expect(
+            f"exact lookup {query}",
+            any(expected.lower() in n.lower() for n in names),
+            ", ".join(names[:3]),
+        )
+
+
 def check_country_risk() -> None:
     from app.risk.config import get_country_risk
 
@@ -514,6 +532,7 @@ guarded("Zefix (Swiss commercial register)", check_zefix)
 guarded("SEC EDGAR (US filings, 13D/13G owners)", check_sec)
 guarded("Country risk indicators", check_country_risk)
 guarded("Casino Secrets (Curaçao gaming leak)", check_casino_secrets)
+guarded("Search by identifier (SIREN, Swiss UID, SEC CIK)", check_identifiers)
 for key, title, fn in [
     ("OPENSANCTIONS_API_KEY", "OpenSanctions", check_opensanctions),
     ("COMPANIES_HOUSE_API_KEY", "Companies House", check_companies_house),

@@ -8,6 +8,7 @@ disambiguation, cross-source deduplication, expansion, screening, scoring.
 from __future__ import annotations
 
 import json
+import re
 from datetime import date
 from functools import lru_cache
 from pathlib import Path
@@ -137,6 +138,21 @@ class DemoRegistryConnector(_DemoBase):
             if score >= SEARCH_MIN_SCORE:
                 scored.append((score, ent))
         return [e for _, e in sorted(scored, key=lambda x: -x[0])]
+
+    def get_by_identifier(self, ident: Any) -> Entity | None:
+        want = re.sub(r"[\s.\-/]", "", ident.value).upper()
+        for rec in self.data["entities"]:
+            if rec["type"] != EntityType.COMPANY:
+                continue
+            ent = self._to_entity(rec)
+            ids = [ent.registration_number or "", *ent.identifiers.values()]
+            if any(
+                re.sub(r"[\s.\-/]", "", i).upper().removeprefix("LU") == want.removeprefix("LU")
+                for i in ids
+                if i
+            ):
+                return ent
+        return None
 
     def search_person(self, name: str, **filters: Any) -> list[Entity]:
         return self._search(name, EntityType.PERSON)

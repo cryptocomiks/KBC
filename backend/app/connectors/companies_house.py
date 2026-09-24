@@ -142,6 +142,11 @@ class CompaniesHouseConnector(BaseConnector):
             out.append(self._company_from_profile(item))
         return out
 
+    def get_by_identifier(self, ident: Any) -> Entity | None:
+        if ident.kind != "uk_company":
+            return None
+        return self.get_company_details(self.record_id(ident.value))
+
     def get_company_details(self, company_id: str) -> Entity | None:
         number = self.native_id(company_id)
         if ":" in number:

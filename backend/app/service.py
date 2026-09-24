@@ -16,6 +16,7 @@ from app.doc_requests import build_requests
 from app.graph.expander import Network, NetworkExpander
 from app.graph.ownership import indirect_stakes, ownership_graph
 from app.graph.resolver import EntityResolver
+from app.identifiers import detect as detect_identifiers
 from app.insights import build_summary, build_timeline
 from app.matching.matcher import match_name
 from app.models import Entity, EntityType, ListType, RelationType, SearchCandidate, utcnow
@@ -39,6 +40,15 @@ class KbcService:
             return self._search_wallet(query.strip())
         registries = self.registry.enabled("registry")
         warnings: list[str] = []
+        idents = detect_identifiers(query)
+        if idents and etype != "person":
+            exact = self._search_identifier(query, idents, registries, warnings)
+            if exact is not None:
+                return exact
+            warnings.append(
+                f"No registry returned a company for the {idents[0].label} {idents[0].value}: "
+                "showing name matches instead."
+            )
 
         def run(conn):
             found: list[Entity] = []
@@ -88,6 +98,52 @@ class KbcService:
         return SearchResponse(
             query=query,
             type=etype,
+            candidates=candidates,
+            sources=[c.label for c in registries],
+            warnings=list(dict.fromkeys(warnings)),
+        )
+
+    def _search_identifier(
+        self, query: str, idents, registries, warnings: list[str]
+    ) -> SearchResponse | None:
+        """Exact lookup by identifier (SIREN, LEI, Swiss UID, UK number, CIK, register number)."""
+        tasks = [(conn, ident) for conn in registries for ident in idents]
+
+        def run(task):
+            conn, ident = task
+            try:
+                return ident, conn.get_by_identifier(ident)
+            except ConnectorError as exc:
+                warnings.append(str(exc))
+                return ident, None
+
+        resolver = EntityResolver()
+        found_by: dict[str, str] = {}
+        with ThreadPoolExecutor(max_workers=max(1, min(8, len(tasks)))) as pool:
+            for ident, ent in pool.map(run, tasks):
+                if ent is not None:
+                    resolver.add(ent)
+                    found_by[ent.id] = f"{ident.label} {ident.value}"
+        if not resolver.entities:
+            return None
+        candidates = []
+        for ent in resolver.entities.values():
+            linked, roles = self._linked_summary(ent, warnings)
+            label = next(
+                (v for k, v in found_by.items() if k in ent.record_ids or k == ent.id), query
+            )
+            candidates.append(
+                SearchCandidate(
+                    entity=ent,
+                    score=100.0,
+                    explanation=[f"exact identifier match: {label}"],
+                    linked_companies=linked,
+                    roles_count=roles,
+                )
+            )
+        return SearchResponse(
+            query=query,
+            type="company",
             candidates=candidates,
             sources=[c.label for c in registries],
             warnings=list(dict.fromkeys(warnings)),
