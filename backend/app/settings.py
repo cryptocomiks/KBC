@@ -21,7 +21,11 @@ def _default_cache_path() -> str:
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=(REPO_ROOT / ".env", ".env"), env_file_encoding="utf-8", extra="ignore"
+        env_file=(REPO_ROOT / ".env", ".env"),
+        env_file_encoding="utf-8",
+        extra="ignore",
+        # An empty variable (e.g. DEMO_MODE= copied from .env.example) means "use the default".
+        env_ignore_empty=True,
     )
 
     demo_mode: bool = True

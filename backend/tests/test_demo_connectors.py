@@ -52,3 +52,10 @@ def test_screening_weak_hit_for_namesake_with_other_dob():
     fr, sanctions = DemoFrRegistry(), DemoSanctions()
     hits = sanctions.screen(fr.get_person_details("demo_fr_registry:P-001"))
     assert hits and all(h.score < 70 for h in hits)
+
+
+def test_empty_env_vars_fall_back_to_defaults(monkeypatch):
+    monkeypatch.setenv("DEMO_MODE", "")
+    monkeypatch.setenv("CACHE_TTL_HOURS", "")
+    s = Settings()
+    assert s.demo_mode is True and s.cache_ttl_hours == 72
