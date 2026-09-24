@@ -11,7 +11,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     let detail = `${res.status} ${res.statusText}`;
     try {
       const body = await res.json();
-      if (body?.detail) detail = typeof body.detail === "string" ? body.detail : JSON.stringify(body.detail);
+      if (body?.detail) detail = `${res.status} — ${typeof body.detail === "string" ? body.detail : JSON.stringify(body.detail)}`;
     } catch {
       /* not JSON */
     }

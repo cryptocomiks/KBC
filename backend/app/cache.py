@@ -7,6 +7,7 @@ from the UI with the "Clear cache" button (DELETE /api/cache).
 from __future__ import annotations
 
 import json
+import logging
 import sqlite3
 import threading
 import time
@@ -14,6 +15,8 @@ from pathlib import Path
 from typing import Any
 
 from app.settings import get_settings
+
+log = logging.getLogger(__name__)
 
 
 class Cache:
@@ -72,10 +75,16 @@ _cache: Cache | None = None
 
 
 def get_cache() -> Cache:
+    """Open the cache, falling back to /tmp then to memory on read-only hosts."""
     global _cache
     if _cache is None:
         s = get_settings()
-        _cache = Cache(s.cache_path, s.cache_ttl_hours)
+        for path in (s.cache_path, "/tmp/kbc_cache.db", ":memory:"):
+            try:
+                _cache = Cache(path, s.cache_ttl_hours)
+                break
+            except (OSError, sqlite3.Error) as exc:
+                log.warning("Cache unavailable at %s (%s), trying next location", path, exc)
     return _cache
 
 

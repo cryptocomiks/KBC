@@ -80,3 +80,15 @@ def test_cache_clear():
     assert client.get("/api/cache").json()["entries"].get("investigation", 0) >= 1
     assert client.delete("/api/cache").json()["deleted"] >= 1
     assert client.get("/api/cache").json()["entries"] == {}
+
+
+def test_unhandled_errors_are_readable(monkeypatch):
+    from app.service import KbcService
+
+    def boom(self, q, t):
+        raise RuntimeError("connector exploded")
+
+    monkeypatch.setattr(KbcService, "search", boom)
+    resp = TestClient(app, raise_server_exceptions=False).get("/api/search", params={"q": "abc"})
+    assert resp.status_code == 500
+    assert resp.json()["detail"] == "RuntimeError: connector exploded"

@@ -8,13 +8,15 @@ from __future__ import annotations
 
 import logging
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from app import __version__
 from app.api.routes import router
 
 logging.basicConfig(level=logging.INFO)
+log = logging.getLogger("kbc")
 
 app = FastAPI(
     title="KBC — Corporate Mapping API",
@@ -30,3 +32,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.include_router(router, prefix="/api")
+
+
+@app.exception_handler(Exception)
+async def unhandled_error(request: Request, exc: Exception) -> JSONResponse:
+    """Return a readable error (shown in the UI) instead of a bare HTTP 500."""
+    log.exception("Unhandled error on %s", request.url.path)
+    return JSONResponse(status_code=500, content={"detail": f"{type(exc).__name__}: {exc}"})
