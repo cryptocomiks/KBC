@@ -1,0 +1,23 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+
+# Env & local data
+.env
+data/
+*.db
+*.sqlite3
+
+# Node
+node_modules/
+frontend/dist/
+.vercel/
+
+# OS / editors
+.DS_Store
+.idea/
+.vscode/

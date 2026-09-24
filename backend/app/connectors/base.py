@@ -1,0 +1,156 @@
+"""Common connector interface.
+
+Every data source (registry, sanctions list, leak database) implements the
+same interface so that new sources (e.g. Zefix for Switzerland, RCS/LBR for
+Luxembourg) can be plugged in without touching the rest of the pipeline.
+
+Methods that make no sense for a given source simply return an empty result.
+"""
+
+from __future__ import annotations
+
+import hashlib
+import json
+import logging
+from abc import ABC
+from typing import Any, ClassVar
+
+import httpx
+
+from app.cache import get_cache
+from app.models import Entity, LinkedEntity, Provenance, ScreeningHit, utcnow
+from app.settings import Settings, get_settings
+
+log = logging.getLogger(__name__)
+
+
+class ConnectorError(RuntimeError):
+    pass
+
+
+class BaseConnector(ABC):
+    #: stable identifier, used as record id prefix ("pappers:552100554")
+    name: ClassVar[str]
+    #: human-readable label shown in the UI and in reports
+    label: ClassVar[str]
+    #: "registry" (companies/officers), "screening" (sanctions/PEP) or "leaks"
+    kind: ClassVar[str] = "registry"
+    #: settings attribute holding the API key, None if no key is required
+    key_setting: ClassVar[str | None] = None
+    #: ISO-2 jurisdictions covered by a registry (None = worldwide)
+    jurisdictions: ClassVar[set[str] | None] = None
+    #: True for connectors serving the fictitious demo dataset
+    is_demo: ClassVar[bool] = False
+    homepage: ClassVar[str | None] = None
+
+    def __init__(self, settings: Settings | None = None) -> None:
+        self.settings = settings or get_settings()
+
+    # ------------------------------------------------------------------ status
+    @property
+    def api_key(self) -> str:
+        return getattr(self.settings, self.key_setting, "") if self.key_setting else ""
+
+    def status(self) -> tuple[bool, str]:
+        """(enabled, message). A missing key disables the connector with a clear message."""
+        if self.is_demo:
+            if self.settings.demo_mode:
+                return True, "Demo mode: fictitious dataset"
+            return False, "Disabled (DEMO_MODE=false)"
+        if self.settings.demo_mode:
+            return False, "Disabled while DEMO_MODE=true"
+        if self.key_setting and not self.api_key:
+            return False, f"Disabled: {self.key_setting.upper()} is not set in .env"
+        return True, "Enabled"
+
+    @property
+    def enabled(self) -> bool:
+        return self.status()[0]
+
+    def covers(self, jurisdiction: str | None) -> bool:
+        return self.jurisdictions is None or (jurisdiction or "").upper() in self.jurisdictions
+
+    # -------------------------------------------------------------- interface
+    def search_person(self, name: str, **filters: Any) -> list[Entity]:
+        return []
+
+    def search_company(self, name: str, **filters: Any) -> list[Entity]:
+        return []
+
+    def get_company_details(self, company_id: str) -> Entity | None:
+        return None
+
+    def get_officers(self, company_id: str) -> list[LinkedEntity]:
+        """People/companies holding a position in the company (incl. past ones)."""
+        return []
+
+    def get_shareholders(self, company_id: str) -> list[LinkedEntity]:
+        """Direct shareholders and declared beneficial owners (UBO / PSC)."""
+        return []
+
+    # Optional extensions used by the network expansion
+    def get_person_roles(self, person_id: str) -> list[LinkedEntity]:
+        """Mandates and holdings of a person (relationship target = company)."""
+        return []
+
+    def get_subsidiaries(self, company_id: str) -> list[LinkedEntity]:
+        """Companies in which the company holds shares."""
+        return []
+
+    def search_address(self, address: str) -> list[Entity]:
+        """Companies registered at an address (detects domiciliation hubs)."""
+        return []
+
+    def screen(self, entity: Entity) -> list[ScreeningHit]:
+        """Sanctions / PEP / leaks screening of an entity."""
+        return []
+
+    # ---------------------------------------------------------------- helpers
+    def native_id(self, record_id: str) -> str:
+        prefix = f"{self.name}:"
+        return record_id[len(prefix) :] if record_id.startswith(prefix) else record_id
+
+    def record_id(self, native_id: str) -> str:
+        return f"{self.name}:{native_id}"
+
+    def provenance(self, record_id: str | None = None, url: str | None = None) -> Provenance:
+        return Provenance(
+            source=self.name,
+            source_label=self.label,
+            record_id=record_id,
+            url=url,
+            retrieved_at=utcnow(),
+        )
+
+    def http_get_json(
+        self,
+        url: str,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, str] | None = None,
+        auth: tuple[str, str] | None = None,
+    ) -> Any:
+        """GET with SQLite caching, so the same query never hits the API twice."""
+        cache = get_cache()
+        key_material = json.dumps([url, sorted((params or {}).items())], default=str)
+        key = hashlib.sha256(key_material.encode()).hexdigest()
+        cached = cache.get(f"http:{self.name}", key)
+        if cached is not None:
+            return cached
+        try:
+            resp = httpx.get(
+                url,
+                params=params,
+                headers=headers,
+                auth=auth,
+                timeout=self.settings.http_timeout_seconds,
+            )
+        except httpx.HTTPError as exc:
+            raise ConnectorError(f"{self.label}: network error ({exc})") from exc
+        if resp.status_code == 404:
+            data: Any = None
+        elif resp.status_code >= 400:
+            raise ConnectorError(f"{self.label}: HTTP {resp.status_code} on {url}")
+        else:
+            data = resp.json()
+        cache.set(f"http:{self.name}", key, data)
+        return data

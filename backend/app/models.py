@@ -1,0 +1,138 @@
+"""Domain model.
+
+Loosely aligned with the FollowTheMoney (FtM) schema used by OCCRP Aleph and
+OpenSanctions, so data from those sources maps naturally. The key compliance
+property: every entity, relationship and screening hit carries its provenance
+(source, record id, URL, retrieval timestamp).
+"""
+
+from __future__ import annotations
+
+from datetime import UTC, date, datetime
+from enum import StrEnum
+from typing import Any
+
+from pydantic import BaseModel, Field
+
+
+def utcnow() -> datetime:
+    return datetime.now(UTC).replace(microsecond=0)
+
+
+class EntityType(StrEnum):
+    PERSON = "person"
+    COMPANY = "company"
+    ADDRESS = "address"
+
+
+class CompanyStatus(StrEnum):
+    ACTIVE = "active"
+    DISSOLVED = "dissolved"
+    UNKNOWN = "unknown"
+
+
+class RelationType(StrEnum):
+    OFFICER = "officer"  # person/company -> company (director, president, secretary...)
+    SHAREHOLDER = "shareholder"  # owner -> owned company, with share_pct
+    BENEFICIAL_OWNER = "beneficial_owner"  # declared UBO / PSC -> company
+    REGISTERED_AT = "registered_at"  # company -> address
+
+
+class Provenance(BaseModel):
+    """Where a piece of information comes from. Mandatory for audit trails."""
+
+    source: str  # connector id, e.g. "pappers"
+    source_label: str  # human readable, e.g. "Pappers (FR company registry)"
+    record_id: str | None = None
+    url: str | None = None
+    retrieved_at: datetime = Field(default_factory=utcnow)
+
+
+class Entity(BaseModel):
+    id: str  # "<connector>:<native id>" for raw records, canonical id once resolved
+    type: EntityType
+    name: str
+    aliases: list[str] = Field(default_factory=list)
+
+    # Person attributes
+    birth_date: str | None = None  # "YYYY", "YYYY-MM" or "YYYY-MM-DD" (registries often truncate)
+    nationalities: list[str] = Field(default_factory=list)  # ISO 3166-1 alpha-2
+
+    # Company attributes
+    jurisdiction: str | None = None  # ISO 3166-1 alpha-2
+    registration_number: str | None = None
+    legal_form: str | None = None
+    status: CompanyStatus | None = None
+    incorporation_date: date | None = None
+    dissolution_date: date | None = None
+    last_accounts_date: date | None = None
+    activity: str | None = None
+
+    address: str | None = None
+    identifiers: dict[str, str] = Field(default_factory=dict)
+    is_offshore: bool = False
+    demo: bool = False  # fictitious record (demo dataset)
+
+    record_ids: list[str] = Field(default_factory=list)  # raw source records merged into this entity
+    sources: list[Provenance] = Field(default_factory=list)
+    extra: dict[str, Any] = Field(default_factory=dict)
+
+    @property
+    def is_company(self) -> bool:
+        return self.type == EntityType.COMPANY
+
+
+class Relationship(BaseModel):
+    id: str
+    type: RelationType
+    source_id: str  # holder / officer / company (arrow origin)
+    target_id: str  # company / address (arrow target)
+    role: str | None = None
+    share_pct: float | None = None
+    start_date: date | None = None
+    end_date: date | None = None
+    sources: list[Provenance] = Field(default_factory=list)
+
+    @property
+    def is_active(self) -> bool:
+        return self.end_date is None
+
+
+class LinkedEntity(BaseModel):
+    """A relationship together with the entity at its other end, as returned by connectors."""
+
+    relationship: Relationship
+    entity: Entity
+
+
+class ListType(StrEnum):
+    SANCTION = "sanction"
+    PEP = "pep"
+    LEAK = "leak"
+    ADVERSE = "adverse"
+
+
+class ScreeningHit(BaseModel):
+    entity_id: str  # entity of the network that was screened
+    list_type: ListType
+    dataset: str
+    matched_name: str
+    score: float  # 0-100 confidence
+    explanation: list[str] = Field(default_factory=list)
+    details: dict[str, Any] = Field(default_factory=dict)
+    provenance: Provenance
+
+
+class MatchResult(BaseModel):
+    score: float
+    explanation: list[str]
+
+
+class SearchCandidate(BaseModel):
+    """A disambiguation candidate shown to the analyst after a search."""
+
+    entity: Entity
+    score: float
+    explanation: list[str]
+    linked_companies: list[str] = Field(default_factory=list)
+    roles_count: int = 0
