@@ -101,9 +101,15 @@ export default function App() {
         {page === "main" && !target && (
           <>
             {!search && (
-              <div className="mx-auto max-w-3xl pt-8 text-center">
-                <h1 className="text-3xl font-bold tracking-tight">Map who owns and controls what.</h1>
-                <p className="mt-2 text-slate-600 dark:text-slate-400">
+              <div className="mx-auto max-w-3xl pt-14 pb-4 text-center">
+                <h1 className="text-[clamp(2.25rem,5vw,3.5rem)] leading-[1.05] font-semibold tracking-[-0.03em]">
+                  Map who owns
+                  <br />
+                  <span className="bg-gradient-to-r from-brand-600 to-[#5e5ce6] bg-clip-text text-transparent dark:from-brand-300 dark:to-[#bf5af2]">
+                    and controls what.
+                  </span>
+                </h1>
+                <p className="mx-auto mt-4 max-w-2xl text-[17px] leading-relaxed text-slate-600 dark:text-slate-400">
                   Search a person or a company across public registries, sanctions/PEP lists and leak databases. KBC resolves
                   homonyms, deduplicates entities across sources, expands the ownership network and explains every red flag,
                   with full source traceability.

@@ -39,8 +39,8 @@ export default function SearchPanel({ initial, demo, live, onSearch, compact }: 
     <button
       type="button"
       onClick={() => setP({ ...p, type: t })}
-      className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium ${
-        p.type === t ? "bg-white shadow-sm dark:bg-slate-700" : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+      className={`inline-flex items-center gap-1.5 rounded-[8px] px-2.5 py-1 transition-all duration-200.5 text-xs font-medium ${
+        p.type === t ? "bg-white shadow-[0_1px_3px_rgb(0_0_0/0.12)] dark:bg-slate-600" : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
       }`}
     >
       <Icon className="h-3.5 w-3.5" /> {label}
@@ -68,7 +68,7 @@ export default function SearchPanel({ initial, demo, live, onSearch, compact }: 
         </div>
         <div>
           <span className="label mb-1 block">Type</span>
-          <div className="flex rounded-lg bg-slate-100 p-0.5 dark:bg-slate-800">
+          <div className="segmented">
             {typeBtn("any", "Any", Users)}
             {typeBtn("person", "Person", User)}
             {typeBtn("company", "Company", Building2)}
@@ -113,7 +113,7 @@ export default function SearchPanel({ initial, demo, live, onSearch, compact }: 
             <button
               key={ex.q}
               type="button"
-              className="rounded-full border border-slate-300 px-3 py-1 hover:border-brand-500 hover:text-brand-600 dark:border-slate-700"
+              className="rounded-full bg-black/[0.05] px-3 py-1 transition hover:bg-brand-600/10 hover:text-brand-600 active:scale-[0.97] dark:bg-white/[0.08] dark:hover:text-brand-300"
               onClick={() => {
                 const next = { ...p, q: ex.q, type: ex.type };
                 setP(next);

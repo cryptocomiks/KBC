@@ -2,9 +2,9 @@ import { ShieldAlert } from "lucide-react";
 
 export default function Disclaimer({ text }: { text?: string }) {
   return (
-    <div className="border-b border-orange-200 bg-orange-50 text-orange-900 dark:border-orange-900/50 dark:bg-orange-950/40 dark:text-orange-200">
-      <div className="mx-auto flex max-w-[1600px] items-start gap-2 px-4 py-2 text-xs">
-        <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0" />
+    <div className="text-slate-600 dark:text-slate-400">
+      <div className="mx-auto flex max-w-[1600px] items-start gap-2 px-4 pt-3 text-[11px]">
+        <ShieldAlert className="mt-px h-3.5 w-3.5 shrink-0 text-[#ff9500]" />
         <p>
           <strong>Analytical aid only.</strong>{" "}
           {text?.replace(/^Analytical aid only\.\s*/, "") ??
