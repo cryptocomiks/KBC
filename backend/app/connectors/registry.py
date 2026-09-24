@@ -22,6 +22,7 @@ def _connector_classes() -> list[type[BaseConnector]]:
     from app.connectors.opensanctions import OpenSanctionsConnector
     from app.connectors.pappers import PappersConnector
     from app.connectors.sec_edgar import SecEdgarConnector
+    from app.connectors.wayback import WaybackConnector
     from app.connectors.wikidata import WikidataConnector, WikidataPepConnector
     from app.connectors.zefix import ZefixConnector
 
@@ -43,6 +44,7 @@ def _connector_classes() -> list[type[BaseConnector]]:
         WikidataConnector,
         WikidataPepConnector,
         GdeltConnector,
+        WaybackConnector,
         IcijReconcileConnector,
         IcijLocalConnector,
         AlephConnector,

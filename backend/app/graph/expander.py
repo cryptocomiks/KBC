@@ -414,7 +414,7 @@ class NetworkExpander:
         providers = [
             c
             for c in self.registry.enabled(demo=self.demo_realm)
-            if type(c).get_documents is not BaseConnector.get_documents
+            if type(c).get_documents is not BaseConnector.get_documents and c.kind != "archive"
         ]
         tasks = [
             (conn, e)
@@ -453,6 +453,26 @@ class NetworkExpander:
             entity.documents = sorted(
                 merged, key=lambda d: (d.date is None, -(d.date.toordinal() if d.date else 0))
             )
+        self._archive_websites(companies)
+
+    def _archive_websites(self, entities: list[Entity]) -> None:
+        """Second pass: website history, once official websites are known (Wikidata, registries)."""
+        archives = [c for c in self.registry.enabled("archive", demo=self.demo_realm)]
+        tasks = [
+            (conn, e)
+            for e in entities
+            if e.type == EntityType.COMPANY and self.depth.get(e.id, 99) <= 1
+            for conn in archives
+        ]
+
+        def run(task: tuple[BaseConnector, Entity]) -> tuple[Entity, list]:
+            conn, entity = task
+            return entity, self._call(
+                conn, "get_documents", entity.name, conn.get_documents, entity
+            ) or []
+
+        for entity, docs in self._run_until_deadline(run, tasks, 4, "website archive"):
+            entity.documents = [*entity.documents, *docs]
 
     def _screen(self) -> list[ScreeningHit]:
         """Screen every person/company against sanctions, PEP and leak sources, in parallel."""

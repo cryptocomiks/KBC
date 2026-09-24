@@ -295,3 +295,42 @@ def test_country_risk_factor_and_findings(tmp_path, monkeypatch):
         assert build_timeline(net) == []  # no dated event in this network
     finally:
         risk_config.get_country_risk.cache_clear()
+
+
+@respx.mock
+def test_wayback_first_and_last_capture():
+    from app.connectors.wayback import WaybackConnector, websites
+    from app.models import Document
+
+    company = Entity(
+        id="c",
+        type=EntityType.COMPANY,
+        name="Acme",
+        documents=[
+            Document(
+                title="Official website",
+                kind="official_profile",
+                url="https://www.acme.example/",
+                source="Wikidata",
+            ),
+            Document(
+                title="X / Twitter @acme",
+                kind="official_profile",
+                url="https://x.com/acme",
+                source="Wikidata",
+            ),
+        ],
+    )
+    assert websites(company) == ["acme.example"]
+
+    def reply(request):
+        first = request.url.params["limit"] == "1"
+        ts = "20050301000000" if first else "20260910120000"
+        return httpx.Response(
+            200, json=[["timestamp", "original", "statuscode"], [ts, "http://acme.example/", "200"]]
+        )
+
+    respx.get("https://web.archive.org/cdx/search/cdx").mock(side_effect=reply)
+    docs = WaybackConnector(LIVE).get_documents(company)
+    assert [str(d.date) for d in docs] == ["2005-03-01", "2026-09-10"]
+    assert docs[0].url == "https://web.archive.org/web/20050301000000/http://acme.example/"
