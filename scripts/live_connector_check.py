@@ -13,6 +13,7 @@ from __future__ import annotations
 import json
 import os
 import sys
+import time
 import traceback
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "backend"))
@@ -340,6 +341,7 @@ def check_gdelt() -> None:
         timeout=30,
     )
     print(f"      raw status {raw.status_code}: {raw.text[:300]!r}")
+    time.sleep(6)  # GDELT allows one request every 5 s: do not rate-limit the connector ourselves
     docs = GdeltConnector(settings).get_documents(company("TotalEnergies"))
     for d in docs[:3]:
         print(f"      {d.date} | {d.title[:90]} | {d.url}")

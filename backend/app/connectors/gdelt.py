@@ -90,17 +90,22 @@ class GdeltConnector(BaseConnector):
             return self._google_news(query)
 
     def _google_news(self, query: str) -> list[Document]:
-        try:
-            resp = httpx.get(
-                RSS,
-                params={"q": query.replace('"', '"'), "hl": "en", "gl": "US", "ceid": "US:en"},
-                headers={"User-Agent": USER_AGENT},
-                timeout=self.settings.http_timeout_seconds,
-                follow_redirects=True,
-            )
-            resp.raise_for_status()
-            root = ET.fromstring(resp.content)
-        except (httpx.HTTPError, ET.ParseError):
+        root = None
+        for _ in range(2):  # one retry: the feed occasionally answers 5xx / empty to cloud IPs
+            try:
+                resp = httpx.get(
+                    RSS,
+                    params={"q": query, "hl": "en", "gl": "US", "ceid": "US:en"},
+                    headers={"User-Agent": USER_AGENT},
+                    timeout=self.settings.http_timeout_seconds,
+                    follow_redirects=True,
+                )
+                resp.raise_for_status()
+                root = ET.fromstring(resp.content)
+                break
+            except (httpx.HTTPError, ET.ParseError):
+                continue
+        if root is None:
             return []
         docs = []
         for it in root.iter("item"):
