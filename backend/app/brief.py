@@ -314,6 +314,29 @@ def build_brief(net: Network, risk: RiskAssessment, jur_name=lambda c: c or "?")
             )
         )
 
+    triaged = [
+        h
+        for h in net.hits
+        if h.list_type in (ListType.SANCTION, ListType.PEP, ListType.ADVERSE, ListType.LEAK)
+    ]
+    counts = {
+        k: sum(1 for h in triaged if (h.triage or "verify") == k)
+        for k in ("likely", "verify", "namesake", "dismissed")
+    }
+    if triaged:
+        figures.insert(
+            1,
+            Figure(
+                key="triage",
+                label="Alerts to review",
+                value=f"{counts['likely']} likely · {counts['verify']} to check",
+                tone="critical" if counts["likely"] else "warning" if counts["verify"] else "good",
+                hint=f"{counts['namesake']} probable namesakes"
+                + (f", {counts['dismissed']} already ruled out" if counts["dismissed"] else ""),
+                tab="screening",
+            ),
+        )
+
     flags = [
         Flag(
             key=f.key,

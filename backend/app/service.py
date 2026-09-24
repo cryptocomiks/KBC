@@ -22,6 +22,7 @@ from app.risk.config import get_country_risk, get_jurisdictions, get_risk_config
 from app.risk.engine import RiskAssessment, RiskEngine
 from app.schemas import Investigation, InvestigationRequest, SearchResponse
 from app.settings import get_settings
+from app.triage import apply_triage
 
 SEARCH_LIMIT = 25
 LINKED_SUMMARY_TOP = 8  # linked companies are fetched for the best candidates only
@@ -144,7 +145,17 @@ class KbcService:
         return list(names)[:8], len(names)
 
     # ------------------------------------------------------ investigation
-    def investigate(self, req: InvestigationRequest) -> Investigation:
+    def investigate(self, req: InvestigationRequest, memory: bool = True) -> Investigation:
+        """Investigation with the analysts' memory applied: hits already ruled out as
+        namesakes (in any case) are marked as dismissed and leave the score."""
+        inv = self._compute(req)
+        if memory:
+            from app.cases import apply_dismissals  # local import: cases depends on this module
+
+            inv = apply_dismissals(inv)
+        return inv
+
+    def _compute(self, req: InvestigationRequest) -> Investigation:
         settings = get_settings()
         key_src = json.dumps(
             [sorted(req.record_ids), req.depth, req.max_nodes, settings.demo_mode], sort_keys=True
@@ -163,6 +174,7 @@ class KbcService:
         depth = min(req.depth, settings.max_depth)
         max_nodes = min(req.max_nodes, settings.max_nodes_limit)
         net = NetworkExpander(self.registry, max_depth=depth, max_nodes=max_nodes).expand(seeds)
+        net.hits = apply_triage(net.hits, net.entities)
         risk = RiskEngine().assess(net)
         inv = Investigation(
             id=key,
@@ -360,6 +372,8 @@ def build_tables(net: Network, risk: RiskAssessment) -> dict[str, list[dict[str,
     def hit_row(h):
         return {
             "entity_id": h.entity_id,
+            "triage": h.triage or "verify",
+            "triage_reasons": "; ".join(h.triage_reasons),
             "entity": name(h.entity_id),
             "matched_name": h.matched_name,
             "list_type": h.list_type.value,

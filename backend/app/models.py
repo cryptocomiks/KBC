@@ -163,6 +163,9 @@ class ScreeningHit(BaseModel):
     explanation: list[str] = Field(default_factory=list)
     details: dict[str, Any] = Field(default_factory=dict)
     provenance: Provenance
+    #: likely | verify | namesake | dismissed (see app/triage.py) and why
+    triage: str | None = None
+    triage_reasons: list[str] = Field(default_factory=list)
 
 
 class MatchResult(BaseModel):

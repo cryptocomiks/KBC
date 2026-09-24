@@ -10,6 +10,7 @@ decision is kept for the audit trail and printed in the report.
 
 from __future__ import annotations
 
+import os
 import time
 from typing import Any
 
@@ -22,7 +23,8 @@ from app.risk.config import get_jurisdictions
 from app.risk.engine import RiskEngine
 from app.schemas import Investigation, InvestigationRequest
 from app.service import KbcService, build_tables
-from app.store import Store, now
+from app.settings import get_settings
+from app.store import Store, get_store, now
 
 DECISIONS = {"confirmed", "false_positive", "to_review"}
 STRONG = 85.0
@@ -141,7 +143,7 @@ def diff(old: dict[str, Any], new: dict[str, Any]) -> list[dict[str, str]]:
 
 def apply_decisions(inv: Investigation, decisions: list[dict[str, Any]]) -> Investigation:
     """Recompute score, tables, brief and findings without the hits marked as false positives."""
-    rejected = {d["item_key"] for d in decisions if d["decision"] == "false_positive"}
+    rejected = {d["item_key"].lower() for d in decisions if d["decision"] == "false_positive"}
     if not rejected:
         return inv
     net = Network(
@@ -154,7 +156,7 @@ def apply_decisions(inv: Investigation, decisions: list[dict[str, Any]]) -> Inve
         hits=[
             h
             for h in inv.hits
-            if hit_key(inv, h.entity_id, h.dataset, h.matched_name) not in rejected
+            if hit_key(inv, h.entity_id, h.dataset, h.matched_name).lower() not in rejected
         ],
         queries=inv.queries,
         merges=inv.merges,
@@ -175,6 +177,37 @@ def apply_decisions(inv: Investigation, decisions: list[dict[str, Any]]) -> Inve
             "brief": build_brief(net, risk, jur),
         }
     )
+
+
+def memory_enabled() -> bool:
+    """Same rule as the case endpoints: on Vercel the store needs APP_PASSWORD."""
+    s = get_settings()
+    return not (os.environ.get("VERCEL") and not s.app_password)
+
+
+def apply_dismissals(inv: Investigation) -> Investigation:
+    """Hits already ruled out by an analyst are shown as dismissed and leave the score."""
+    if not memory_enabled() or not inv.hits:
+        return inv
+    try:
+        memory = get_store().dismissals()
+    except Exception:  # noqa: BLE001 - the store is optional for plain investigations
+        return inv
+    if not memory:
+        return inv
+    decisions = []
+    for h in inv.hits:
+        key = hit_key(inv, h.entity_id, h.dataset, h.matched_name).lower()
+        m = memory.get(key)
+        if m:
+            h.triage = "dismissed"
+            h.triage_reasons = [
+                f"ruled out on {str(m['decided_at'])[:10]}"
+                + (f" by {m['author']}" if m.get("author") else ""),
+                *([m["comment"]] if m.get("comment") else []),
+            ]
+            decisions.append({"item_key": key, "decision": "false_positive"})
+    return apply_decisions(inv, decisions) if decisions else inv
 
 
 class CaseService:

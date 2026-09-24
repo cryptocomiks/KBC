@@ -16,6 +16,27 @@ interface Props {
 
 export const hitKey = (r: Row) => `hit|${String(r.entity)}|${String(r.dataset)}|${String(r.matched_name)}`;
 
+const TRIAGE: Record<string, { label: string; cls: string }> = {
+  likely: { label: "Likely match", cls: "bg-[#ff3b30]/12 text-[#d70015] dark:bg-[#ff453a]/20 dark:text-[#ff6961]" },
+  verify: { label: "To check", cls: "bg-[#ff9500]/15 text-[#c93400] dark:bg-[#ff9f0a]/20 dark:text-[#ffb340]" },
+  namesake: { label: "Probable namesake", cls: "bg-black/[0.05] text-slate-600 dark:bg-white/[0.08] dark:text-slate-300" },
+  dismissed: { label: "Ruled out", cls: "bg-[#34c759]/15 text-[#248a3d] dark:bg-[#30d158]/20 dark:text-[#30d158]" },
+};
+const triageColumn: Column = {
+  key: "triage",
+  label: "Triage",
+  value: (r) => ["likely", "verify", "namesake", "dismissed"].indexOf(String(r.triage)),
+  render: (r) => {
+    const t = TRIAGE[String(r.triage)] ?? TRIAGE.verify;
+    return (
+      <span className="flex max-w-[190px] flex-col gap-0.5">
+        <span className={`w-fit rounded-full px-2 py-0.5 text-[11px] font-semibold ${t.cls}`}>{t.label}</span>
+        {r.triage_reasons ? <span className="text-[10px] leading-tight text-slate-500">{String(r.triage_reasons)}</span> : null}
+      </span>
+    );
+  },
+};
+
 const DECISION_STYLE: Record<string, string> = {
   confirmed: "border-red-300 bg-red-50 text-red-800 dark:border-red-800 dark:bg-red-950/40 dark:text-red-200",
   false_positive: "border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200",
@@ -54,6 +75,8 @@ const urls = (r: Row) => {
 };
 
 export default function TablesSection({ investigation: inv, onSelect, activeTab, onTabChange, decisions, onDecide }: Props) {
+  const [hideNamesakes, setHideNamesakes] = useState(false);
+  const hiddenCount = [...inv.tables.screening, ...inv.tables.leaks].filter((r) => r.triage === "namesake" || r.triage === "dismissed").length;
   const decisionColumn: Column[] = onDecide
     ? [
         {
@@ -156,10 +179,11 @@ export default function TablesSection({ investigation: inv, onSelect, activeTab,
     {
       key: "screening",
       label: "Sanctions, PEP & watchlists",
-      rows: t.screening,
+      rows: hideNamesakes ? t.screening.filter((r) => r.triage !== "namesake" && r.triage !== "dismissed") : t.screening,
       click: "entity_id",
       empty: "No sanctions, PEP or watchlist hit.",
       columns: [
+        triageColumn,
         ...decisionColumn,
         { key: "entity", label: "Network entity" },
         { key: "matched_name", label: "Listed name" },
@@ -176,10 +200,11 @@ export default function TablesSection({ investigation: inv, onSelect, activeTab,
     {
       key: "leaks",
       label: "Leaks",
-      rows: t.leaks,
+      rows: hideNamesakes ? t.leaks.filter((r) => r.triage !== "namesake" && r.triage !== "dismissed") : t.leaks,
       click: "entity_id",
       empty: "No appearance in leak datasets.",
       columns: [
+        triageColumn,
         ...decisionColumn,
         { key: "entity", label: "Network entity" },
         { key: "matched_name", label: "Name in dataset" },
@@ -347,6 +372,12 @@ export default function TablesSection({ investigation: inv, onSelect, activeTab,
           </button>
         ))}
       </div>
+      {(tab.key === "screening" || tab.key === "leaks") && hiddenCount > 0 && (
+        <label className="mb-2 inline-flex cursor-pointer items-center gap-2 text-xs text-slate-600 dark:text-slate-300">
+          <input type="checkbox" className="accent-brand-600" checked={hideNamesakes} onChange={(e) => setHideNamesakes(e.target.checked)} />
+          Hide probable namesakes and ruled-out hits ({hiddenCount})
+        </label>
+      )}
       <DataTable
         key={tab.key}
         rows={tab.rows}

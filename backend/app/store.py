@@ -48,6 +48,14 @@ SCHEMA = [
         decided_at TEXT NOT NULL,
         PRIMARY KEY (case_id, item_key)
     )""",
+    """CREATE TABLE IF NOT EXISTS dismissals (
+        item_key TEXT PRIMARY KEY,
+        item_label TEXT NOT NULL DEFAULT '',
+        comment TEXT NOT NULL DEFAULT '',
+        author TEXT NOT NULL DEFAULT '',
+        case_id TEXT NOT NULL DEFAULT '',
+        decided_at TEXT NOT NULL
+    )""",
     """CREATE TABLE IF NOT EXISTS changes (
         id TEXT PRIMARY KEY,
         case_id TEXT NOT NULL,
@@ -207,7 +215,30 @@ class Store:
                 "VALUES (?, ?, ?, ?, ?, ?, ?)",
                 (case_id, item_key, item_label, decision, comment, author, now()),
             )
+        # Memory of decisions: a hit ruled out once is ruled out everywhere (until changed).
+        if decision == "false_positive":
+            self.set_dismissal(item_key, item_label, comment, author, case_id)
+        else:
+            self.remove_dismissal(item_key)
         self.update_case(case_id)  # bump updated_at
+
+    # ------------------------------------------------------------ dismissals
+    def dismissals(self) -> dict[str, dict[str, Any]]:
+        """Hits ruled out as namesakes, remembered across cases and investigations."""
+        return {r["item_key"]: r for r in self._exec("SELECT * FROM dismissals")}
+
+    def set_dismissal(
+        self, item_key: str, item_label: str, comment: str, author: str, case_id: str
+    ) -> None:
+        self._exec("DELETE FROM dismissals WHERE item_key = ?", (item_key.lower(),))
+        self._exec(
+            "INSERT INTO dismissals (item_key, item_label, comment, author, case_id, decided_at) "
+            "VALUES (?, ?, ?, ?, ?, ?)",
+            (item_key.lower(), item_label, comment, author, case_id, now()),
+        )
+
+    def remove_dismissal(self, item_key: str) -> None:
+        self._exec("DELETE FROM dismissals WHERE item_key = ?", (item_key.lower(),))
 
     # --------------------------------------------------------------- changes
     def add_changes(self, case_id: str, run_at: str, changes: list[dict[str, str]]) -> None:

@@ -73,6 +73,8 @@ export interface ScreeningHit {
   explanation: string[];
   details: Record<string, unknown>;
   provenance: Provenance;
+  triage?: "likely" | "verify" | "namesake" | "dismissed" | null;
+  triage_reasons?: string[];
 }
 
 export interface SearchCandidate {
