@@ -87,6 +87,15 @@ def _styles() -> dict[str, ParagraphStyle]:
             spaceBefore=10,
             spaceAfter=5,
         ),
+        "h3": ParagraphStyle(
+            "h3",
+            parent=body,
+            fontName="DejaVu-Bold",
+            fontSize=9.5,
+            leading=12,
+            spaceBefore=6,
+            spaceAfter=3,
+        ),
         "warn": ParagraphStyle(
             "warn",
             parent=body,
@@ -283,6 +292,16 @@ def build_pdf(
     summary.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "TOP")]))
     story.append(Paragraph("1. Executive summary", st["h2"]))
     story.append(summary)
+    if inv.summary:
+        marks = {"critical": "#b91c1c", "warning": "#b45309", "info": "#475569"}
+        story.append(Paragraph("Key findings", st["h3"]))
+        for f in inv.summary:
+            story.append(
+                Paragraph(
+                    f"<font color='{marks.get(f.severity, '#475569')}'>■</font> {_esc(f.text)}",
+                    st["body"],
+                )
+            )
 
     # ---------------------------------------------------------- subject
     story.append(Paragraph("2. Subject profile", st["h2"]))
@@ -541,6 +560,23 @@ def build_pdf(
             "No dated document.",
         )
     )
+
+    if inv.timeline:
+        story.append(Paragraph("11a. Timeline", st["h2"]))
+        story.append(
+            _table(
+                [e.model_dump() for e in inv.timeline[:120]],
+                [
+                    ("date", "Date", 0.9),
+                    ("kind", "Type", 0.9),
+                    ("title", "Event", 4.2),
+                    ("detail", "Detail", 3),
+                    ("source", "Source", 2),
+                ],
+                st,
+                "No dated event.",
+            )
+        )
 
     if inv.merges:
         story.append(Paragraph("11b. Cross-source entity resolution", st["h2"]))

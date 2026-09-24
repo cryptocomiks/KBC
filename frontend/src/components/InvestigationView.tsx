@@ -5,6 +5,8 @@ import { countryName, fmtDate } from "../lib/format";
 import type { Theme } from "../lib/theme";
 import type { Investigation } from "../types";
 import EntityPanel from "./EntityPanel";
+import KeyFindings from "./KeyFindings";
+import Timeline from "./Timeline";
 import GraphView, { GraphLegend, type GraphFilters, type GraphHandle, type GraphLayout } from "./GraphView";
 import RiskPanel, { RiskGauge } from "./RiskPanel";
 import TablesSection from "./TablesSection";
@@ -113,6 +115,8 @@ export default function InvestigationView({ investigation: inv, theme, refreshin
         </div>
       )}
 
+      <KeyFindings investigation={inv} onSelect={select} />
+
       {/* Graph + details */}
       <div id="graph-card" className="card grid overflow-hidden lg:grid-cols-[1fr_380px]">
         <div className="flex min-h-[640px] flex-col border-slate-200 dark:border-slate-800 lg:border-r">
@@ -166,6 +170,7 @@ export default function InvestigationView({ investigation: inv, theme, refreshin
       </div>
 
       <RiskPanel investigation={inv} onSelect={select} />
+      <Timeline investigation={inv} onSelect={select} />
       <TablesSection investigation={inv} onSelect={select} />
     </div>
   );

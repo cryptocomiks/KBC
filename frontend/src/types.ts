@@ -152,6 +152,25 @@ export interface Investigation {
   warnings: string[];
   truncated: boolean;
   stats: Record<string, number>;
+  summary: Finding[];
+  timeline: TimelineEvent[];
+}
+
+export interface Finding {
+  text: string;
+  severity: "info" | "warning" | "critical";
+  entity_ids: string[];
+  urls: string[];
+}
+
+export interface TimelineEvent {
+  date: string;
+  kind: "company" | "role" | "ownership" | "filing" | "legal_notice" | "sanction" | "media" | "transfer" | "country";
+  title: string;
+  entity_id: string | null;
+  detail: string | null;
+  url: string | null;
+  source: string | null;
 }
 
 export interface ConnectorStatus {
