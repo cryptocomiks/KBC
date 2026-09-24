@@ -83,8 +83,20 @@ class GleifConnector(BaseConnector):
 
     # --------------------------------------------------------- interface
     def search_company(self, name: str, **filters: Any) -> list[Entity]:
-        data = self._get("/lei-records", **{"filter[fulltext]": name, "page[size]": 10}) or {}
-        return [self._company(r) for r in data.get("data", [])]
+        """Exact legal-name match first, then full-text. Full-text alone ranks a group's
+        many subsidiaries ("Danone Hungary", "Fonds Danone"...) above the group head."""
+        exact = (
+            self._get("/lei-records", **{"filter[entity.legalName]": name.upper(), "page[size]": 5})
+            or {}
+        )
+        fulltext = self._get("/lei-records", **{"filter[fulltext]": name, "page[size]": 10}) or {}
+        seen: set[str] = set()
+        out = []
+        for rec in [*exact.get("data", []), *fulltext.get("data", [])]:
+            if rec.get("id") not in seen:
+                seen.add(rec.get("id"))
+                out.append(self._company(rec))
+        return out
 
     def get_company_details(self, company_id: str) -> Entity | None:
         data = self._get(f"/lei-records/{self._lei(company_id)}") or {}

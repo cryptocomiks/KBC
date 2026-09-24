@@ -105,15 +105,15 @@ def check_gleif() -> None:
     found = conn.search_company("Danone")
     expect("LEI search returns results", bool(found),
            ", ".join(f"{c.name} [{c.jurisdiction}] reg={c.registration_number}" for c in found[:3]))
+    expect("exact legal name ranked first", found[0].name.upper() == "DANONE", found[0].name)
     parents = []
-    for c in found[:5]:
+    for c in found[1:6]:
         parents = conn.get_shareholders(c.id)
         if parents:
             print(f"      parent of {c.name}: {parents[0].entity.name}")
             break
     expect("a parent company is returned for a Danone subsidiary", bool(parents))
-    top = next((c for c in found if c.name.upper() == "DANONE"), found[0])
-    children = conn.get_subsidiaries(top.id)
+    children = conn.get_subsidiaries(found[0].id)
     expect("children returned for the group head", bool(children),
            f"{len(children)}: " + ", ".join(ch.entity.name for ch in children[:4]))
 

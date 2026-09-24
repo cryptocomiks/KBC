@@ -73,6 +73,29 @@ def test_gleif_parent_and_children():
 
 
 @respx.mock
+def test_gleif_search_puts_exact_legal_name_first():
+    def reply(request):
+        params = request.url.params
+        if "filter[entity.legalName]" in params:
+            return httpx.Response(
+                200, json={"data": [lei_record("HEAD0000000000000001", "DANONE", "552032534")]}
+            )
+        return httpx.Response(
+            200,
+            json={
+                "data": [
+                    lei_record("SUB00000000000000001", "FONDS DANONE", "531660702"),
+                    lei_record("HEAD0000000000000001", "DANONE", "552032534"),
+                ]
+            },
+        )
+
+    respx.get("https://api.gleif.org/api/v1/lei-records").mock(side_effect=reply)
+    found = GleifConnector(LIVE).search_company("Danone")
+    assert [c.name for c in found] == ["DANONE", "FONDS DANONE"]  # head first, no duplicate
+
+
+@respx.mock
 def test_gleif_no_parent_reported():
     respx.get("https://api.gleif.org/api/v1/lei-records/X/direct-parent").mock(
         return_value=httpx.Response(404)
