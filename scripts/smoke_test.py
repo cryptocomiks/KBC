@@ -51,7 +51,9 @@ def main(base: str) -> None:
     enabled = [r["name"] for r in rows if r["enabled"]]
     check("GET /api/connectors", status == 200 and len(enabled) >= 1, f"enabled: {enabled}")
 
-    status, body, _ = call(base, "/api/search?" + urllib.parse.urlencode({"q": "Mohamed Qadrany", "type": "person"}))
+    status, body, _ = call(
+        base, "/api/search?" + urllib.parse.urlencode({"q": "Mohamed Qadrany", "type": "person"})
+    )
     check("GET /api/search", status == 200, body[:300].decode(errors="replace"))
     candidates = json.loads(body)["candidates"]
     names = [c["entity"]["name"] for c in candidates]
@@ -59,13 +61,24 @@ def main(base: str) -> None:
 
     params = {"record_ids": candidates[0]["entity"]["record_ids"], "depth": 3, "max_nodes": 60}
     status, body, _ = call(base, "/api/investigations", params)
-    check("POST /api/investigations", status == 200, body[:300].decode(errors="replace") if status != 200 else "")
+    check(
+        "POST /api/investigations",
+        status == 200,
+        body[:300].decode(errors="replace") if status != 200 else "",
+    )
     inv = json.loads(body)
-    check("investigation content", len(inv["entities"]) > 3,
-          f"{len(inv['entities'])} entities, risk {inv['risk']['score']} ({inv['risk']['level']})")
+    check(
+        "investigation content",
+        len(inv["entities"]) > 3,
+        f"{len(inv['entities'])} entities, risk {inv['risk']['score']} ({inv['risk']['level']})",
+    )
 
     status, body, ctype = call(base, "/api/reports/pdf", params)
-    check("POST /api/reports/pdf", status == 200 and body.startswith(b"%PDF"), f"{len(body)} bytes, {ctype}")
+    check(
+        "POST /api/reports/pdf",
+        status == 200 and body.startswith(b"%PDF"),
+        f"{len(body)} bytes, {ctype}",
+    )
 
     if "--live" in sys.argv:
         check_live(base)
@@ -82,28 +95,51 @@ def check_live(base: str) -> None:
     live = [r["name"] for r in json.loads(body) if r["enabled"] and not r["demo"]]
     check("live connectors enabled", bool(live), f"{live}")
 
-    status, body, _ = call(base, "/api/search?" + urllib.parse.urlencode({"q": "TotalEnergies", "type": "company"}))
+    status, body, _ = call(
+        base, "/api/search?" + urllib.parse.urlencode({"q": "TotalEnergies", "type": "company"})
+    )
     data = json.loads(body) if status == 200 else {}
     real = [c for c in data.get("candidates", []) if not c["entity"]["demo"]]
-    check("live search (TotalEnergies)", status == 200 and bool(real),
-          f"{len(real)} real candidates; warnings: {data.get('warnings')}")
+    check(
+        "live search (TotalEnergies)",
+        status == 200 and bool(real),
+        f"{len(real)} real candidates; warnings: {data.get('warnings')}",
+    )
 
     params = {"record_ids": real[0]["entity"]["record_ids"], "depth": 1, "max_nodes": 20}
     status, body, _ = call(base, "/api/investigations", params)
-    check("live investigation", status == 200, body[:300].decode(errors="replace") if status != 200 else "")
+    check(
+        "live investigation",
+        status == 200,
+        body[:300].decode(errors="replace") if status != 200 else "",
+    )
     inv = json.loads(body)
     slow = sorted(inv["queries"], key=lambda q: -(q.get("duration_ms") or 0))[:8]
     for q in slow:
-        print(f"      slow: {q.get('duration_ms')} ms  {q['source']}.{q['operation']}  {q['target'][:40]}")
+        print(
+            f"      slow: {q.get('duration_ms')} ms  {q['source']}.{q['operation']}  {q['target'][:40]}"
+        )
     print(f"      warnings: {inv['warnings'][:5]}")
     errors = [f"{q['source']}.{q['operation']}: {q['error']}" for q in inv["queries"] if q["error"]]
     sources = sorted({q["source"] for q in inv["queries"]})
-    print(f"      sources queried: {sources}; entities: {len(inv['entities'])}; hits: {len(inv['hits'])}")
+    print(
+        f"      sources queried: {sources}; entities: {len(inv['entities'])}; hits: {len(inv['hits'])}"
+    )
     for h in inv["hits"][:5]:
         print(f"      hit: {h['list_type']} {h['matched_name']} ({h['dataset']}, {h['score']})")
-    critical = [e for e in errors if e.split(".")[0] in ("annuaire_fr", "icij_offshore_leaks", "official_sanctions")]
+    critical = [
+        e
+        for e in errors
+        if e.split(".")[0] in ("annuaire_fr", "icij_offshore_leaks", "official_sanctions")
+    ]
     print(f"      non-critical source errors: {[e for e in errors if e not in critical][:5]}")
     check("core live sources answered without error", not critical, "; ".join(critical[:5]))
+    cut = [w for w in inv["warnings"] if "during screening" in w]
+    check(
+        "screening (sanctions / PEP / leaks) completed within the time limit",
+        not cut,
+        "; ".join(cut),
+    )
 
 
 if __name__ == "__main__":

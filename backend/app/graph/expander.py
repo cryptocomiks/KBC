@@ -371,8 +371,13 @@ class NetworkExpander:
                 f"Node limit of {self.max_nodes} reached: the network was truncated. "
                 "Increase the limit or reduce the depth to see more."
             )
-        self._collect_documents()
-        hits = self._screen()
+        # Screening (sanctions, PEP, leaks) and documents run side by side, so that slow
+        # document sources can never starve the screening of the finishing time window.
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            docs = pool.submit(self._collect_documents)
+            screening = pool.submit(self._screen)
+            hits = screening.result()
+            docs.result()
         return Network(
             subject_id=subject_id,
             max_depth=self.max_depth,
