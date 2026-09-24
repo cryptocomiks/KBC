@@ -1,0 +1,33 @@
+name: Country risk data
+
+# Refreshes config/country_risk.json (Basel AML Index, CPI, World Bank WGI)
+# and commits it when the indicators change.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 5 3 * *"   # monthly
+  push:
+    paths:
+      - "scripts/update_country_risk.py"
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install httpx pycountry
+      - run: python scripts/update_country_risk.py
+      - name: Commit if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add config/country_risk.json
+          if git diff --cached --quiet; then echo "no change"; exit 0; fi
+          git commit -m "Refresh country risk indicators (Basel AML Index, CPI, WGI)"
+          git push
