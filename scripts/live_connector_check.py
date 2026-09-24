@@ -236,7 +236,9 @@ def check_gdelt() -> None:
     docs = GdeltConnector(settings).get_documents(company("TotalEnergies"))
     for d in docs[:3]:
         print(f"      {d.date} | {d.title[:90]} | {d.url}")
-    expect("GDELT answered with JSON", raw.status_code == 200 and raw.text.lstrip().startswith("{"))
+    # GDELT rate-limits shared cloud IPs (HTTP 429): the connector falls back to Google News.
+    expect("adverse media returned (GDELT or Google News fallback)", bool(docs),
+           f"{len(docs)} articles via {docs[0].source.split(' — ')[0] if docs else '-'}")
 
 
 def check_opensanctions() -> None:
