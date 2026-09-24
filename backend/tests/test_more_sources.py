@@ -243,3 +243,11 @@ def test_year_only_dates_never_break_a_search():
     from app.connectors.wikidata import _full
 
     assert _full("2000") is None and _full("2000-03-01") == "2000-03-01"
+
+
+def test_wikidata_company_ranking_prefers_the_corporate_entity():
+    from app.connectors.wikidata import _corporate_weight
+
+    team = {"description": "French cycling team", "lei": None, "links": 1}
+    group = {"description": "French multinational energy company", "lei": "LEI1", "links": 4}
+    assert _corporate_weight(group) > _corporate_weight(team)

@@ -229,6 +229,7 @@ class _WikidataClient(BaseConnector):
                 "types": set(_item_ids(e, "P31")),
                 "positions": positions,
                 "lei": (_strings(e, "P1278") or [None])[0],
+                "links": sum(len(_item_ids(e, prop)) for prop in {**ORG_FROM, **ORG_TO}),
                 **{key: (_strings(e, prop) or [None])[0] for key, prop in CONTACT_PROPS.items()},
             }
         return out
@@ -263,6 +264,15 @@ class _WikidataClient(BaseConnector):
         )
 
 
+NOT_CORPORATE = ("team", "season", "club", "race", "event", "award", "stadium", "album", "song")
+
+
+def _corporate_weight(d: dict[str, Any]) -> int:
+    description = (d.get("description") or "").lower()
+    weight = (3 if d.get("lei") else 0) + min(d.get("links") or 0, 5)
+    return weight - (4 if any(w in description for w in NOT_CORPORATE) else 0)
+
+
 def _full(value: str | None) -> str | None:
     """Only exact dates go into date fields (Wikidata often knows just the year)."""
     return value if value and len(value) == 10 else None
@@ -290,10 +300,14 @@ class WikidataConnector(_WikidataClient):
             if name_similarity(name, r.get("label", ""), "person" if want_human else "company")[0]
             >= MIN_NAME
         ]
-        details = self.details([r["id"] for r in found])
-        return [
-            self.entity_from(d) for d in details.values() if (HUMAN in d["types"]) == want_human
+        rank = {r["id"]: i for i, r in enumerate(found)}
+        details = [
+            d for d in self.details(list(rank)).values() if (HUMAN in d["types"]) == want_human
         ]
+        # Keep Wikidata's relevance order, but for companies put the corporate entity first
+        # (LEI, ownership / management links) ahead of its sports teams, seasons or events.
+        details.sort(key=lambda d: (0 if want_human else -_corporate_weight(d), rank[d["qid"]]))
+        return [self.entity_from(d) for d in details]
 
     def search_person(self, name: str, **filters: Any) -> list[Entity]:
         return self._search_entities(name, want_human=True)
