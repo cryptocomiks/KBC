@@ -123,6 +123,10 @@ class EntityResolver:
         )
         target.record_ids.extend(new_records)
         target.sources.extend(other.sources)
+        # Registries often store names in capitals: prefer the properly cased spelling.
+        if target.name.isupper() and not other.name.isupper():
+            target.aliases.append(target.name)
+            target.name, other = other.name, other.model_copy(update={"name": target.name})
         names = {target.name.casefold(), *(a.casefold() for a in target.aliases)}
         for n in [other.name, *other.aliases]:
             if n.casefold() not in names:

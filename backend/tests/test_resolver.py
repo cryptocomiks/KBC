@@ -72,3 +72,27 @@ def test_addresses_merged_despite_formatting():
     a, _ = r.add(address_entity("22 rue Hélène-Vasseur, 75008 Paris, France"))
     b, _ = r.add(address_entity("22 RUE HELENE VASSEUR 75008 PARIS"))
     assert a == b
+
+
+def test_properly_cased_name_preferred():
+    r = EntityResolver()
+    a, _ = r.add(
+        rec(
+            "oc:1",
+            "MERIDIAN CAPITAL HOLDINGS SARL",
+            type=EntityType.COMPANY,
+            registration_number="B198765",
+            jurisdiction="LU",
+        )
+    )
+    r.add(
+        rec(
+            "fr:1",
+            "Meridian Capital Holdings S.à r.l.",
+            type=EntityType.COMPANY,
+            registration_number="B198765",
+            jurisdiction="LU",
+        )
+    )
+    assert r.entities[a].name == "Meridian Capital Holdings S.à r.l."
+    assert "MERIDIAN CAPITAL HOLDINGS SARL" in r.entities[a].aliases
