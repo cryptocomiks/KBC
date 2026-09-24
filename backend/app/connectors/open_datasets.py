@@ -17,6 +17,7 @@ import csv
 import io
 import threading
 import time
+from concurrent.futures import ThreadPoolExecutor
 
 import httpx
 
@@ -37,6 +38,16 @@ DATASETS = {
     "ch_seco_sanctions": ("Swiss sanctions (SECO)", ListType.SANCTION),
     "worldbank_debarred": ("World Bank debarred firms and individuals", ListType.ADVERSE),
     "interpol_red_notices": ("Interpol red notices (public)", ListType.ADVERSE),
+    # Investigative lists (journalists / NGOs / governments documenting networks)
+    "ru_acf_bribetakers": (
+        "ACF (Navalny Anti-Corruption Foundation) — War Enablers investigation",
+        ListType.ADVERSE,
+    ),
+    "ua_war_sanctions": ("Ukraine War & Sanctions (NAZK) — enablers of the war", ListType.ADVERSE),
+    "wd_oligarchs": ("Russian oligarchs and billionaires (Wikidata)", ListType.ADVERSE),
+    # Professional bans and regulator warnings
+    "gb_coh_disqualified": ("UK disqualified directors (Companies House)", ListType.ADVERSE),
+    "ch_finma_warnings": ("Swiss FINMA warning list (unauthorised firms)", ListType.ADVERSE),
 }
 SKIPPED_SCHEMAS = {"Vessel", "Airplane", "CryptoWallet", "Address", "Security"}
 
@@ -56,8 +67,7 @@ class _State:
 _STATE = _State()
 
 
-def _load(dataset: str, index: _Index, timeout: float) -> None:
-    label, list_type = DATASETS.get(dataset, (dataset, ListType.SANCTION))
+def _fetch(dataset: str, timeout: float) -> str:
     resp = httpx.get(
         URL.format(dataset=dataset),
         timeout=timeout,
@@ -65,8 +75,15 @@ def _load(dataset: str, index: _Index, timeout: float) -> None:
         headers={"User-Agent": USER_AGENT},
     )
     resp.raise_for_status()
+    return resp.content.decode("utf-8", errors="replace")
+
+
+def _load(dataset: str, index: _Index, timeout: float, text: str | None = None) -> None:
+    label, list_type = DATASETS.get(dataset, (dataset, ListType.SANCTION))
+    if text is None:
+        text = _fetch(dataset, timeout)
     before = len(index.entries)
-    for row in csv.DictReader(io.StringIO(resp.content.decode("utf-8", errors="replace"))):
+    for row in csv.DictReader(io.StringIO(text)):
         schema = row.get("schema") or ""
         if schema in SKIPPED_SCHEMAS or not row.get("name"):
             continue
@@ -101,7 +118,7 @@ def _load(dataset: str, index: _Index, timeout: float) -> None:
 
 class OpenDatasetsConnector(BaseConnector):
     name = "open_watchlists"
-    label = "EU / UK / Swiss sanctions, World Bank debarments, Interpol red notices"
+    label = "EU / UK / Swiss sanctions, debarments, wanted notices, investigative lists (ACF, War & Sanctions), FINMA warnings"
     kind = "screening"
     homepage = "https://www.opensanctions.org/datasets/"
 
@@ -113,9 +130,13 @@ class OpenDatasetsConnector(BaseConnector):
             if not _STATE.index.entries or time.time() - _STATE.loaded_at > REFRESH_SECONDS:
                 fresh, errors = _Index(), []
                 timeout = max(self.settings.http_timeout_seconds, 30.0)
-                for dataset in self._datasets():
+                datasets = self._datasets()
+                # Download all lists in parallel (I/O bound), then index them one by one.
+                with ThreadPoolExecutor(max_workers=max(1, min(8, len(datasets)))) as pool:
+                    futures = {d: pool.submit(_fetch, d, timeout) for d in datasets}
+                for dataset, future in futures.items():
                     try:
-                        _load(dataset, fresh, timeout)
+                        _load(dataset, fresh, timeout, future.result())
                     except (httpx.HTTPError, csv.Error, ValueError) as exc:
                         errors.append(f"{dataset} unavailable ({exc})")
                 if not fresh.entries:
