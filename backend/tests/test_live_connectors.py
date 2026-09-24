@@ -17,6 +17,8 @@ from app.connectors.pappers import PappersConnector
 from app.models import CompanyStatus, Entity, EntityType, ListType, RelationType
 from app.settings import Settings
 
+ICIJ_SCHEMA = "https://offshoreleaks.icij.org/schema/oldb"
+
 KEYS = Settings(
     demo_mode=False,
     live_sources=True,
@@ -403,14 +405,29 @@ def test_icij_reconcile_batches_and_attributes_the_leak():
         for key, q in queries.items():
             found = []
             if slug == "panama-papers" and q["query"] == "Acme Offshore Ltd":
+                # Shape copied from a real response of the ICIJ reconciliation API.
+                entity_type = [{"id": f"{ICIJ_SCHEMA}/entity", "name": "Entity"}]
                 found = [
                     {
                         "id": "10001",
                         "name": "ACME OFFSHORE LIMITED",
                         "score": 99,
-                        "match": True,
-                        "type": [{"id": "Entity", "name": "Entity"}],
-                    }
+                        "match": False,
+                        "description": "Entity node extracted from the Panama Papers data.",
+                        "types": entity_type,
+                    },
+                    {
+                        "id": "10002",
+                        "name": "ACME OFFSHORE GUATEMALA",
+                        "score": 70,
+                        "types": entity_type,
+                    },
+                    {
+                        "id": "10003",
+                        "name": "Acme Offshore Ltd",
+                        "score": 99,
+                        "types": [{"id": f"{ICIJ_SCHEMA}/address", "name": "Address"}],
+                    },
                 ]
             result[key] = {"result": found}
         return httpx.Response(200, json=result)
@@ -421,10 +438,15 @@ def test_icij_reconcile_batches_and_attributes_the_leak():
     company = Entity(id="x:acme", type=EntityType.COMPANY, name="Acme Offshore Ltd")
     hits = IcijReconcileConnector(KEYS).screen_many([company, person("Nobody Here")])
     assert route.call_count == 5  # one batched request per investigation
-    [hit] = hits
+    by_node = {h.provenance.url.rsplit("/", 1)[-1]: h for h in hits}
+    assert set(by_node) == {"10001", "10002"}  # the Address node is filtered out by type
+    hit = by_node["10001"]
     assert hit.dataset.startswith("Panama Papers") and hit.list_type == ListType.LEAK
-    assert hit.provenance.url == "https://offshoreleaks.icij.org/nodes/10001"
+    assert hit.details["node_type"] == "entity" and hit.score >= 85
     assert any("name-only" in e for e in hit.explanation)
+    assert (
+        by_node["10002"].score < 85
+    )  # extra word: related but distinct node, kept as possible match
 
 
 # ------------------------------------------------------------------ Aleph

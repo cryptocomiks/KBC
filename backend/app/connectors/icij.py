@@ -37,6 +37,9 @@ INVESTIGATIONS = {
 BATCH_SIZE = 10
 MIN_NAME_SCORE = 80
 NAME_ONLY_PENALTY = 5
+EXTRA_TOKENS_PENALTY = (
+    10  # "Mossack Fonseca" vs "Mossack Fonseca Guatemala": a related but distinct node
+)
 DISCLAIMER = "Appearing in the Offshore Leaks Database does not imply wrongdoing."
 ACCEPTED_TYPES = {
     EntityType.PERSON: {"officer", "intermediary"},
@@ -44,8 +47,20 @@ ACCEPTED_TYPES = {
 }
 
 
+def _leak_score(name_score: float, notes: list[str]) -> tuple[float, list[str]]:
+    """Leak records have no date of birth: name-only evidence is discounted, and a
+    leaked name with extra/missing words is treated as a related, distinct node."""
+    score = name_score - NAME_ONLY_PENALTY
+    reasons = [f"name-only match (leak records carry no date of birth) [-{NAME_ONLY_PENALTY}]"]
+    if any("token count differs" in n for n in notes):
+        score -= EXTRA_TOKENS_PENALTY
+        reasons.append(f"the leaked name has extra or missing words [-{EXTRA_TOKENS_PENALTY}]")
+    return round(score, 1), reasons
+
+
 def _type_name(result: dict[str, Any]) -> str:
-    types = result.get("type") or []
+    # The API returns "types": [{"id": "https://offshoreleaks.icij.org/schema/oldb/entity", "name": "Entity"}]
+    types = result.get("types") or result.get("type") or []
     if types and isinstance(types[0], dict):
         return str(types[0].get("name") or types[0].get("id") or "").rsplit("/", 1)[-1].lower()
     return str(types[0]).lower() if types else ""
@@ -94,12 +109,8 @@ class IcijReconcileConnector(BaseConnector):
             list_type=ListType.LEAK,
             dataset=dataset,
             matched_name=result.get("name", ""),
-            score=round(score - NAME_ONLY_PENALTY, 1),
-            explanation=[
-                f"name {score:.0f}%",
-                *notes,
-                f"name-only match (leak records carry no date of birth) [-{NAME_ONLY_PENALTY}]",
-            ],
+            score=_leak_score(score, notes)[0],
+            explanation=[f"name {score:.0f}%", *notes, *_leak_score(score, notes)[1]],
             details={
                 "node_type": rtype or "unknown",
                 "icij_score": result.get("score"),
@@ -159,12 +170,8 @@ class IcijLocalConnector(BaseConnector):
                     list_type=ListType.LEAK,
                     dataset=source or "ICIJ Offshore Leaks",
                     matched_name=name,
-                    score=round(score - NAME_ONLY_PENALTY, 1),
-                    explanation=[
-                        f"name {score:.0f}%",
-                        *notes,
-                        f"name-only match (leak records carry no date of birth) [-{NAME_ONLY_PENALTY}]",
-                    ],
+                    score=_leak_score(score, notes)[0],
+                    explanation=[f"name {score:.0f}%", *notes, *_leak_score(score, notes)[1]],
                     details={
                         "node_type": node_kind,
                         "jurisdiction": jur,

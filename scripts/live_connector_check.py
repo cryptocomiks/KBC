@@ -87,6 +87,14 @@ def check_icij() -> None:
     expect("known Panama Papers name is found", any("mossack" in h.matched_name.lower() for h in hits),
            f"{len(hits)} hits")
     expect("hits are attributed to a leak", all(h.dataset.endswith(")") for h in hits))
+    expect("node types are parsed", all(h.details.get("node_type") not in (None, "unknown") for h in hits),
+           ", ".join(sorted({str(h.details.get("node_type")) for h in hits})))
+    exact = [h for h in hits if h.matched_name.upper().startswith("MOSSACK FONSECA &")]
+    related = [h for h in hits if "GUATEMALA" in h.matched_name.upper()]
+    expect("exact name counts as a match (>= 85)", bool(exact) and exact[0].score >= 85,
+           f"{exact[0].matched_name}: {exact[0].score}" if exact else "")
+    expect("name with extra words is only a possible match (< 85)", all(h.score < 85 for h in related),
+           ", ".join(f"{h.matched_name}: {h.score}" for h in related))
 
 
 def check_opensanctions() -> None:
