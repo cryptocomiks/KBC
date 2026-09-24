@@ -315,6 +315,16 @@ def build_brief(net: Network, risk: RiskAssessment, jur_name=lambda c: c or "?")
             tab="documents",
         ),
     ]
+    docs = [d for e in ents.values() for d in e.documents]
+    for key, flag, label, tone_ in (
+        ("courts", "court", "Court decisions", "warning"),
+        ("contracts", "public_contract", "Public contracts won", "neutral"),
+        ("websites", "linked_websites", "Linked websites", "neutral"),
+        ("uk_property", "uk_property", "UK property register", "warning"),
+    ):
+        n = sum(1 for d in docs if flag in d.flags)
+        if n:
+            figures.append(Figure(key=key, label=label, value=str(n), tone=tone_, tab="documents"))
     if flows:
         total = {}
         for r in flows:

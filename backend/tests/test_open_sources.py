@@ -56,16 +56,25 @@ def test_gleif_parent_and_children():
             200, json={"data": lei_record("PARENT00000000000001", "PARENT SA", "111111111")}
         )
     )
+    respx.get(f"{base}/CHILD000000000000001/ultimate-parent").mock(
+        return_value=httpx.Response(
+            200, json={"data": lei_record("GROUP000000000000001", "GROUP HOLDING AG", "333333333")}
+        )
+    )
     respx.get(f"{base}/CHILD000000000000001/direct-children").mock(
         return_value=httpx.Response(
             200, json={"data": [lei_record("GRAND000000000000001", "GRANDCHILD SAS", "222222222")]}
         )
     )
     conn = GleifConnector(LIVE)
-    [parent] = conn.get_shareholders("gleif:CHILD000000000000001")
+    parent, head = conn.get_shareholders("gleif:CHILD000000000000001")
     assert (
         parent.entity.name == "PARENT SA" and parent.relationship.type == RelationType.SHAREHOLDER
     )
+    assert (
+        head.entity.name == "GROUP HOLDING AG" and head.relationship.type == RelationType.CONTROLS
+    )
+    assert "Ultimate parent" in head.relationship.role
     assert parent.relationship.share_pct is None and "consolidation" in parent.relationship.role
     [child] = conn.get_subsidiaries("gleif:CHILD000000000000001")
     assert child.relationship.target_id == "gleif:GRAND000000000000001"
@@ -97,9 +106,10 @@ def test_gleif_search_puts_exact_legal_name_first():
 
 @respx.mock
 def test_gleif_no_parent_reported():
-    respx.get("https://api.gleif.org/api/v1/lei-records/X/direct-parent").mock(
-        return_value=httpx.Response(404)
-    )
+    for kind in ("direct-parent", "ultimate-parent"):
+        respx.get(f"https://api.gleif.org/api/v1/lei-records/X/{kind}").mock(
+            return_value=httpx.Response(404)
+        )
     assert GleifConnector(LIVE).get_shareholders("gleif:X") == []
 
 

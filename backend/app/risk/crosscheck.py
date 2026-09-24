@@ -241,3 +241,12 @@ def cross_checks(net: Network, t: dict, flag: Callable[[str, str, str], None]) -
                     f"{name(cid)}: {j - i + 1} officer appointments / departures between {days[i]} and {days[j]}",
                 )
                 break
+
+    # 7. Beneficial owners declared as public officials in a register (e.g. Slovak RPVS)
+    for e in ents.values():
+        if e.type == EntityType.PERSON and e.extra.get("public_official"):
+            flag(
+                "pep_match",
+                e.id,
+                f"{e.name} is declared a public official in a beneficial-ownership register",
+            )

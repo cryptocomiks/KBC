@@ -108,22 +108,36 @@ class GleifConnector(BaseConnector):
         return self._company(data["data"]) if data.get("data") else None
 
     def get_shareholders(self, company_id: str) -> list[LinkedEntity]:
-        """Direct accounting parent (GLEIF level-2 relationship data)."""
+        """Direct and ultimate accounting parents (GLEIF level-2 relationship data)."""
         lei = self._lei(company_id)
-        data = self._get(f"/lei-records/{lei}/direct-parent") or {}
-        parent = data.get("data")
-        if not isinstance(parent, dict) or parent.get("type") != "lei-records":
-            return []
-        other = self._company(parent)
-        rel = Relationship(
-            id=f"{self.name}:parent:{lei}",
-            type=RelationType.SHAREHOLDER,
-            source_id=other.id,
-            target_id=self.record_id(lei),
-            role="Direct parent — accounting consolidation (GLEIF level 2, % not published)",
-            sources=[self.provenance(self.record_id(lei), UI.format(lei=lei))],
-        )
-        return [LinkedEntity(relationship=rel, entity=other)]
+        out: list[LinkedEntity] = []
+        for kind, role in (
+            (
+                "direct-parent",
+                "Direct parent — accounting consolidation (GLEIF level 2, % not published)",
+            ),
+            (
+                "ultimate-parent",
+                "Ultimate parent (group head) — accounting consolidation (GLEIF level 2)",
+            ),
+        ):
+            data = self._get(f"/lei-records/{lei}/{kind}") or {}
+            parent = data.get("data")
+            if not isinstance(parent, dict) or parent.get("type") != "lei-records":
+                continue
+            other = self._company(parent)
+            if any(o.entity.id == other.id for o in out):
+                continue  # the direct parent is also the group head
+            rel = Relationship(
+                id=f"{self.name}:{kind}:{lei}",
+                type=RelationType.SHAREHOLDER if kind == "direct-parent" else RelationType.CONTROLS,
+                source_id=other.id,
+                target_id=self.record_id(lei),
+                role=role,
+                sources=[self.provenance(self.record_id(lei), UI.format(lei=lei))],
+            )
+            out.append(LinkedEntity(relationship=rel, entity=other))
+        return out
 
     def get_subsidiaries(self, company_id: str) -> list[LinkedEntity]:
         lei = self._lei(company_id)

@@ -492,6 +492,63 @@ def check_sanctioned_official() -> None:
     )
 
 
+def check_uk_public_register() -> None:
+    from app.connectors.companies_house_web import CompaniesHouseWebConnector
+
+    conn = CompaniesHouseWebConnector(Settings(live_sources=True, companies_house_api_key=""))
+    found = conn.search_company("Tesco PLC")
+    tesco = next((c for c in found if c.registration_number == "00445790"), None)
+    expect("company search (public site, JSON)", tesco is not None, ", ".join(c.name for c in found[:3]))
+    officers = conn.get_officers("companies_house_web:00445790")
+    for o in officers[:3]:
+        print(f"      {o.entity.name} — {o.relationship.role} (from {o.relationship.start_date}, born {o.entity.birth_date})")
+    expect("officers parsed from the public page", len(officers) >= 5, f"{len(officers)} officers")
+    owners = conn.get_shareholders("companies_house_web:OE000001")
+    for o in owners[:3]:
+        print(f"      {o.entity.name} — {o.relationship.role} ({o.relationship.share_pct}%)")
+    expect("overseas entity: registrable beneficial owners", len(owners) >= 1)
+    people = conn.search_person("Alisher Usmanov")
+    roles = conn.get_person_roles(people[0].id) if people else []
+    expect("officer search + appointments", len(roles) >= 1, f"{people[0].name if people else '-'}: {len(roles)} appointments")
+
+
+def check_rpvs() -> None:
+    from app.connectors.rpvs import RpvsConnector
+
+    conn = RpvsConnector(settings)
+    found = conn.search_company("Slovnaft")
+    expect("partner search", bool(found), ", ".join(f"{c.name} ({c.registration_number})" for c in found[:3]))
+    owners = [o for c in found[:3] for o in conn.get_shareholders(c.id)]
+    for o in owners[:4]:
+        print(f"      {o.entity.name} (born {o.entity.birth_date}) — {o.relationship.role}, until {o.relationship.end_date}")
+    expect("verified beneficial owners", len(owners) >= 1)
+
+
+def check_documents_sources() -> None:
+    from app.connectors.courts import CourtListenerConnector, SwissCourtsConnector
+    from app.connectors.littlesis import LittleSisConnector
+    from app.connectors.ted import TedConnector
+    from app.connectors.websites import LinkedWebsitesConnector
+
+    glencore = company("Glencore")
+    for label, conn, entity in (
+        ("Swiss court decisions (entscheidsuche)", SwissCourtsConnector(settings), glencore),
+        ("US court opinions (CourtListener)", CourtListenerConnector(settings), glencore),
+        ("EU public contracts (TED)", TedConnector(settings), company("Thales")),
+        ("LittleSis relationships", LittleSisConnector(settings), company("Glencore Plc")),
+    ):
+        docs = conn.get_documents(entity)
+        for d in docs[:2]:
+            print(f"      {d.date} | {d.title[:90]} | {d.url}")
+        expect(label, bool(docs), f"{len(docs)} documents")
+    site = company("Glencore")
+    site.extra["website"] = "https://www.glencore.com"
+    docs = LinkedWebsitesConnector(settings).get_documents(site)
+    for d in docs:
+        print(f"      {d.title} — {(d.summary or '')[:160]}")
+    expect("linked websites (certificates / analytics IDs)", bool(docs), f"{len(docs)} documents")
+
+
 def check_country_risk() -> None:
     from app.risk.config import get_country_risk
 
@@ -568,6 +625,9 @@ guarded("Country risk indicators", check_country_risk)
 guarded("Casino Secrets (Curaçao gaming leak)", check_casino_secrets)
 guarded("Search by identifier (SIREN, Swiss UID, SEC CIK)", check_identifiers)
 guarded("Sanctioned public official, depth 2 (Elvira Nabiullina)", check_sanctioned_official)
+guarded("UK register without key (Companies House public site, overseas entities)", check_uk_public_register)
+guarded("Slovak beneficial owners (RPVS)", check_rpvs)
+guarded("Courts, public contracts, LittleSis, linked websites", check_documents_sources)
 for key, title, fn in [
     ("OPENSANCTIONS_API_KEY", "OpenSanctions", check_opensanctions),
     ("COMPANIES_HOUSE_API_KEY", "Companies House", check_companies_house),

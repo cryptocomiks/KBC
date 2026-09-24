@@ -13,17 +13,23 @@ def _connector_classes() -> list[type[BaseConnector]]:
     from app.connectors.casino_secrets import CasinoSecretsConnector, CasinoSecretsLeakConnector
     from app.connectors.chains import CHAIN_CONNECTORS
     from app.connectors.companies_house import CompaniesHouseConnector
+    from app.connectors.companies_house_web import CompaniesHouseWebConnector
+    from app.connectors.courts import CourtListenerConnector, SwissCourtsConnector
     from app.connectors.demo import DEMO_CONNECTORS
     from app.connectors.gdelt import GdeltConnector
     from app.connectors.gleif import GleifConnector
     from app.connectors.icij import IcijLocalConnector, IcijReconcileConnector
+    from app.connectors.littlesis import LittleSisConnector
     from app.connectors.official_sanctions import OfficialSanctionsConnector
     from app.connectors.open_datasets import OpenDatasetsConnector
     from app.connectors.opencorporates import OpenCorporatesConnector
     from app.connectors.opensanctions import OpenSanctionsConnector
     from app.connectors.pappers import PappersConnector
+    from app.connectors.rpvs import RpvsConnector
     from app.connectors.sec_edgar import SecEdgarConnector
+    from app.connectors.ted import TedConnector
     from app.connectors.wayback import WaybackConnector
+    from app.connectors.websites import LinkedWebsitesConnector
     from app.connectors.wikidata import WikidataConnector, WikidataPepConnector
     from app.connectors.zefix import ZefixConnector
 
@@ -36,7 +42,9 @@ def _connector_classes() -> list[type[BaseConnector]]:
         GleifConnector,
         PappersConnector,
         CompaniesHouseConnector,
+        CompaniesHouseWebConnector,
         ZefixConnector,
+        RpvsConnector,
         SecEdgarConnector,
         OpenCorporatesConnector,
         OpenSanctionsConnector,
@@ -46,6 +54,11 @@ def _connector_classes() -> list[type[BaseConnector]]:
         WikidataPepConnector,
         GdeltConnector,
         WaybackConnector,
+        LinkedWebsitesConnector,
+        SwissCourtsConnector,
+        CourtListenerConnector,
+        TedConnector,
+        LittleSisConnector,
         IcijReconcileConnector,
         IcijLocalConnector,
         CasinoSecretsConnector,
