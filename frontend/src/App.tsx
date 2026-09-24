@@ -29,7 +29,13 @@ export default function App() {
     queryKey: ["investigation", target],
     queryFn: () => api.investigate(target!),
     enabled: !!target,
-    placeholderData: keepPreviousData,
+    // Keep the current graph on screen only while changing the depth of the same subject;
+    // a new subject never shows the previous investigation.
+    placeholderData: (previous, previousQuery) => {
+      const prev = previousQuery?.queryKey[1] as InvestigationParams | undefined;
+      const same = prev && target && prev.record_ids.join("|") === target.record_ids.join("|");
+      return same ? keepPreviousData(previous) : undefined;
+    },
   });
 
   const home = () => {
