@@ -480,6 +480,7 @@ def build_tables(net: Network, risk: RiskAssessment) -> dict[str, list[dict[str,
         jurisdictions.append(
             {
                 "code": code,
+                "numeric": c.get("numeric"),
                 "country": jur.name(code),
                 "entities": len(names),
                 "examples": ", ".join(sorted(names)[:4]),

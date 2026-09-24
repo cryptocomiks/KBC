@@ -209,7 +209,7 @@ def main() -> None:
             if country
             else b.get(code, {}).get("name", code)
         )
-        entry = {"name": name}
+        entry = {"name": name, **({"numeric": country.numeric} if country else {})}
         for src in (b, c, w):
             entry.update({k: v for k, v in src.get(code, {}).items() if k != "name"})
         countries[code] = entry

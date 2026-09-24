@@ -47,7 +47,7 @@ export default function KeyFindings({ investigation: inv, onSelect }: Props) {
                       ))}
                   </span>
                 )}
-                {f.urls.slice(0, 2).map((u) => (
+                {[...new Set(f.urls)].slice(0, 2).map((u) => (
                   <a key={u} href={u} target="_blank" rel="noreferrer" className="ml-1 inline-flex align-middle text-brand-600" title={u}>
                     <ExternalLink className="h-3 w-3" />
                   </a>

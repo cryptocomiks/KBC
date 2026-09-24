@@ -72,6 +72,10 @@ explained, and every fact carries **its source, its URL and the time it was retr
 | **Timeline** | Every dated event of the network on one axis: incorporations and dissolutions, appointments and resignations, ownership changes, filings and legal notices, sanctions listings, press articles, first and last crypto transfers. Filterable by type. |
 | **Country risk** | Each jurisdiction of the network with the **Basel AML Index**, the **Corruption Perceptions Index** and the **World Bank control-of-corruption** indicator, next to the FATF / EU / offshore lists. Refreshed monthly by a workflow (`config/country_risk.json`). |
 | **Financials** | Revenue, net income and total assets by year (INPI accounts for France, SEC XBRL for US filers). A large balance sheet with no revenue raises a *shell-company indicator*. |
+| **Cases & monitoring** | Save an investigation as a **case**: it is re-checked every day against fresh data and every difference is recorded (**new sanctions / PEP / leak hit, new officer or owner, new filing, new crypto flows, score change**). A **dashboard** lists all cases with their risk, the review queue, the latest changes and the countries involved. Password-protected (`APP_PASSWORD`). |
+| **Analyst decisions** | On every screening or leak hit: *confirmed*, *false positive* or *to review*, with a comment. False positives leave the score, the brief and the findings; every decision is kept and printed in the PDF (**audit trail**). |
+| **World map** | Countries of the network coloured by Basel AML Index, cross-border ownership links as arrows, offshore centres circled (micro-jurisdictions shown as markers). |
+| **Crypto flow diagram** | Sankey of the aggregated on-chain flows around the subject: where the money comes from and where it goes, sanctioned wallets in red, owners named. |
 | **Traceability** | `Provenance {source, record_id, url, retrieved_at}` is attached to every entity, relationship and screening hit. |
 | **Privacy** | Personal data is stored only in a local SQLite cache, which a **"Clear cache"** button wipes. |
 
@@ -347,7 +351,13 @@ a *Demo · fictitious* or *Real public data* badge.
 | **OCCRP Aleph** | Leaks, registries, court records, gazettes | [free account](https://aleph.occrp.org) | `ALEPH_API_KEY` |
 | Demo connectors (4) | Fictitious registries, sanctions/PEP, leaks | none | `DEMO_MODE` |
 
-On Vercel, add the keys under *Project → Settings → Environment Variables*, then redeploy. The
+On Vercel, add the keys under *Project → Settings → Environment Variables*, then redeploy.
+
+**Cases on Vercel (3 steps).** 1) *Storage → Create Database → Postgres (Neon, free)* and connect it to
+the project: `DATABASE_URL` is added automatically. 2) Add `APP_PASSWORD` (protects cases) and
+`CRON_SECRET` (any long random string) in *Environment Variables*, then redeploy. 3) For daily monitoring
+of every case, add the same `CRON_SECRET` as a GitHub repository secret: the *Case monitoring* workflow
+re-checks one case per call until all are done (Vercel Cron also calls it once a day). The
 "Sources" menu shows the status of each connector.
 
 **Licences and fair use.**

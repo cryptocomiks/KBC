@@ -6,6 +6,8 @@ import type { Theme } from "../lib/theme";
 import type { Decision, DecisionValue, Investigation } from "../types";
 import EntityPanel from "./EntityPanel";
 import BriefCard from "./BriefCard";
+import CryptoSankey from "./CryptoSankey";
+import WorldMap from "./WorldMap";
 import KeyFindings from "./KeyFindings";
 import Timeline from "./Timeline";
 import GraphView, { GraphLegend, type GraphFilters, type GraphHandle, type GraphLayout } from "./GraphView";
@@ -216,6 +218,8 @@ export default function InvestigationView({
         </div>
       </div>
 
+      <WorldMap investigation={inv} onSelect={select} />
+      <CryptoSankey investigation={inv} onSelect={select} />
       <RiskPanel investigation={inv} onSelect={select} />
       <Timeline investigation={inv} onSelect={select} />
       <TablesSection

@@ -23,7 +23,8 @@
    "basel_aml_score": 3.48,
    "basel_aml_rank": 171,
    "wgi_control_of_corruption": 1.18,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "020"
   },
   "AE": {
    "name": "United Arab Emirates",
@@ -32,26 +33,30 @@
    "cpi_score": 68.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 1.17,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "784"
   },
   "AF": {
    "name": "Afghanistan",
    "cpi_score": 17.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -1.31,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "004"
   },
   "AG": {
    "name": "Antigua and Barbuda",
    "basel_aml_score": 3.98,
    "basel_aml_rank": 162,
    "wgi_control_of_corruption": 0.28,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "028"
   },
   "AI": {
    "name": "Anguilla",
    "wgi_control_of_corruption": 1.18,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "660"
   },
   "AL": {
    "name": "Albania",
@@ -60,7 +65,8 @@
    "cpi_score": 42.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.42,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "008"
   },
   "AM": {
    "name": "Armenia",
@@ -69,7 +75,8 @@
    "cpi_score": 47.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 0.14,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "051"
   },
   "AO": {
    "name": "Angola",
@@ -78,7 +85,8 @@
    "cpi_score": 32.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.62,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "024"
   },
   "AR": {
    "name": "Argentina",
@@ -87,12 +95,14 @@
    "cpi_score": 37.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.33,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "032"
   },
   "AS": {
    "name": "American Samoa",
    "wgi_control_of_corruption": 1.18,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "016"
   },
   "AT": {
    "name": "Austria",
@@ -101,7 +111,8 @@
    "cpi_score": 67.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 1.29,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "040"
   },
   "AU": {
    "name": "Australia",
@@ -110,12 +121,14 @@
    "cpi_score": 77.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 1.85,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "036"
   },
   "AW": {
    "name": "Aruba",
    "wgi_control_of_corruption": 0.87,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "533"
   },
   "AZ": {
    "name": "Azerbaijan",
@@ -124,7 +137,8 @@
    "cpi_score": 22.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.78,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "031"
   },
   "BA": {
    "name": "Bosnia and Herzegovina",
@@ -133,7 +147,8 @@
    "cpi_score": 33.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.51,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "070"
   },
   "BB": {
    "name": "Barbados",
@@ -142,7 +157,8 @@
    "cpi_score": 68.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 1.23,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "052"
   },
   "BD": {
    "name": "Bangladesh",
@@ -151,7 +167,8 @@
    "cpi_score": 23.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -1.1,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "050"
   },
   "BE": {
    "name": "Belgium",
@@ -160,7 +177,8 @@
    "cpi_score": 69.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 1.47,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "056"
   },
   "BF": {
    "name": "Burkina Faso",
@@ -169,7 +187,8 @@
    "cpi_score": 41.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.25,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "854"
   },
   "BG": {
    "name": "Bulgaria",
@@ -178,7 +197,8 @@
    "cpi_score": 43.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.24,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "100"
   },
   "BH": {
    "name": "Bahrain",
@@ -187,14 +207,16 @@
    "cpi_score": 53.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 0.25,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "048"
   },
   "BI": {
    "name": "Burundi",
    "cpi_score": 17.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -1.46,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "108"
   },
   "BJ": {
    "name": "Benin",
@@ -203,12 +225,14 @@
    "cpi_score": 45.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.24,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "204"
   },
   "BM": {
    "name": "Bermuda",
    "wgi_control_of_corruption": 1.18,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "060"
   },
   "BN": {
    "name": "Brunei",
@@ -217,7 +241,8 @@
    "cpi_score": 60.0,
    "cpi_year": 2020,
    "wgi_control_of_corruption": 1.19,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "096"
   },
   "BO": {
    "name": "Bolivia",
@@ -226,7 +251,8 @@
    "cpi_score": 28.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -1.0,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "068"
   },
   "BR": {
    "name": "Brazil",
@@ -235,7 +261,8 @@
    "cpi_score": 34.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.41,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "076"
   },
   "BS": {
    "name": "Bahamas",
@@ -244,7 +271,8 @@
    "cpi_score": 65.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 1.23,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "044"
   },
   "BT": {
    "name": "Bhutan",
@@ -253,7 +281,8 @@
    "cpi_score": 72.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 1.47,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "064"
   },
   "BW": {
    "name": "Botswana",
@@ -262,7 +291,8 @@
    "cpi_score": 57.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 0.63,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "072"
   },
   "BY": {
    "name": "Belarus",
@@ -271,14 +301,16 @@
    "cpi_score": 33.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.58,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "112"
   },
   "BZ": {
    "name": "Belize",
    "basel_aml_score": 4.06,
    "basel_aml_rank": 154,
    "wgi_control_of_corruption": -0.16,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "084"
   },
   "CA": {
    "name": "Canada",
@@ -287,7 +319,8 @@
    "cpi_score": 75.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 1.63,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "124"
   },
   "CD": {
    "name": "DR Congo",
@@ -296,7 +329,8 @@
    "cpi_score": 20.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -1.52,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "180"
   },
   "CF": {
    "name": "Central African Republic",
@@ -305,7 +339,8 @@
    "cpi_score": 24.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -1.31,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "140"
   },
   "CG": {
    "name": "Congo",
@@ -314,7 +349,8 @@
    "cpi_score": 23.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -1.42,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "178"
   },
   "CH": {
    "name": "Switzerland",
@@ -323,19 +359,22 @@
    "cpi_score": 81.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 2.01,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "756"
   },
   "CI": {
    "name": "Côte d'Ivoire",
    "cpi_score": 45.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.29,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "384"
   },
   "CK": {
    "name": "Cook Islands",
    "wgi_control_of_corruption": 0.43,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "184"
   },
   "CL": {
    "name": "Chile",
@@ -344,7 +383,8 @@
    "cpi_score": 63.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 1.11,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "152"
   },
   "CM": {
    "name": "Cameroon",
@@ -353,7 +393,8 @@
    "cpi_score": 26.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -1.22,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "120"
   },
   "CN": {
    "name": "China",
@@ -362,7 +403,8 @@
    "cpi_score": 43.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 0.09,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "156"
   },
   "CO": {
    "name": "Colombia",
@@ -371,7 +413,8 @@
    "cpi_score": 39.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.29,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "170"
   },
   "CR": {
    "name": "Costa Rica",
@@ -380,7 +423,8 @@
    "cpi_score": 58.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 0.68,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "188"
   },
   "CU": {
    "name": "Cuba",
@@ -389,7 +433,8 @@
    "cpi_score": 41.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.23,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "192"
   },
   "CV": {
    "name": "Cabo Verde",
@@ -398,7 +443,8 @@
    "cpi_score": 62.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 0.94,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "132"
   },
   "CY": {
    "name": "Cyprus",
@@ -407,7 +453,8 @@
    "cpi_score": 56.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 0.53,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "196"
   },
   "CZ": {
    "name": "Czechia",
@@ -416,7 +463,8 @@
    "cpi_score": 56.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 0.93,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "203"
   },
   "DE": {
    "name": "Germany",
@@ -425,7 +473,8 @@
    "cpi_score": 75.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 1.77,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "276"
   },
   "DJ": {
    "name": "Djibouti",
@@ -434,7 +483,8 @@
    "cpi_score": 31.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.89,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "262"
   },
   "DK": {
    "name": "Denmark",
@@ -443,7 +493,8 @@
    "cpi_score": 90.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 2.29,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "208"
   },
   "DM": {
    "name": "Dominica",
@@ -452,7 +503,8 @@
    "cpi_score": 60.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 0.53,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "212"
   },
   "DO": {
    "name": "Dominican Republic",
@@ -461,7 +513,8 @@
    "cpi_score": 36.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.27,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "214"
   },
   "DZ": {
    "name": "Algeria",
@@ -470,7 +523,8 @@
    "cpi_score": 34.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.59,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "012"
   },
   "EC": {
    "name": "Ecuador",
@@ -479,7 +533,8 @@
    "cpi_score": 32.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.78,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "218"
   },
   "EE": {
    "name": "Estonia",
@@ -488,7 +543,8 @@
    "cpi_score": 76.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 1.67,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "233"
   },
   "EG": {
    "name": "Egypt",
@@ -497,14 +553,16 @@
    "cpi_score": 30.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.83,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "818"
   },
   "ER": {
    "name": "Eritrea",
    "cpi_score": 13.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -1.63,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "232"
   },
   "ES": {
    "name": "Spain",
@@ -513,7 +571,8 @@
    "cpi_score": 56.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 0.71,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "724"
   },
   "ET": {
    "name": "Ethiopia",
@@ -522,7 +581,8 @@
    "cpi_score": 37.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.44,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "231"
   },
   "FI": {
    "name": "Finland",
@@ -531,7 +591,8 @@
    "cpi_score": 88.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 2.19,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "246"
   },
   "FJ": {
    "name": "Fiji",
@@ -540,12 +601,14 @@
    "cpi_score": 55.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 0.56,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "242"
   },
   "FM": {
    "name": "Micronesia",
    "wgi_control_of_corruption": 0.71,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "583"
   },
   "FR": {
    "name": "France",
@@ -554,7 +617,8 @@
    "cpi_score": 67.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 1.22,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "250"
   },
   "GA": {
    "name": "Gabon",
@@ -563,7 +627,8 @@
    "cpi_score": 27.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.94,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "266"
   },
   "GB": {
    "name": "United Kingdom",
@@ -572,7 +637,8 @@
    "cpi_score": 71.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 1.51,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "826"
   },
   "GD": {
    "name": "Grenada",
@@ -581,7 +647,8 @@
    "cpi_score": 56.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 0.48,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "308"
   },
   "GE": {
    "name": "Georgia",
@@ -590,12 +657,14 @@
    "cpi_score": 53.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 0.38,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "268"
   },
   "GF": {
    "name": "French Guiana",
    "wgi_control_of_corruption": 1.2,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "254"
   },
   "GH": {
    "name": "Ghana",
@@ -604,12 +673,14 @@
    "cpi_score": 42.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.19,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "288"
   },
   "GL": {
    "name": "Greenland",
    "wgi_control_of_corruption": 1.48,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "304"
   },
   "GM": {
    "name": "Gambia",
@@ -618,7 +689,8 @@
    "cpi_score": 38.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.33,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "270"
   },
   "GN": {
    "name": "Guinea",
@@ -627,7 +699,8 @@
    "cpi_score": 28.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -1.17,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "324"
   },
   "GQ": {
    "name": "Equatorial Guinea",
@@ -636,7 +709,8 @@
    "cpi_score": 13.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -1.47,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "226"
   },
   "GR": {
    "name": "Greece",
@@ -645,7 +719,8 @@
    "cpi_score": 49.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 0.3,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "300"
   },
   "GT": {
    "name": "Guatemala",
@@ -654,12 +729,14 @@
    "cpi_score": 25.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.95,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "320"
   },
   "GU": {
    "name": "Guam",
    "wgi_control_of_corruption": 1.18,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "316"
   },
   "GW": {
    "name": "Guinea-Bissau",
@@ -668,7 +745,8 @@
    "cpi_score": 21.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -1.35,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "624"
   },
   "GY": {
    "name": "Guyana",
@@ -677,7 +755,8 @@
    "cpi_score": 39.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.35,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "328"
   },
   "HK": {
    "name": "Hong Kong",
@@ -686,7 +765,8 @@
    "cpi_score": 74.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 1.57,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "344"
   },
   "HN": {
    "name": "Honduras",
@@ -695,7 +775,8 @@
    "cpi_score": 22.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -1.24,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "340"
   },
   "HR": {
    "name": "Croatia",
@@ -704,7 +785,8 @@
    "cpi_score": 47.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 0.15,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "191"
   },
   "HT": {
    "name": "Haiti",
@@ -713,7 +795,8 @@
    "cpi_score": 16.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -1.54,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "332"
   },
   "HU": {
    "name": "Hungary",
@@ -722,7 +805,8 @@
    "cpi_score": 41.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 0.04,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "348"
   },
   "ID": {
    "name": "Indonesia",
@@ -731,7 +815,8 @@
    "cpi_score": 37.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.54,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "360"
   },
   "IE": {
    "name": "Ireland",
@@ -740,7 +825,8 @@
    "cpi_score": 77.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 1.57,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "372"
   },
   "IL": {
    "name": "Israel",
@@ -749,7 +835,8 @@
    "cpi_score": 64.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 0.85,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "376"
   },
   "IN": {
    "name": "India",
@@ -758,7 +845,8 @@
    "cpi_score": 38.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.3,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "356"
   },
   "IQ": {
    "name": "Iraq",
@@ -767,14 +855,16 @@
    "cpi_score": 26.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -1.21,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "368"
   },
   "IR": {
    "name": "Iran",
    "cpi_score": 23.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -1.15,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "364"
   },
   "IS": {
    "name": "Iceland",
@@ -783,7 +873,8 @@
    "cpi_score": 77.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 1.83,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "352"
   },
   "IT": {
    "name": "Italy",
@@ -792,12 +883,14 @@
    "cpi_score": 54.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 0.55,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "380"
   },
   "JE": {
    "name": "Jersey",
    "wgi_control_of_corruption": 1.03,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "832"
   },
   "JM": {
    "name": "Jamaica",
@@ -806,7 +899,8 @@
    "cpi_score": 44.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.1,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "388"
   },
   "JO": {
    "name": "Jordan",
@@ -815,7 +909,8 @@
    "cpi_score": 49.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 0.27,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "400"
   },
   "JP": {
    "name": "Japan",
@@ -824,7 +919,8 @@
    "cpi_score": 71.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 1.36,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "392"
   },
   "KE": {
    "name": "Kenya",
@@ -833,7 +929,8 @@
    "cpi_score": 32.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.8,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "404"
   },
   "KG": {
    "name": "Kyrgyzstan",
@@ -842,7 +939,8 @@
    "cpi_score": 25.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -1.14,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "417"
   },
   "KH": {
    "name": "Cambodia",
@@ -851,12 +949,14 @@
    "cpi_score": 21.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -1.23,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "116"
   },
   "KI": {
    "name": "Kiribati",
    "wgi_control_of_corruption": 0.37,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "296"
   },
   "KM": {
    "name": "Comoros",
@@ -865,28 +965,32 @@
    "cpi_score": 21.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -1.14,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "174"
   },
   "KN": {
    "name": "Saint Kitts and Nevis",
    "basel_aml_score": 5.46,
    "basel_aml_rank": 76,
    "wgi_control_of_corruption": 0.35,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "659"
   },
   "KP": {
    "name": "North Korea",
    "cpi_score": 15.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -1.56,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "408"
   },
   "KR": {
    "name": "South Korea",
    "cpi_score": 64.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 0.85,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "410"
   },
   "KW": {
    "name": "Kuwait",
@@ -895,12 +999,14 @@
    "cpi_score": 46.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 0.22,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "414"
   },
   "KY": {
    "name": "Cayman Islands",
    "wgi_control_of_corruption": 0.6,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "136"
   },
   "KZ": {
    "name": "Kazakhstan",
@@ -909,7 +1015,8 @@
    "cpi_score": 40.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.07,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "398"
   },
   "LA": {
    "name": "Laos",
@@ -918,7 +1025,8 @@
    "cpi_score": 33.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.98,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "418"
   },
   "LB": {
    "name": "Lebanon",
@@ -927,7 +1035,8 @@
    "cpi_score": 22.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -1.3,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "422"
   },
   "LC": {
    "name": "Saint Lucia",
@@ -936,14 +1045,16 @@
    "cpi_score": 59.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 0.45,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "662"
   },
   "LI": {
    "name": "Liechtenstein",
    "basel_aml_score": 4.11,
    "basel_aml_rank": 153,
    "wgi_control_of_corruption": 1.76,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "438"
   },
   "LK": {
    "name": "Sri Lanka",
@@ -952,7 +1063,8 @@
    "cpi_score": 32.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.38,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "144"
   },
   "LR": {
    "name": "Liberia",
@@ -961,7 +1073,8 @@
    "cpi_score": 27.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -1.05,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "430"
   },
   "LS": {
    "name": "Lesotho",
@@ -970,7 +1083,8 @@
    "cpi_score": 37.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.3,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "426"
   },
   "LT": {
    "name": "Lithuania",
@@ -979,7 +1093,8 @@
    "cpi_score": 63.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 0.99,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "440"
   },
   "LU": {
    "name": "Luxembourg",
@@ -988,7 +1103,8 @@
    "cpi_score": 81.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 2.02,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "442"
   },
   "LV": {
    "name": "Latvia",
@@ -997,14 +1113,16 @@
    "cpi_score": 59.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 0.83,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "428"
   },
   "LY": {
    "name": "Libya",
    "cpi_score": 13.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -1.53,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "434"
   },
   "MA": {
    "name": "Morocco",
@@ -1013,12 +1131,14 @@
    "cpi_score": 37.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.52,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "504"
   },
   "MC": {
    "name": "Monaco",
    "wgi_control_of_corruption": 1.8,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "492"
   },
   "MD": {
    "name": "Moldova",
@@ -1027,7 +1147,8 @@
    "cpi_score": 43.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.29,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "498"
   },
   "ME": {
    "name": "Montenegro",
@@ -1036,7 +1157,8 @@
    "cpi_score": 46.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.06,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "499"
   },
   "MG": {
    "name": "Madagascar",
@@ -1045,14 +1167,16 @@
    "cpi_score": 26.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -1.01,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "450"
   },
   "MH": {
    "name": "Marshall Islands",
    "basel_aml_score": 4.89,
    "basel_aml_rank": 109,
    "wgi_control_of_corruption": 0.39,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "584"
   },
   "MK": {
    "name": "North Macedonia",
@@ -1061,7 +1185,8 @@
    "cpi_score": 40.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.33,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "807"
   },
   "ML": {
    "name": "Mali",
@@ -1070,7 +1195,8 @@
    "cpi_score": 27.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.98,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "466"
   },
   "MM": {
    "name": "Myanmar",
@@ -1079,7 +1205,8 @@
    "cpi_score": 16.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -1.25,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "104"
   },
   "MN": {
    "name": "Mongolia",
@@ -1088,17 +1215,20 @@
    "cpi_score": 33.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.49,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "496"
   },
   "MO": {
    "name": "Macao",
    "wgi_control_of_corruption": 0.57,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "446"
   },
   "MQ": {
    "name": "Martinique",
    "wgi_control_of_corruption": 0.55,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "474"
   },
   "MR": {
    "name": "Mauritania",
@@ -1107,7 +1237,8 @@
    "cpi_score": 30.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.93,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "478"
   },
   "MT": {
    "name": "Malta",
@@ -1116,7 +1247,8 @@
    "cpi_score": 46.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 0.27,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "470"
   },
   "MU": {
    "name": "Mauritius",
@@ -1125,14 +1257,16 @@
    "cpi_score": 51.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 0.34,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "480"
   },
   "MV": {
    "name": "Maldives",
    "cpi_score": 38.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.34,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "462"
   },
   "MW": {
    "name": "Malawi",
@@ -1141,7 +1275,8 @@
    "cpi_score": 34.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.65,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "454"
   },
   "MX": {
    "name": "Mexico",
@@ -1150,7 +1285,8 @@
    "cpi_score": 26.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.94,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "484"
   },
   "MY": {
    "name": "Malaysia",
@@ -1159,7 +1295,8 @@
    "cpi_score": 50.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 0.5,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "458"
   },
   "MZ": {
    "name": "Mozambique",
@@ -1168,7 +1305,8 @@
    "cpi_score": 25.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -1.06,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "508"
   },
   "NA": {
    "name": "Namibia",
@@ -1177,12 +1315,14 @@
    "cpi_score": 49.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 0.13,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "516"
   },
   "NC": {
    "name": "New Caledonia",
    "wgi_control_of_corruption": 0.13,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "540"
   },
   "NE": {
    "name": "Niger",
@@ -1191,7 +1331,8 @@
    "cpi_score": 34.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.62,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "562"
   },
   "NG": {
    "name": "Nigeria",
@@ -1200,7 +1341,8 @@
    "cpi_score": 26.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -1.11,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "566"
   },
   "NI": {
    "name": "Nicaragua",
@@ -1209,7 +1351,8 @@
    "cpi_score": 14.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -1.43,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "558"
   },
   "NL": {
    "name": "Netherlands",
@@ -1218,7 +1361,8 @@
    "cpi_score": 78.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 1.91,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "528"
   },
   "NO": {
    "name": "Norway",
@@ -1227,7 +1371,8 @@
    "cpi_score": 81.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 1.96,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "578"
   },
   "NP": {
    "name": "Nepal",
@@ -1236,19 +1381,22 @@
    "cpi_score": 34.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.63,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "524"
   },
   "NR": {
    "name": "Nauru",
    "basel_aml_score": 3.88,
    "basel_aml_rank": 165,
    "wgi_control_of_corruption": 0.5,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "520"
   },
   "NU": {
    "name": "Niue",
    "wgi_control_of_corruption": -0.49,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "570"
   },
   "NZ": {
    "name": "New Zealand",
@@ -1257,7 +1405,8 @@
    "cpi_score": 83.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 1.93,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "554"
   },
   "OM": {
    "name": "Oman",
@@ -1266,7 +1415,8 @@
    "cpi_score": 55.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 0.51,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "512"
   },
   "PA": {
    "name": "Panama",
@@ -1275,7 +1425,8 @@
    "cpi_score": 33.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.55,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "591"
   },
   "PE": {
    "name": "Peru",
@@ -1284,12 +1435,14 @@
    "cpi_score": 31.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.72,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "604"
   },
   "PF": {
    "name": "French Polynesia",
    "wgi_control_of_corruption": -0.21,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "258"
   },
   "PG": {
    "name": "Papua New Guinea",
@@ -1298,7 +1451,8 @@
    "cpi_score": 31.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.8,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "598"
   },
   "PH": {
    "name": "Philippines",
@@ -1307,7 +1461,8 @@
    "cpi_score": 33.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.58,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "608"
   },
   "PK": {
    "name": "Pakistan",
@@ -1316,7 +1471,8 @@
    "cpi_score": 27.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -1.07,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "586"
   },
   "PL": {
    "name": "Poland",
@@ -1325,19 +1481,22 @@
    "cpi_score": 53.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 0.79,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "616"
   },
   "PR": {
    "name": "Puerto Rico",
    "cpi_score": 63.0,
    "cpi_year": 2014,
    "wgi_control_of_corruption": 0.4,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "630"
   },
   "PS": {
    "name": "Palestine",
    "wgi_control_of_corruption": -0.57,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "275"
   },
   "PT": {
    "name": "Portugal",
@@ -1346,12 +1505,14 @@
    "cpi_score": 57.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 0.82,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "620"
   },
   "PW": {
    "name": "Palau",
    "wgi_control_of_corruption": 0.5,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "585"
   },
   "PY": {
    "name": "Paraguay",
@@ -1360,7 +1521,8 @@
    "cpi_score": 24.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -1.02,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "600"
   },
   "QA": {
    "name": "Qatar",
@@ -1369,12 +1531,14 @@
    "cpi_score": 59.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 0.75,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "634"
   },
   "RE": {
    "name": "Réunion",
    "wgi_control_of_corruption": 0.55,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "638"
   },
   "RO": {
    "name": "Romania",
@@ -1383,7 +1547,8 @@
    "cpi_score": 46.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 0.03,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "642"
   },
   "RS": {
    "name": "Serbia",
@@ -1392,14 +1557,16 @@
    "cpi_score": 35.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.56,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "688"
   },
   "RU": {
    "name": "Russia",
    "cpi_score": 22.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.89,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "643"
   },
   "RW": {
    "name": "Rwanda",
@@ -1408,7 +1575,8 @@
    "cpi_score": 57.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 0.63,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "646"
   },
   "SA": {
    "name": "Saudi Arabia",
@@ -1417,7 +1585,8 @@
    "cpi_score": 59.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 0.75,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "682"
   },
   "SB": {
    "name": "Solomon Islands",
@@ -1426,7 +1595,8 @@
    "cpi_score": 43.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.14,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "090"
   },
   "SC": {
    "name": "Seychelles",
@@ -1435,14 +1605,16 @@
    "cpi_score": 72.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 1.23,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "690"
   },
   "SD": {
    "name": "Sudan",
    "cpi_score": 15.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -1.56,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "729"
   },
   "SE": {
    "name": "Sweden",
@@ -1451,7 +1623,8 @@
    "cpi_score": 80.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 1.97,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "752"
   },
   "SG": {
    "name": "Singapore",
@@ -1460,7 +1633,8 @@
    "cpi_score": 84.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 1.97,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "702"
   },
   "SI": {
    "name": "Slovenia",
@@ -1469,7 +1643,8 @@
    "cpi_score": 60.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 0.67,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "705"
   },
   "SK": {
    "name": "Slovakia",
@@ -1478,7 +1653,8 @@
    "cpi_score": 49.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 0.11,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "703"
   },
   "SL": {
    "name": "Sierra Leone",
@@ -1487,14 +1663,16 @@
    "cpi_score": 33.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.7,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "694"
   },
   "SM": {
    "name": "San Marino",
    "basel_aml_score": 3.08,
    "basel_aml_rank": 175,
    "wgi_control_of_corruption": 1.18,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "674"
   },
   "SN": {
    "name": "Senegal",
@@ -1503,14 +1681,16 @@
    "cpi_score": 45.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 0.11,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "686"
   },
   "SO": {
    "name": "Somalia",
    "cpi_score": 9.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -1.79,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "706"
   },
   "SR": {
    "name": "Suriname",
@@ -1519,14 +1699,16 @@
    "cpi_score": 40.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.38,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "740"
   },
   "SS": {
    "name": "South Sudan",
    "cpi_score": 8.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -2.06,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "728"
   },
   "ST": {
    "name": "Sao Tome and Principe",
@@ -1535,7 +1717,8 @@
    "cpi_score": 45.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 0.18,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "678"
   },
   "SV": {
    "name": "El Salvador",
@@ -1544,14 +1727,16 @@
    "cpi_score": 30.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.58,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "222"
   },
   "SY": {
    "name": "Syria",
    "cpi_score": 12.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -1.7,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "760"
   },
   "SZ": {
    "name": "Eswatini",
@@ -1560,7 +1745,8 @@
    "cpi_score": 27.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.79,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "748"
   },
   "TD": {
    "name": "Chad",
@@ -1569,7 +1755,8 @@
    "cpi_score": 21.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -1.39,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "148"
   },
   "TG": {
    "name": "Togo",
@@ -1578,7 +1765,8 @@
    "cpi_score": 32.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.66,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "768"
   },
   "TH": {
    "name": "Thailand",
@@ -1587,7 +1775,8 @@
    "cpi_score": 34.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.53,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "764"
   },
   "TJ": {
    "name": "Tajikistan",
@@ -1596,7 +1785,8 @@
    "cpi_score": 19.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -1.22,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "762"
   },
   "TL": {
    "name": "Timor-Leste",
@@ -1605,7 +1795,8 @@
    "cpi_score": 44.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.38,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "626"
   },
   "TM": {
    "name": "Turkmenistan",
@@ -1614,7 +1805,8 @@
    "cpi_score": 17.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -1.3,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "795"
   },
   "TN": {
    "name": "Tunisia",
@@ -1623,14 +1815,16 @@
    "cpi_score": 39.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.22,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "788"
   },
   "TO": {
    "name": "Tonga",
    "basel_aml_score": 5.67,
    "basel_aml_rank": 58,
    "wgi_control_of_corruption": -0.4,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "776"
   },
   "TR": {
    "name": "Türkiye",
@@ -1639,7 +1833,8 @@
    "cpi_score": 34.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.56,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "792"
   },
   "TT": {
    "name": "Trinidad and Tobago",
@@ -1648,12 +1843,14 @@
    "cpi_score": 41.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.34,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "780"
   },
   "TV": {
    "name": "Tuvalu",
    "wgi_control_of_corruption": 0.58,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "798"
   },
   "TW": {
    "name": "Taiwan",
@@ -1662,7 +1859,8 @@
    "cpi_score": 67.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 1.18,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "158"
   },
   "TZ": {
    "name": "Tanzania",
@@ -1671,7 +1869,8 @@
    "cpi_score": 41.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.29,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "834"
   },
   "UA": {
    "name": "Ukraine",
@@ -1680,7 +1879,8 @@
    "cpi_score": 35.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.67,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "804"
   },
   "UG": {
    "name": "Uganda",
@@ -1689,7 +1889,8 @@
    "cpi_score": 26.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -1.12,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "800"
   },
   "US": {
    "name": "United States",
@@ -1698,7 +1899,8 @@
    "cpi_score": 65.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 1.09,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "840"
   },
   "UY": {
    "name": "Uruguay",
@@ -1707,7 +1909,8 @@
    "cpi_score": 76.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 1.53,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "858"
   },
   "UZ": {
    "name": "Uzbekistan",
@@ -1716,7 +1919,8 @@
    "cpi_score": 32.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.75,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "860"
   },
   "VC": {
    "name": "Saint Vincent and the Grenadines",
@@ -1725,7 +1929,8 @@
    "cpi_score": 63.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 0.71,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "670"
   },
   "VE": {
    "name": "Venezuela",
@@ -1734,12 +1939,14 @@
    "cpi_score": 10.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -1.59,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "862"
   },
   "VI": {
    "name": "Virgin Islands, U.S.",
    "wgi_control_of_corruption": -0.07,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "850"
   },
   "VN": {
    "name": "Vietnam",
@@ -1748,7 +1955,8 @@
    "cpi_score": 40.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.25,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "704"
   },
   "VU": {
    "name": "Vanuatu",
@@ -1757,14 +1965,16 @@
    "cpi_score": 50.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.15,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "548"
   },
   "WS": {
    "name": "Samoa",
    "basel_aml_score": 4.56,
    "basel_aml_rank": 128,
    "wgi_control_of_corruption": 0.69,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "882"
   },
   "XK": {
    "name": "XK",
@@ -1776,7 +1986,8 @@
    "cpi_score": 13.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -1.64,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "887"
   },
   "ZA": {
    "name": "South Africa",
@@ -1785,7 +1996,8 @@
    "cpi_score": 41.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.19,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "710"
   },
   "ZM": {
    "name": "Zambia",
@@ -1794,7 +2006,8 @@
    "cpi_score": 39.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.46,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "894"
   },
   "ZW": {
    "name": "Zimbabwe",
@@ -1803,7 +2016,8 @@
    "cpi_score": 21.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -1.25,
-   "wgi_year": 2024
+   "wgi_year": 2024,
+   "numeric": "716"
   }
  }
 }
