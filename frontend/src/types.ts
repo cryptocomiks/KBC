@@ -167,6 +167,14 @@ export interface Investigation {
   summary: Finding[];
   timeline: TimelineEvent[];
   brief: Brief | null;
+  requests?: DocRequest[];
+}
+
+export interface DocRequest {
+  document: string;
+  reason: string;
+  priority: "required" | "standard";
+  entity_ids: string[];
 }
 
 export interface Brief {

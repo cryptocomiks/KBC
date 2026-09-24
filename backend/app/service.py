@@ -12,6 +12,7 @@ from app.cache import get_cache
 from app.connectors.base import ConnectorError
 from app.connectors.crypto_util import detect_chain
 from app.connectors.registry import ConnectorRegistry
+from app.doc_requests import build_requests
 from app.graph.expander import Network, NetworkExpander
 from app.graph.ownership import indirect_stakes, ownership_graph
 from app.graph.resolver import EntityResolver
@@ -191,6 +192,7 @@ class KbcService:
             summary=build_summary(net, risk, get_jurisdictions().name),
             timeline=build_timeline(net),
             brief=build_brief(net, risk, get_jurisdictions().name),
+            requests=build_requests(net, risk, get_jurisdictions().name),
             queries=net.queries,
             merges=net.merges,
             warnings=net.warnings,

@@ -6,6 +6,7 @@ from typing import Literal
 
 from fastapi import APIRouter, Header, HTTPException, Query
 from fastapi.responses import Response
+from unidecode import unidecode
 
 from app import __version__
 from app.api.cases_routes import cases_status, require_access
@@ -80,9 +81,11 @@ def report_pdf(req: ReportRequest, x_kbc_password: str | None = Header(default=N
     except LookupError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     decisions: list[dict] = []
+    changes: list[dict] = []
     if req.case_id:
         require_access(x_kbc_password)
         decisions = get_store().decisions(req.case_id)
+        changes = get_store().changes(req.case_id)
         inv = apply_decisions(inv, decisions)
     pdf = build_pdf(
         inv,
@@ -90,10 +93,18 @@ def report_pdf(req: ReportRequest, x_kbc_password: str | None = Header(default=N
         analyst=req.analyst,
         reference=req.reference,
         decisions=decisions,
+        template=req.template,
+        changes=changes,
     )
     subject = next(e for e in inv.entities if e.id == inv.subject_id)
-    safe = "".join(ch if ch.isalnum() else "_" for ch in subject.name)[:60]
-    filename = f"due_diligence_{safe}_{inv.generated_at:%Y%m%d}.pdf"
+    # HTTP headers are Latin-1: keep the file name ASCII ("S.à r.l." -> "S_a_r_l_")
+    safe = "".join(ch if ch.isascii() and ch.isalnum() else "_" for ch in unidecode(subject.name))[
+        :60
+    ]
+    prefix = {"kyc": "kyc", "edd": "edd", "review": "periodic_review"}.get(
+        req.template, "due_diligence"
+    )
+    filename = f"{prefix}_{safe}_{inv.generated_at:%Y%m%d}.pdf"
     return Response(
         content=pdf,
         media_type="application/pdf",

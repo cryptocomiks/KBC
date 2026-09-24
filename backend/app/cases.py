@@ -16,6 +16,7 @@ from typing import Any
 
 from app.brief import build_brief
 from app.cache import get_cache
+from app.doc_requests import build_requests
 from app.graph.expander import Network
 from app.insights import build_summary, build_timeline
 from app.models import EntityType, RelationType
@@ -175,6 +176,7 @@ def apply_decisions(inv: Investigation, decisions: list[dict[str, Any]]) -> Inve
             "summary": build_summary(net, risk, jur),
             "timeline": build_timeline(net),
             "brief": build_brief(net, risk, jur),
+            "requests": build_requests(net, risk, jur),
         }
     )
 

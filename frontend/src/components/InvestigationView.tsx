@@ -6,6 +6,7 @@ import type { Theme } from "../lib/theme";
 import type { Decision, DecisionValue, Investigation } from "../types";
 import EntityPanel from "./EntityPanel";
 import BriefCard from "./BriefCard";
+import DocRequests from "./DocRequests";
 import CryptoSankey from "./CryptoSankey";
 import WorldMap from "./WorldMap";
 import KeyFindings from "./KeyFindings";
@@ -47,6 +48,7 @@ export default function InvestigationView({
   const [selected, setSelected] = useState<string | null>(null);
   const [pdfState, setPdfState] = useState<"idle" | "busy" | "error">("idle");
   const [reference, setReference] = useState("");
+  const [template, setTemplate] = useState<"full" | "kyc" | "edd" | "review">("full");
   const [tableTab, setTableTab] = useState<string | undefined>(undefined);
   const subject = inv.entities.find((e) => e.id === inv.subject_id)!;
 
@@ -59,7 +61,7 @@ export default function InvestigationView({
     setPdfState("busy");
     try {
       const png = graph.current?.exportPng() ?? undefined;
-      await api.downloadPdf({ ...inv.params, graph_png: png, reference: reference || undefined, case_id: caseId });
+      await api.downloadPdf({ ...inv.params, graph_png: png, reference: reference || undefined, case_id: caseId, template });
       setPdfState("idle");
     } catch {
       setPdfState("error");
@@ -130,6 +132,17 @@ export default function InvestigationView({
               Save as case
             </button>
           )}
+          <div>
+            <label className="label mb-1 block" htmlFor="tpl">
+              Report
+            </label>
+            <select id="tpl" className="input py-1.5" value={template} onChange={(e) => setTemplate(e.target.value as typeof template)}>
+              <option value="full">Full due diligence</option>
+              <option value="kyc">KYC / KYB (standard)</option>
+              <option value="edd">Enhanced due diligence</option>
+              <option value="review">Periodic review</option>
+            </select>
+          </div>
           <button className="btn-primary h-[34px]" onClick={exportPdf} disabled={pdfState === "busy"}>
             {pdfState === "busy" ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileDown className="h-4 w-4" />}
             PDF report
@@ -157,6 +170,7 @@ export default function InvestigationView({
           setTimeout(() => document.getElementById("tables")?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
         }}
       />
+      <DocRequests investigation={inv} />
       <details className="group card">
         <summary className="cursor-pointer select-none px-4 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-300">
           Detailed findings ({inv.summary?.length ?? 0}) — full reading of the network, with sources

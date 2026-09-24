@@ -127,8 +127,9 @@ def _table(
     columns: list[tuple[str, str, float]],
     st: dict,
     empty: str = "No data.",
+    row_height: float | None = None,
 ) -> Any:
-    """columns: (key, header, relative width)."""
+    """columns: (key, header, relative width). row_height: fixed height (forms to fill in)."""
     if not rows:
         return Paragraph(empty, st["muted"])
     total = sum(w for _, _, w in columns)
@@ -136,7 +137,8 @@ def _table(
     data = [[Paragraph(h, st["head"]) for _, h, _ in columns]]
     for row in rows:
         data.append([Paragraph(_esc(row.get(k)), st["cell"]) for k, _, _ in columns])
-    t = Table(data, colWidths=widths, repeatRows=1)
+    heights = [None] + [row_height] * (len(data) - 1) if row_height else None
+    t = Table(data, colWidths=widths, repeatRows=1, rowHeights=heights)
     t.setStyle(
         TableStyle(
             [
@@ -168,12 +170,39 @@ def _graph_image(b64: str | None) -> Image | None:
     return Image(io.BytesIO(raw), width=w * scale, height=h * scale)
 
 
+TITLES = {
+    "full": "Due Diligence Report",
+    "kyc": "Customer Due Diligence (KYC / KYB)",
+    "edd": "Enhanced Due Diligence Report",
+    "review": "Periodic Review",
+}
+# Sections left out of the shorter templates (their numbering prefix)
+SKIPPED_SECTIONS = {
+    "kyc": {"8.", "10b.", "11.", "11a.", "11b."},
+    "review": {"8.", "11.", "11b."},
+}
+
+
+def _drop_sections(story: list[Any], prefixes: set[str]) -> list[Any]:
+    """Remove whole report sections (from their h2 title to the next h2)."""
+    out, skipping = [], False
+    for flow in story:
+        if isinstance(flow, Paragraph) and getattr(flow.style, "name", "") == "h2":
+            text = flow.getPlainText()
+            skipping = any(text.startswith(p + " ") for p in prefixes)
+        if not skipping:
+            out.append(flow)
+    return out
+
+
 def build_pdf(
     inv: Investigation,
     graph_png_b64: str | None = None,
     analyst: str | None = None,
     reference: str | None = None,
     decisions: list[dict] | None = None,
+    template: str = "full",
+    changes: list[dict] | None = None,
 ) -> bytes:
     st = _styles()
     ents = {e.id: e for e in inv.entities}
@@ -215,7 +244,9 @@ def build_pdf(
     story: list[Any] = []
 
     # ---------------------------------------------------------------- header
-    story.append(Paragraph(f"Due Diligence Report — {_esc(subject.name)}", st["h1"]))
+    story.append(
+        Paragraph(f"{TITLES.get(template, TITLES['full'])} — {_esc(subject.name)}", st["h1"])
+    )
     meta = [
         f"Subject type: <b>{subject.type.value}</b>",
         f"Generated: <b>{inv.generated_at:%Y-%m-%d %H:%M} UTC</b>",
@@ -721,5 +752,101 @@ def build_pdf(
         for w in inv.warnings:
             story.append(Paragraph(f"• {_esc(w)}", st["small"]))
 
+    # --------------------------------------------------- template sections
+    if template == "review":
+        story.append(Paragraph("Changes since the previous review", st["h2"]))
+        story.append(
+            _table(
+                [
+                    {
+                        "when": str(c.get("run_at", ""))[:10],
+                        "what": c["description"],
+                        "sev": c["severity"],
+                    }
+                    for c in (changes or [])
+                ],
+                [("when", "Date", 1), ("sev", "Severity", 1), ("what", "Change", 8)],
+                st,
+                "No change recorded since the case was opened.",
+            )
+        )
+    if inv.requests:
+        story.append(Paragraph("Documents to request from the client", st["h2"]))
+        story.append(
+            _table(
+                [
+                    {
+                        "doc": ("☐ " if template != "full" else "") + r.document,
+                        "why": r.reason,
+                        "prio": "Required" if r.priority == "required" else "Recommended",
+                    }
+                    for r in inv.requests
+                ],
+                [("doc", "Document", 5), ("prio", "Priority", 1.2), ("why", "Why", 4.5)],
+                st,
+                "",
+            )
+        )
+    if template == "edd":
+        story.append(Paragraph("Source of wealth and source of funds assessment", st["h2"]))
+        story.append(
+            _table(
+                [
+                    {"item": item, "value": "\u00a0"}
+                    for item in (
+                        "Declared source of wealth (how the wealth was built)",
+                        "Evidence received (documents, dates)",
+                        "Plausibility of the source of wealth (analyst assessment)",
+                        "Source of funds for this relationship (origin of the money deposited)",
+                        "Evidence received for the source of funds",
+                        "Expected activity (volumes, counterparties, countries)",
+                        "Conclusion on source of wealth / funds",
+                    )
+                ],
+                [("item", "Item", 4), ("value", "Analyst notes", 7)],
+                st,
+                "",
+                row_height=34,
+            )
+        )
+    if template in ("kyc", "edd", "review"):
+        story.append(Paragraph("Decision and sign-off", st["h2"]))
+        rows = [
+            {"role": "Prepared by (analyst)", "name": analyst or "", "date": "", "sig": ""},
+            {"role": "Reviewed by (second pair of eyes)", "name": "", "date": "", "sig": ""},
+        ]
+        if template == "edd":
+            rows.append(
+                {"role": "Approved by (senior management)", "name": "", "date": "", "sig": ""}
+            )
+        story.append(
+            Paragraph(
+                "Decision: ☐ Accept &nbsp;&nbsp; ☐ Accept with conditions / enhanced monitoring &nbsp;&nbsp; "
+                "☐ Reject / exit the relationship &nbsp;&nbsp; ☐ Report to the financial intelligence unit",
+                st["body"],
+            )
+        )
+        story.append(Spacer(1, 4))
+        story.append(
+            _table(
+                rows,
+                [
+                    ("role", "Role", 3),
+                    ("name", "Name", 3),
+                    ("date", "Date", 1.5),
+                    ("sig", "Signature", 3),
+                ],
+                st,
+                "",
+            )
+        )
+        if template == "review":
+            story.append(
+                Paragraph("Next review due: ____ / ____ / ________ (per risk level)", st["body"])
+            )
+
+    skip = SKIPPED_SECTIONS.get(template, set())
+    if skip:
+        story = _drop_sections(story, skip)
     doc.build(story, onFirstPage=on_page, onLaterPages=on_page)
     return buf.getvalue()

@@ -88,7 +88,7 @@ export const api = {
   decide: (id: string, d: { item_key: string; item_label: string; decision: DecisionValue | "none"; comment?: string; author?: string }) =>
     request<{ decisions: Decision[] }>(`/cases/${id}/decisions`, { method: "PUT", body: JSON.stringify(d) }),
 
-  async downloadPdf(params: InvestigationParams & { graph_png?: string; reference?: string; analyst?: string; case_id?: string }) {
+  async downloadPdf(params: InvestigationParams & { graph_png?: string; reference?: string; analyst?: string; case_id?: string; template?: string }) {
     const res = await fetch(`${BASE}/reports/pdf`, {
       method: "POST",
       headers: { "Content-Type": "application/json", ...authHeaders() },

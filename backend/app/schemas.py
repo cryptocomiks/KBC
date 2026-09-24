@@ -8,6 +8,7 @@ from typing import Any
 from pydantic import BaseModel, Field
 
 from app.brief import Brief
+from app.doc_requests import DocRequest
 from app.graph.expander import QueryLog
 from app.insights import Finding, TimelineEvent
 from app.models import Entity, Relationship, ScreeningHit, SearchCandidate
@@ -32,6 +33,8 @@ class ReportRequest(InvestigationRequest):
     analyst: str | None = Field(default=None, max_length=120)
     reference: str | None = Field(default=None, max_length=120)
     case_id: str | None = Field(default=None, max_length=40)  # applies the case's analyst decisions
+    # full | kyc (standard due diligence) | edd (enhanced) | review (periodic review)
+    template: str = Field(default="full", pattern="^(full|kyc|edd|review)$")
 
 
 class SearchResponse(BaseModel):
@@ -63,3 +66,4 @@ class Investigation(BaseModel):
     summary: list[Finding] = Field(default_factory=list)
     timeline: list[TimelineEvent] = Field(default_factory=list)
     brief: Brief | None = None
+    requests: list[DocRequest] = Field(default_factory=list)
