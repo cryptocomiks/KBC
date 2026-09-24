@@ -1,0 +1,31 @@
+name: Live connector check
+
+# Calls each real data source directly with known reference cases (e.g. a
+# Panama Papers name for ICIJ). Keyed sources run when the matching repository
+# secret is set (Settings → Secrets and variables → Actions).
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 1"   # weekly, to catch API format changes
+  push:
+    paths:
+      - "backend/app/connectors/**"
+      - "scripts/live_connector_check.py"
+
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: python scripts/live_connector_check.py
+        env:
+          PAPPERS_API_KEY: ${{ secrets.PAPPERS_API_KEY }}
+          COMPANIES_HOUSE_API_KEY: ${{ secrets.COMPANIES_HOUSE_API_KEY }}
+          OPENCORPORATES_API_TOKEN: ${{ secrets.OPENCORPORATES_API_TOKEN }}
+          OPENSANCTIONS_API_KEY: ${{ secrets.OPENSANCTIONS_API_KEY }}
+          ALEPH_API_KEY: ${{ secrets.ALEPH_API_KEY }}

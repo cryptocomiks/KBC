@@ -1,0 +1,143 @@
+"""Run each real connector against its live API with known reference cases.
+
+    pip install -r requirements.txt
+    python scripts/live_connector_check.py
+
+Keyless sources are always checked; keyed ones only when their key is set in
+the environment. Prints what each source returned and exits non-zero on the
+first failure, so the logs show exactly which parser disagrees with the API.
+"""
+
+from __future__ import annotations
+
+import json
+import os
+import sys
+import traceback
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "backend"))
+os.environ.setdefault("CACHE_PATH", ":memory:")
+
+from app.connectors.aleph import AlephConnector  # noqa: E402
+from app.connectors.annuaire_fr import AnnuaireEntreprisesConnector  # noqa: E402
+from app.connectors.companies_house import CompaniesHouseConnector  # noqa: E402
+from app.connectors.icij import RECONCILE, IcijReconcileConnector  # noqa: E402
+from app.connectors.opencorporates import OpenCorporatesConnector  # noqa: E402
+from app.connectors.opensanctions import OpenSanctionsConnector  # noqa: E402
+from app.connectors.pappers import PappersConnector  # noqa: E402
+from app.models import Entity, EntityType  # noqa: E402
+from app.settings import Settings  # noqa: E402
+
+settings = Settings(live_sources=True)
+failures: list[str] = []
+
+
+def section(title: str) -> None:
+    print(f"\n=== {title} ===")
+
+
+def expect(name: str, ok: bool, detail: str = "") -> None:
+    print(f"{'PASS' if ok else 'FAIL'}  {name}{'  — ' + detail if detail else ''}")
+    if not ok:
+        failures.append(name)
+
+
+def guarded(title: str, fn) -> None:
+    section(title)
+    try:
+        fn()
+    except Exception as exc:  # noqa: BLE001 - report and continue with the other sources
+        traceback.print_exc()
+        expect(f"{title}: no exception", False, f"{type(exc).__name__}: {exc}")
+
+
+def company(name: str, jur: str | None = None) -> Entity:
+    return Entity(id=f"check:{name}", type=EntityType.COMPANY, name=name, jurisdiction=jur)
+
+
+def person(name: str, dob: str | None = None) -> Entity:
+    return Entity(id=f"check:{name}", type=EntityType.PERSON, name=name, birth_date=dob)
+
+
+def check_annuaire() -> None:
+    conn = AnnuaireEntreprisesConnector(settings)
+    found = conn.search_company("Danone")
+    expect("company search returns results", bool(found), ", ".join(f"{c.name} ({c.registration_number})" for c in found[:3]))
+    top = found[0]
+    expect("company fields parsed", bool(top.registration_number and top.address and top.status),
+           f"status={top.status} created={top.incorporation_date} address={top.address}")
+    officers = conn.get_officers(top.id)
+    expect("officers returned", bool(officers),
+           "; ".join(f"{o.entity.name} [{o.relationship.role}] dob={o.entity.birth_date}" for o in officers[:4]))
+    people = conn.search_person(officers[0].entity.name) if officers else []
+    expect("person search finds that officer", bool(people), ", ".join(p.name for p in people[:3]))
+    if people:
+        roles = conn.get_person_roles(people[0].id)
+        expect("person roles returned", bool(roles), "; ".join(r.entity.name for r in roles[:4]))
+
+
+def check_icij() -> None:
+    conn = IcijReconcileConnector(settings)
+    raw = conn.http_post_json(f"{RECONCILE}/panama-papers",
+                              form={"queries": json.dumps({"q0": {"query": "Mossack Fonseca", "limit": 3}})})
+    print("raw reconcile sample:", json.dumps(raw)[:600])
+    hits = conn.screen_many([company("Mossack Fonseca"), company("Portcullis TrustNet")])
+    for h in hits[:8]:
+        print(f"      hit: {h.matched_name} | {h.dataset} | score {h.score} | {h.details.get('node_type')} | {h.provenance.url}")
+    expect("known Panama Papers name is found", any("mossack" in h.matched_name.lower() for h in hits),
+           f"{len(hits)} hits")
+    expect("hits are attributed to a leak", all(h.dataset.endswith(")") for h in hits))
+
+
+def check_opensanctions() -> None:
+    conn = OpenSanctionsConnector(settings)
+    hits = conn.screen_many([person("Vladimir Putin", "1952-10-07")])
+    for h in hits[:3]:
+        print(f"      hit: {h.list_type} {h.matched_name} | {h.dataset} | {h.score}")
+    expect("sanctioned reference person found", any(h.score >= 85 for h in hits), f"{len(hits)} hits")
+
+
+def check_companies_house() -> None:
+    conn = CompaniesHouseConnector(settings)
+    found = conn.search_company("TESCO PLC")
+    expect("company search", bool(found), ", ".join(c.name for c in found[:3]))
+    detail = conn.get_company_details(found[0].id)
+    expect("company profile", bool(detail and detail.incorporation_date), f"{detail.name if detail else None}")
+    expect("officers", bool(conn.get_officers(found[0].id)))
+
+
+def check_pappers() -> None:
+    conn = PappersConnector(settings)
+    detail = conn.get_company_details("pappers:552032534")  # Danone
+    expect("company profile", bool(detail and detail.name), detail.name if detail else "")
+    expect("officers", bool(conn.get_officers("pappers:552032534")))
+
+
+def check_opencorporates() -> None:
+    conn = OpenCorporatesConnector(settings)
+    found = conn.search_company("Tesco PLC")
+    expect("company search", bool(found), ", ".join(f"{c.name} [{c.jurisdiction}]" for c in found[:3]))
+
+
+def check_aleph() -> None:
+    hits = AlephConnector(settings).screen(company("Mossack Fonseca"))
+    expect("Aleph search answered", True, f"{len(hits)} hits: " + "; ".join(h.dataset for h in hits[:3]))
+
+
+guarded("Annuaire des Entreprises (data.gouv.fr)", check_annuaire)
+guarded("ICIJ Offshore Leaks reconcile API", check_icij)
+for key, title, fn in [
+    ("OPENSANCTIONS_API_KEY", "OpenSanctions", check_opensanctions),
+    ("COMPANIES_HOUSE_API_KEY", "Companies House", check_companies_house),
+    ("PAPPERS_API_KEY", "Pappers", check_pappers),
+    ("OPENCORPORATES_API_TOKEN", "OpenCorporates", check_opencorporates),
+    ("ALEPH_API_KEY", "OCCRP Aleph", check_aleph),
+]:
+    if os.environ.get(key):
+        guarded(title, fn)
+    else:
+        section(title)
+        print(f"SKIP  {key} not set")
+
+print("\nFAILED: " + ", ".join(failures) if failures else "\nAll live connector checks passed.")
+sys.exit(1 if failures else 0)
