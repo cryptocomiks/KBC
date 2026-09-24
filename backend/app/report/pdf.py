@@ -173,6 +173,7 @@ def build_pdf(
     graph_png_b64: str | None = None,
     analyst: str | None = None,
     reference: str | None = None,
+    decisions: list[dict] | None = None,
 ) -> bytes:
     st = _styles()
     ents = {e.id: e for e in inv.entities}
@@ -625,6 +626,43 @@ def build_pdf(
             "No dated document.",
         )
     )
+
+    if decisions:
+        labels = {
+            "confirmed": "Confirmed",
+            "false_positive": "False positive",
+            "to_review": "To review",
+        }
+        story.append(Paragraph("Analyst decisions (audit trail)", st["h2"]))
+        story.append(
+            Paragraph(
+                "Hits marked as false positives are excluded from the score and the tables above.",
+                st["muted"],
+            )
+        )
+        story.append(
+            _table(
+                [
+                    {
+                        "item": d.get("item_label") or d["item_key"],
+                        "decision": labels.get(d["decision"], d["decision"]),
+                        "comment": d.get("comment", ""),
+                        "by": d.get("author", ""),
+                        "at": str(d.get("decided_at", ""))[:16].replace("T", " "),
+                    }
+                    for d in decisions
+                ],
+                [
+                    ("item", "Item", 4),
+                    ("decision", "Decision", 1.2),
+                    ("comment", "Comment", 3.5),
+                    ("by", "By", 1.2),
+                    ("at", "When (UTC)", 1.4),
+                ],
+                st,
+                "",
+            )
+        )
 
     if inv.timeline:
         story.append(Paragraph("11a. Timeline", st["h2"]))

@@ -6,6 +6,7 @@ import os
 from functools import lru_cache
 from pathlib import Path
 
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -34,6 +35,22 @@ class Settings(BaseSettings):
     live_sources: bool = True
     cache_path: str = _default_cache_path()
     cache_ttl_hours: int = 72
+
+    # Cases, analyst decisions and monitoring history (durable store). On Vercel, create a
+    # Postgres database (Storage tab): it injects DATABASE_URL / POSTGRES_URL. Without it,
+    # a local SQLite file is used (ephemeral on Vercel).
+    database_url: str = Field(
+        default="", validation_alias=AliasChoices("DATABASE_URL", "POSTGRES_URL")
+    )
+    store_path: str = (
+        "/tmp/kbc_store.db"
+        if os.environ.get("VERCEL")
+        else str(REPO_ROOT / "data" / "kbc_store.db")
+    )
+    # Password protecting cases and the dashboard (required on Vercel to use cases).
+    app_password: str = ""
+    # Secret for the monitoring job (GitHub Actions / Vercel Cron) that refreshes cases.
+    cron_secret: str = ""
 
     pappers_api_key: str = ""
     opencorporates_api_token: str = ""

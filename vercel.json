@@ -10,5 +10,16 @@
       "maxDuration": 60
     }
   },
-  "rewrites": [{ "source": "/api/(.*)", "destination": "/api/index" }]
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/index"
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/monitor/run",
+      "schedule": "17 6 * * *"
+    }
+  ]
 }

@@ -4,10 +4,11 @@ from __future__ import annotations
 
 from typing import Literal
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Header, HTTPException, Query
 from fastapi.responses import Response
 
 from app import __version__
+from app.api.cases_routes import cases_status, require_access
 from app.cache import get_cache
 from app.risk.config import get_jurisdictions, get_risk_config
 from app.schemas import (
@@ -41,6 +42,7 @@ def meta() -> dict:
         "disclaimer": DISCLAIMER,
         "max_depth": s.max_depth,
         "max_nodes_limit": s.max_nodes_limit,
+        "cases": cases_status(),
     }
 
 
@@ -66,8 +68,10 @@ def investigate(req: InvestigationRequest) -> Investigation:
 
 
 @router.post("/reports/pdf")
-def report_pdf(req: ReportRequest) -> Response:
+def report_pdf(req: ReportRequest, x_kbc_password: str | None = Header(default=None)) -> Response:
+    from app.cases import apply_decisions
     from app.report.pdf import build_pdf
+    from app.store import get_store
 
     try:
         inv = service().investigate(
@@ -75,7 +79,18 @@ def report_pdf(req: ReportRequest) -> Response:
         )
     except LookupError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
-    pdf = build_pdf(inv, graph_png_b64=req.graph_png, analyst=req.analyst, reference=req.reference)
+    decisions: list[dict] = []
+    if req.case_id:
+        require_access(x_kbc_password)
+        decisions = get_store().decisions(req.case_id)
+        inv = apply_decisions(inv, decisions)
+    pdf = build_pdf(
+        inv,
+        graph_png_b64=req.graph_png,
+        analyst=req.analyst,
+        reference=req.reference,
+        decisions=decisions,
+    )
     subject = next(e for e in inv.entities if e.id == inv.subject_id)
     safe = "".join(ch if ch.isalnum() else "_" for ch in subject.name)[:60]
     filename = f"due_diligence_{safe}_{inv.generated_at:%Y%m%d}.pdf"

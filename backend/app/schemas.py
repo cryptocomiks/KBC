@@ -31,6 +31,7 @@ class ReportRequest(InvestigationRequest):
     graph_png: str | None = None  # base64 PNG exported by Cytoscape in the browser
     analyst: str | None = Field(default=None, max_length=120)
     reference: str | None = Field(default=None, max_length=120)
+    case_id: str | None = Field(default=None, max_length=40)  # applies the case's analyst decisions
 
 
 class SearchResponse(BaseModel):

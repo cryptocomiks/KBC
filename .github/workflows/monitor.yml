@@ -1,0 +1,31 @@
+name: Case monitoring
+
+# Re-runs every monitored case against today's data and records what changed
+# (new sanctions / PEP / leak hits, new officers or owners, filings, flows, score).
+# One case per API call, so each call stays within the host's time limit.
+# Needs the repository secret CRON_SECRET (same value as in Vercel) and,
+# optionally, the variable PRODUCTION_URL.
+on:
+  schedule:
+    - cron: "37 5 * * *"   # daily
+  workflow_dispatch:
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Refresh monitored cases
+        env:
+          BASE: ${{ vars.PRODUCTION_URL || 'https://kbc-lemon.vercel.app' }}
+          TOKEN: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$TOKEN" ]; then echo "CRON_SECRET secret not set: skipping"; exit 0; fi
+          first=""
+          for i in $(seq 1 50); do
+            out=$(curl -sS -X POST -H "Authorization: Bearer $TOKEN" "$BASE/api/monitor/run" --max-time 90)
+            echo "$out" | head -c 600; echo
+            id=$(echo "$out" | python3 -c "import sys,json; print(json.load(sys.stdin).get('refreshed') or '')")
+            [ -z "$id" ] && break
+            [ "$id" = "$first" ] && break   # every monitored case has been refreshed once
+            [ -z "$first" ] && first="$id"
+          done

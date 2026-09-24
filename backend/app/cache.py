@@ -24,6 +24,8 @@ class Cache:
         self.path = path
         self.ttl_seconds = ttl_hours * 3600
         self._lock = threading.Lock()
+        # Entries written before this timestamp are ignored (forced refresh of a monitored case).
+        self.fresh_after: float = 0.0
         if path != ":memory:":
             Path(path).parent.mkdir(parents=True, exist_ok=True)
         self._conn = sqlite3.connect(path, check_same_thread=False)
@@ -42,7 +44,7 @@ class Cache:
         if row is None:
             return None
         value, created_at = row
-        if time.time() - created_at > self.ttl_seconds:
+        if time.time() - created_at > self.ttl_seconds or created_at < self.fresh_after:
             return None
         return json.loads(value)
 
