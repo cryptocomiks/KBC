@@ -6,6 +6,7 @@ from typing import Literal
 
 from fastapi import APIRouter, Header, HTTPException, Query
 from fastapi.responses import Response
+from pydantic import Field
 from unidecode import unidecode
 
 from app import __version__
@@ -109,6 +110,43 @@ def report_pdf(req: ReportRequest, x_kbc_password: str | None = Header(default=N
         content=pdf,
         media_type="application/pdf",
         headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+class SarRequest(InvestigationRequest):
+    fiu: Literal["tracfin", "mros", "lu_crf"] = "tracfin"
+    lang: Literal["fr", "en"] | None = None
+    reference: str | None = Field(default=None, max_length=120)
+    case_id: str | None = Field(default=None, max_length=40)
+
+
+@router.post("/reports/sar")
+def sar_draft(req: SarRequest, x_kbc_password: str | None = Header(default=None)) -> Response:
+    """Draft suspicious activity report (TRACFIN / MROS / CRF Luxembourg), never filed automatically."""
+    from app.cases import apply_decisions
+    from app.report.sar import build_sar
+    from app.store import get_store
+
+    try:
+        inv = service().investigate(
+            InvestigationRequest(**req.model_dump(include={"record_ids", "depth", "max_nodes"}))
+        )
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    decisions: list[dict] = []
+    if req.case_id:
+        require_access(x_kbc_password)
+        decisions = get_store().decisions(req.case_id)
+        inv = apply_decisions(inv, decisions)
+    pdf = build_sar(inv, req.fiu, req.lang, req.reference, decisions)
+    subject = next(e for e in inv.entities if e.id == inv.subject_id)
+    safe = "".join(ch if ch.isascii() and ch.isalnum() else "_" for ch in unidecode(subject.name))[
+        :60
+    ]
+    return Response(
+        content=pdf,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="DRAFT_SAR_{req.fiu}_{safe}.pdf"'},
     )
 
 

@@ -41,3 +41,10 @@ def test_report_templates(template):
 
 def test_unknown_template_rejected():
     assert client.post("/api/reports/pdf", json={**BODY, "template": "other"}).status_code == 422
+
+
+@pytest.mark.parametrize("fiu", ["tracfin", "mros", "lu_crf"])
+def test_sar_draft(fiu):
+    resp = client.post("/api/reports/sar", json={**BODY, "fiu": fiu})
+    assert resp.status_code == 200 and resp.content.startswith(b"%PDF")
+    assert f"DRAFT_SAR_{fiu}_" in resp.headers["content-disposition"]

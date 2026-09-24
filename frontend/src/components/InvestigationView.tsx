@@ -1,6 +1,6 @@
 import { AlertTriangle, ArrowLeft, FileDown, FolderPlus, Loader2, Maximize2, Network, RefreshCw, Workflow } from "lucide-react";
 import { useRef, useState } from "react";
-import { api } from "../api";
+import { api, downloadSar } from "../api";
 import { countryName, fmtDate } from "../lib/format";
 import type { Theme } from "../lib/theme";
 import type { Decision, DecisionValue, Investigation } from "../types";
@@ -50,6 +50,17 @@ export default function InvestigationView({
   const [pdfState, setPdfState] = useState<"idle" | "busy" | "error">("idle");
   const [reference, setReference] = useState("");
   const [template, setTemplate] = useState<"full" | "kyc" | "edd" | "review">("full");
+  const [sarState, setSarState] = useState<"idle" | "busy" | "error">("idle");
+  const draftSar = async (fiu: string) => {
+    if (!fiu) return;
+    setSarState("busy");
+    try {
+      await downloadSar({ ...inv.params, fiu, case_id: caseId, reference: reference || undefined });
+      setSarState("idle");
+    } catch {
+      setSarState("error");
+    }
+  };
   const [tableTab, setTableTab] = useState<string | undefined>(undefined);
   const subject = inv.entities.find((e) => e.id === inv.subject_id)!;
 
@@ -149,6 +160,25 @@ export default function InvestigationView({
             PDF report
           </button>
           {pdfState === "error" && <span className="text-xs text-red-600">PDF generation failed</span>}
+          <div>
+            <label className="label mb-1 block" htmlFor="sar">
+              Suspicious activity report
+            </label>
+            <select
+              id="sar"
+              className="input py-1.5"
+              value=""
+              disabled={sarState === "busy"}
+              onChange={(e) => draftSar(e.target.value)}
+              title="Pre-filled draft to check and complete — never filed automatically"
+            >
+              <option value="">{sarState === "busy" ? "Preparing draft…" : "Draft for…"}</option>
+              <option value="tracfin">TRACFIN (France)</option>
+              <option value="mros">MROS (Switzerland)</option>
+              <option value="lu_crf">CRF (Luxembourg)</option>
+            </select>
+          </div>
+          {sarState === "error" && <span className="text-xs text-red-600">Draft failed</span>}
         </div>
       </div>
 

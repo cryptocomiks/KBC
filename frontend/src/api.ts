@@ -117,6 +117,17 @@ export const api = {
   },
 };
 
+export async function downloadSar(params: InvestigationParams & { fiu: string; case_id?: string; reference?: string }) {
+  const res = await fetch(`${BASE}/reports/sar`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...authHeaders() },
+    body: JSON.stringify(params),
+  });
+  if (!res.ok) throw new Error(`Draft generation failed (${res.status})`);
+  const name = res.headers.get("Content-Disposition")?.match(/filename="([^"]+)"/)?.[1] ?? "DRAFT_SAR.pdf";
+  triggerDownload(await res.blob(), name);
+}
+
 export function triggerDownload(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
