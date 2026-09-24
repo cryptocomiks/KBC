@@ -1,0 +1,1809 @@
+{
+ "retrieved": "2026-09-24",
+ "sources": {
+  "basel_aml": {
+   "label": "Basel AML Index (public ranking)",
+   "url": "https://index.baselgovernance.org/ranking",
+   "scale": "0 low – 10 high risk"
+  },
+  "cpi": {
+   "label": "Corruption Perceptions Index (Transparency International, via Our World in Data)",
+   "url": "https://www.transparency.org/en/cpi",
+   "scale": "0 highly corrupt – 100 very clean"
+  },
+  "wgi": {
+   "label": "World Bank Worldwide Governance Indicators — Control of Corruption",
+   "url": "https://www.worldbank.org/en/publication/worldwide-governance-indicators",
+   "scale": "-2.5 weak – +2.5 strong"
+  }
+ },
+ "countries": {
+  "AD": {
+   "name": "Andorra",
+   "basel_aml_score": 3.48,
+   "basel_aml_rank": 171,
+   "wgi_control_of_corruption": 1.18,
+   "wgi_year": 2024
+  },
+  "AE": {
+   "name": "United Arab Emirates",
+   "basel_aml_score": 6.11,
+   "basel_aml_rank": 40,
+   "cpi_score": 68.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 1.17,
+   "wgi_year": 2024
+  },
+  "AF": {
+   "name": "Afghanistan",
+   "cpi_score": 17.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -1.31,
+   "wgi_year": 2024
+  },
+  "AG": {
+   "name": "Antigua and Barbuda",
+   "basel_aml_score": 3.98,
+   "basel_aml_rank": 162,
+   "wgi_control_of_corruption": 0.28,
+   "wgi_year": 2024
+  },
+  "AI": {
+   "name": "Anguilla",
+   "wgi_control_of_corruption": 1.18,
+   "wgi_year": 2024
+  },
+  "AL": {
+   "name": "Albania",
+   "basel_aml_score": 4.36,
+   "basel_aml_rank": 138,
+   "cpi_score": 42.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.42,
+   "wgi_year": 2024
+  },
+  "AM": {
+   "name": "Armenia",
+   "basel_aml_score": 3.98,
+   "basel_aml_rank": 163,
+   "cpi_score": 47.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 0.14,
+   "wgi_year": 2024
+  },
+  "AO": {
+   "name": "Angola",
+   "basel_aml_score": 6.55,
+   "basel_aml_rank": 24,
+   "cpi_score": 32.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.62,
+   "wgi_year": 2024
+  },
+  "AR": {
+   "name": "Argentina",
+   "basel_aml_score": 4.44,
+   "basel_aml_rank": 135,
+   "cpi_score": 37.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.33,
+   "wgi_year": 2024
+  },
+  "AS": {
+   "name": "American Samoa",
+   "wgi_control_of_corruption": 1.18,
+   "wgi_year": 2024
+  },
+  "AT": {
+   "name": "Austria",
+   "basel_aml_score": 4.28,
+   "basel_aml_rank": 141,
+   "cpi_score": 67.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 1.29,
+   "wgi_year": 2024
+  },
+  "AU": {
+   "name": "Australia",
+   "basel_aml_score": 4.13,
+   "basel_aml_rank": 150,
+   "cpi_score": 77.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 1.85,
+   "wgi_year": 2024
+  },
+  "AW": {
+   "name": "Aruba",
+   "wgi_control_of_corruption": 0.87,
+   "wgi_year": 2024
+  },
+  "AZ": {
+   "name": "Azerbaijan",
+   "basel_aml_score": 5.46,
+   "basel_aml_rank": 75,
+   "cpi_score": 22.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.78,
+   "wgi_year": 2024
+  },
+  "BA": {
+   "name": "Bosnia and Herzegovina",
+   "basel_aml_score": 5.54,
+   "basel_aml_rank": 69,
+   "cpi_score": 33.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.51,
+   "wgi_year": 2024
+  },
+  "BB": {
+   "name": "Barbados",
+   "basel_aml_score": 4.91,
+   "basel_aml_rank": 106,
+   "cpi_score": 68.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 1.23,
+   "wgi_year": 2024
+  },
+  "BD": {
+   "name": "Bangladesh",
+   "basel_aml_score": 5.62,
+   "basel_aml_rank": 65,
+   "cpi_score": 23.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -1.1,
+   "wgi_year": 2024
+  },
+  "BE": {
+   "name": "Belgium",
+   "basel_aml_score": 4.46,
+   "basel_aml_rank": 134,
+   "cpi_score": 69.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 1.47,
+   "wgi_year": 2024
+  },
+  "BF": {
+   "name": "Burkina Faso",
+   "basel_aml_score": 5.75,
+   "basel_aml_rank": 53,
+   "cpi_score": 41.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.25,
+   "wgi_year": 2024
+  },
+  "BG": {
+   "name": "Bulgaria",
+   "basel_aml_score": 5.0,
+   "basel_aml_rank": 101,
+   "cpi_score": 43.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.24,
+   "wgi_year": 2024
+  },
+  "BH": {
+   "name": "Bahrain",
+   "basel_aml_score": 5.16,
+   "basel_aml_rank": 90,
+   "cpi_score": 53.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 0.25,
+   "wgi_year": 2024
+  },
+  "BI": {
+   "name": "Burundi",
+   "cpi_score": 17.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -1.46,
+   "wgi_year": 2024
+  },
+  "BJ": {
+   "name": "Benin",
+   "basel_aml_score": 6.33,
+   "basel_aml_rank": 33,
+   "cpi_score": 45.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.24,
+   "wgi_year": 2024
+  },
+  "BM": {
+   "name": "Bermuda",
+   "wgi_control_of_corruption": 1.18,
+   "wgi_year": 2024
+  },
+  "BN": {
+   "name": "Brunei Darussalam",
+   "basel_aml_score": 4.22,
+   "basel_aml_rank": 146,
+   "cpi_score": 60.0,
+   "cpi_year": 2020,
+   "wgi_control_of_corruption": 1.19,
+   "wgi_year": 2024
+  },
+  "BO": {
+   "name": "Bolivia, Plurinational State of",
+   "basel_aml_score": 5.58,
+   "basel_aml_rank": 67,
+   "cpi_score": 28.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -1.0,
+   "wgi_year": 2024
+  },
+  "BR": {
+   "name": "Brazil",
+   "basel_aml_score": 5.4,
+   "basel_aml_rank": 80,
+   "cpi_score": 34.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.41,
+   "wgi_year": 2024
+  },
+  "BS": {
+   "name": "Bahamas",
+   "basel_aml_score": 5.08,
+   "basel_aml_rank": 97,
+   "cpi_score": 65.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 1.23,
+   "wgi_year": 2024
+  },
+  "BT": {
+   "name": "Bhutan",
+   "basel_aml_score": 5.49,
+   "basel_aml_rank": 73,
+   "cpi_score": 72.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 1.47,
+   "wgi_year": 2024
+  },
+  "BW": {
+   "name": "Botswana",
+   "basel_aml_score": 4.12,
+   "basel_aml_rank": 151,
+   "cpi_score": 57.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 0.63,
+   "wgi_year": 2024
+  },
+  "BY": {
+   "name": "Belarus",
+   "basel_aml_score": 5.7,
+   "basel_aml_rank": 56,
+   "cpi_score": 33.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.58,
+   "wgi_year": 2024
+  },
+  "BZ": {
+   "name": "Belize",
+   "basel_aml_score": 4.06,
+   "basel_aml_rank": 154,
+   "wgi_control_of_corruption": -0.16,
+   "wgi_year": 2024
+  },
+  "CA": {
+   "name": "Canada",
+   "basel_aml_score": 4.61,
+   "basel_aml_rank": 125,
+   "cpi_score": 75.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 1.63,
+   "wgi_year": 2024
+  },
+  "CD": {
+   "name": "Congo, The Democratic Republic of the",
+   "basel_aml_score": 7.63,
+   "basel_aml_rank": 3,
+   "cpi_score": 20.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -1.52,
+   "wgi_year": 2024
+  },
+  "CF": {
+   "name": "Central African Republic",
+   "basel_aml_score": 7.44,
+   "basel_aml_rank": 9,
+   "cpi_score": 24.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -1.31,
+   "wgi_year": 2024
+  },
+  "CG": {
+   "name": "Congo",
+   "basel_aml_score": 7.27,
+   "basel_aml_rank": 11,
+   "cpi_score": 23.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -1.42,
+   "wgi_year": 2024
+  },
+  "CH": {
+   "name": "Switzerland",
+   "basel_aml_score": 4.47,
+   "basel_aml_rank": 133,
+   "cpi_score": 81.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 2.01,
+   "wgi_year": 2024
+  },
+  "CI": {
+   "name": "Côte d'Ivoire",
+   "cpi_score": 45.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.29,
+   "wgi_year": 2024
+  },
+  "CK": {
+   "name": "Cook Islands",
+   "wgi_control_of_corruption": 0.43,
+   "wgi_year": 2024
+  },
+  "CL": {
+   "name": "Chile",
+   "basel_aml_score": 4.28,
+   "basel_aml_rank": 142,
+   "cpi_score": 63.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 1.11,
+   "wgi_year": 2024
+  },
+  "CM": {
+   "name": "Cameroon",
+   "basel_aml_score": 6.41,
+   "basel_aml_rank": 30,
+   "cpi_score": 26.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -1.22,
+   "wgi_year": 2024
+  },
+  "CN": {
+   "name": "China",
+   "basel_aml_score": 7.26,
+   "basel_aml_rank": 12,
+   "cpi_score": 43.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 0.09,
+   "wgi_year": 2024
+  },
+  "CO": {
+   "name": "Colombia",
+   "basel_aml_score": 5.05,
+   "basel_aml_rank": 99,
+   "cpi_score": 39.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.29,
+   "wgi_year": 2024
+  },
+  "CR": {
+   "name": "Costa Rica",
+   "basel_aml_score": 4.97,
+   "basel_aml_rank": 102,
+   "cpi_score": 58.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 0.68,
+   "wgi_year": 2024
+  },
+  "CU": {
+   "name": "Cuba",
+   "basel_aml_score": 5.16,
+   "basel_aml_rank": 91,
+   "cpi_score": 41.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.23,
+   "wgi_year": 2024
+  },
+  "CV": {
+   "name": "Cabo Verde",
+   "basel_aml_score": 5.45,
+   "basel_aml_rank": 77,
+   "cpi_score": 62.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 0.94,
+   "wgi_year": 2024
+  },
+  "CY": {
+   "name": "Cyprus",
+   "basel_aml_score": 4.77,
+   "basel_aml_rank": 117,
+   "cpi_score": 56.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 0.53,
+   "wgi_year": 2024
+  },
+  "CZ": {
+   "name": "Czechia",
+   "basel_aml_score": 3.82,
+   "basel_aml_rank": 167,
+   "cpi_score": 56.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 0.93,
+   "wgi_year": 2024
+  },
+  "DE": {
+   "name": "Germany",
+   "basel_aml_score": 4.97,
+   "basel_aml_rank": 103,
+   "cpi_score": 75.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 1.77,
+   "wgi_year": 2024
+  },
+  "DJ": {
+   "name": "Djibouti",
+   "basel_aml_score": 6.93,
+   "basel_aml_rank": 13,
+   "cpi_score": 31.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.89,
+   "wgi_year": 2024
+  },
+  "DK": {
+   "name": "Denmark",
+   "basel_aml_score": 3.18,
+   "basel_aml_rank": 174,
+   "cpi_score": 90.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 2.29,
+   "wgi_year": 2024
+  },
+  "DM": {
+   "name": "Dominica",
+   "basel_aml_score": 4.17,
+   "basel_aml_rank": 149,
+   "cpi_score": 60.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 0.53,
+   "wgi_year": 2024
+  },
+  "DO": {
+   "name": "Dominican Republic",
+   "basel_aml_score": 5.08,
+   "basel_aml_rank": 98,
+   "cpi_score": 36.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.27,
+   "wgi_year": 2024
+  },
+  "DZ": {
+   "name": "Algeria",
+   "basel_aml_score": 6.82,
+   "basel_aml_rank": 15,
+   "cpi_score": 34.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.59,
+   "wgi_year": 2024
+  },
+  "EC": {
+   "name": "Ecuador",
+   "basel_aml_score": 4.91,
+   "basel_aml_rank": 107,
+   "cpi_score": 32.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.78,
+   "wgi_year": 2024
+  },
+  "EE": {
+   "name": "Estonia",
+   "basel_aml_score": 3.25,
+   "basel_aml_rank": 173,
+   "cpi_score": 76.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 1.67,
+   "wgi_year": 2024
+  },
+  "EG": {
+   "name": "Egypt",
+   "basel_aml_score": 5.22,
+   "basel_aml_rank": 87,
+   "cpi_score": 30.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.83,
+   "wgi_year": 2024
+  },
+  "ER": {
+   "name": "Eritrea",
+   "cpi_score": 13.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -1.63,
+   "wgi_year": 2024
+  },
+  "ES": {
+   "name": "Spain",
+   "basel_aml_score": 4.24,
+   "basel_aml_rank": 144,
+   "cpi_score": 56.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 0.71,
+   "wgi_year": 2024
+  },
+  "ET": {
+   "name": "Ethiopia",
+   "basel_aml_score": 5.68,
+   "basel_aml_rank": 57,
+   "cpi_score": 37.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.44,
+   "wgi_year": 2024
+  },
+  "FI": {
+   "name": "Finland",
+   "basel_aml_score": 3.03,
+   "basel_aml_rank": 177,
+   "cpi_score": 88.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 2.19,
+   "wgi_year": 2024
+  },
+  "FJ": {
+   "name": "Fiji",
+   "basel_aml_score": 4.73,
+   "basel_aml_rank": 120,
+   "cpi_score": 55.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 0.56,
+   "wgi_year": 2024
+  },
+  "FM": {
+   "name": "Micronesia, Federated States of",
+   "wgi_control_of_corruption": 0.71,
+   "wgi_year": 2024
+  },
+  "FR": {
+   "name": "France",
+   "basel_aml_score": 3.99,
+   "basel_aml_rank": 160,
+   "cpi_score": 67.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 1.22,
+   "wgi_year": 2024
+  },
+  "GA": {
+   "name": "Gabon",
+   "basel_aml_score": 7.46,
+   "basel_aml_rank": 8,
+   "cpi_score": 27.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.94,
+   "wgi_year": 2024
+  },
+  "GB": {
+   "name": "United Kingdom",
+   "basel_aml_score": 4.04,
+   "basel_aml_rank": 157,
+   "cpi_score": 71.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 1.51,
+   "wgi_year": 2024
+  },
+  "GD": {
+   "name": "Grenada",
+   "basel_aml_score": 4.85,
+   "basel_aml_rank": 111,
+   "cpi_score": 56.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 0.48,
+   "wgi_year": 2024
+  },
+  "GE": {
+   "name": "Georgia",
+   "basel_aml_score": 4.32,
+   "basel_aml_rank": 140,
+   "cpi_score": 53.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 0.38,
+   "wgi_year": 2024
+  },
+  "GF": {
+   "name": "French Guiana",
+   "wgi_control_of_corruption": 1.2,
+   "wgi_year": 2024
+  },
+  "GH": {
+   "name": "Ghana",
+   "basel_aml_score": 5.13,
+   "basel_aml_rank": 96,
+   "cpi_score": 42.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.19,
+   "wgi_year": 2024
+  },
+  "GL": {
+   "name": "Greenland",
+   "wgi_control_of_corruption": 1.48,
+   "wgi_year": 2024
+  },
+  "GM": {
+   "name": "Gambia",
+   "basel_aml_score": 5.76,
+   "basel_aml_rank": 52,
+   "cpi_score": 38.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.33,
+   "wgi_year": 2024
+  },
+  "GN": {
+   "name": "Guinea",
+   "basel_aml_score": 6.43,
+   "basel_aml_rank": 28,
+   "cpi_score": 28.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -1.17,
+   "wgi_year": 2024
+  },
+  "GQ": {
+   "name": "Equatorial Guinea",
+   "basel_aml_score": 7.55,
+   "basel_aml_rank": 5,
+   "cpi_score": 13.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -1.47,
+   "wgi_year": 2024
+  },
+  "GR": {
+   "name": "Greece",
+   "basel_aml_score": 3.99,
+   "basel_aml_rank": 161,
+   "cpi_score": 49.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 0.3,
+   "wgi_year": 2024
+  },
+  "GT": {
+   "name": "Guatemala",
+   "basel_aml_score": 5.44,
+   "basel_aml_rank": 78,
+   "cpi_score": 25.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.95,
+   "wgi_year": 2024
+  },
+  "GU": {
+   "name": "Guam",
+   "wgi_control_of_corruption": 1.18,
+   "wgi_year": 2024
+  },
+  "GW": {
+   "name": "Guinea-Bissau",
+   "basel_aml_score": 7.3,
+   "basel_aml_rank": 10,
+   "cpi_score": 21.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -1.35,
+   "wgi_year": 2024
+  },
+  "GY": {
+   "name": "Guyana",
+   "basel_aml_score": 5.16,
+   "basel_aml_rank": 92,
+   "cpi_score": 39.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.35,
+   "wgi_year": 2024
+  },
+  "HK": {
+   "name": "Hong Kong",
+   "basel_aml_score": 5.37,
+   "basel_aml_rank": 82,
+   "cpi_score": 74.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 1.57,
+   "wgi_year": 2024
+  },
+  "HN": {
+   "name": "Honduras",
+   "basel_aml_score": 5.66,
+   "basel_aml_rank": 59,
+   "cpi_score": 22.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -1.24,
+   "wgi_year": 2024
+  },
+  "HR": {
+   "name": "Croatia",
+   "basel_aml_score": 4.18,
+   "basel_aml_rank": 148,
+   "cpi_score": 47.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 0.15,
+   "wgi_year": 2024
+  },
+  "HT": {
+   "name": "Haiti",
+   "basel_aml_score": 8.12,
+   "basel_aml_rank": 2,
+   "cpi_score": 16.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -1.54,
+   "wgi_year": 2024
+  },
+  "HU": {
+   "name": "Hungary",
+   "basel_aml_score": 5.16,
+   "basel_aml_rank": 93,
+   "cpi_score": 41.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 0.04,
+   "wgi_year": 2024
+  },
+  "ID": {
+   "name": "Indonesia",
+   "basel_aml_score": 5.52,
+   "basel_aml_rank": 70,
+   "cpi_score": 37.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.54,
+   "wgi_year": 2024
+  },
+  "IE": {
+   "name": "Ireland",
+   "basel_aml_score": 4.4,
+   "basel_aml_rank": 136,
+   "cpi_score": 77.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 1.57,
+   "wgi_year": 2024
+  },
+  "IL": {
+   "name": "Israel",
+   "basel_aml_score": 4.06,
+   "basel_aml_rank": 155,
+   "cpi_score": 64.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 0.85,
+   "wgi_year": 2024
+  },
+  "IN": {
+   "name": "India",
+   "basel_aml_score": 5.66,
+   "basel_aml_rank": 60,
+   "cpi_score": 38.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.3,
+   "wgi_year": 2024
+  },
+  "IQ": {
+   "name": "Iraq",
+   "basel_aml_score": 5.9,
+   "basel_aml_rank": 48,
+   "cpi_score": 26.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -1.21,
+   "wgi_year": 2024
+  },
+  "IR": {
+   "name": "Iran, Islamic Republic of",
+   "cpi_score": 23.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -1.15,
+   "wgi_year": 2024
+  },
+  "IS": {
+   "name": "Iceland",
+   "basel_aml_score": 3.04,
+   "basel_aml_rank": 176,
+   "cpi_score": 77.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 1.83,
+   "wgi_year": 2024
+  },
+  "IT": {
+   "name": "Italy",
+   "basel_aml_score": 4.76,
+   "basel_aml_rank": 118,
+   "cpi_score": 54.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 0.55,
+   "wgi_year": 2024
+  },
+  "JE": {
+   "name": "Jersey",
+   "wgi_control_of_corruption": 1.03,
+   "wgi_year": 2024
+  },
+  "JM": {
+   "name": "Jamaica",
+   "basel_aml_score": 4.78,
+   "basel_aml_rank": 115,
+   "cpi_score": 44.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.1,
+   "wgi_year": 2024
+  },
+  "JO": {
+   "name": "Jordan",
+   "basel_aml_score": 4.85,
+   "basel_aml_rank": 112,
+   "cpi_score": 49.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 0.27,
+   "wgi_year": 2024
+  },
+  "JP": {
+   "name": "Japan",
+   "basel_aml_score": 4.73,
+   "basel_aml_rank": 121,
+   "cpi_score": 71.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 1.36,
+   "wgi_year": 2024
+  },
+  "KE": {
+   "name": "Kenya",
+   "basel_aml_score": 6.6,
+   "basel_aml_rank": 23,
+   "cpi_score": 32.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.8,
+   "wgi_year": 2024
+  },
+  "KG": {
+   "name": "Kyrgyzstan",
+   "basel_aml_score": 5.96,
+   "basel_aml_rank": 45,
+   "cpi_score": 25.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -1.14,
+   "wgi_year": 2024
+  },
+  "KH": {
+   "name": "Cambodia",
+   "basel_aml_score": 6.72,
+   "basel_aml_rank": 18,
+   "cpi_score": 21.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -1.23,
+   "wgi_year": 2024
+  },
+  "KI": {
+   "name": "Kiribati",
+   "wgi_control_of_corruption": 0.37,
+   "wgi_year": 2024
+  },
+  "KM": {
+   "name": "Comoros",
+   "basel_aml_score": 6.67,
+   "basel_aml_rank": 20,
+   "cpi_score": 21.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -1.14,
+   "wgi_year": 2024
+  },
+  "KN": {
+   "name": "Saint Kitts and Nevis",
+   "basel_aml_score": 5.46,
+   "basel_aml_rank": 76,
+   "wgi_control_of_corruption": 0.35,
+   "wgi_year": 2024
+  },
+  "KP": {
+   "name": "Korea, Democratic People's Republic of",
+   "cpi_score": 15.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -1.56,
+   "wgi_year": 2024
+  },
+  "KR": {
+   "name": "Korea, Republic of",
+   "cpi_score": 64.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 0.85,
+   "wgi_year": 2024
+  },
+  "KW": {
+   "name": "Kuwait",
+   "basel_aml_score": 6.13,
+   "basel_aml_rank": 39,
+   "cpi_score": 46.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 0.22,
+   "wgi_year": 2024
+  },
+  "KY": {
+   "name": "Cayman Islands",
+   "wgi_control_of_corruption": 0.6,
+   "wgi_year": 2024
+  },
+  "KZ": {
+   "name": "Kazakhstan",
+   "basel_aml_score": 5.18,
+   "basel_aml_rank": 89,
+   "cpi_score": 40.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.07,
+   "wgi_year": 2024
+  },
+  "LA": {
+   "name": "Lao People's Democratic Republic",
+   "basel_aml_score": 7.5,
+   "basel_aml_rank": 7,
+   "cpi_score": 33.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.98,
+   "wgi_year": 2024
+  },
+  "LB": {
+   "name": "Lebanon",
+   "basel_aml_score": 5.93,
+   "basel_aml_rank": 47,
+   "cpi_score": 22.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -1.3,
+   "wgi_year": 2024
+  },
+  "LC": {
+   "name": "Saint Lucia",
+   "basel_aml_score": 4.58,
+   "basel_aml_rank": 127,
+   "cpi_score": 59.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 0.45,
+   "wgi_year": 2024
+  },
+  "LI": {
+   "name": "Liechtenstein",
+   "basel_aml_score": 4.11,
+   "basel_aml_rank": 153,
+   "wgi_control_of_corruption": 1.76,
+   "wgi_year": 2024
+  },
+  "LK": {
+   "name": "Sri Lanka",
+   "basel_aml_score": 5.16,
+   "basel_aml_rank": 94,
+   "cpi_score": 32.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.38,
+   "wgi_year": 2024
+  },
+  "LR": {
+   "name": "Liberia",
+   "basel_aml_score": 6.26,
+   "basel_aml_rank": 36,
+   "cpi_score": 27.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -1.05,
+   "wgi_year": 2024
+  },
+  "LS": {
+   "name": "Lesotho",
+   "basel_aml_score": 6.04,
+   "basel_aml_rank": 42,
+   "cpi_score": 37.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.3,
+   "wgi_year": 2024
+  },
+  "LT": {
+   "name": "Lithuania",
+   "basel_aml_score": 4.03,
+   "basel_aml_rank": 158,
+   "cpi_score": 63.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 0.99,
+   "wgi_year": 2024
+  },
+  "LU": {
+   "name": "Luxembourg",
+   "basel_aml_score": 3.97,
+   "basel_aml_rank": 164,
+   "cpi_score": 81.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 2.02,
+   "wgi_year": 2024
+  },
+  "LV": {
+   "name": "Latvia",
+   "basel_aml_score": 4.01,
+   "basel_aml_rank": 159,
+   "cpi_score": 59.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 0.83,
+   "wgi_year": 2024
+  },
+  "LY": {
+   "name": "Libya",
+   "cpi_score": 13.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -1.53,
+   "wgi_year": 2024
+  },
+  "MA": {
+   "name": "Morocco",
+   "basel_aml_score": 5.04,
+   "basel_aml_rank": 100,
+   "cpi_score": 37.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.52,
+   "wgi_year": 2024
+  },
+  "MC": {
+   "name": "Monaco",
+   "wgi_control_of_corruption": 1.8,
+   "wgi_year": 2024
+  },
+  "MD": {
+   "name": "Moldova, Republic of",
+   "basel_aml_score": 4.64,
+   "basel_aml_rank": 124,
+   "cpi_score": 43.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.29,
+   "wgi_year": 2024
+  },
+  "ME": {
+   "name": "Montenegro",
+   "basel_aml_score": 4.33,
+   "basel_aml_rank": 139,
+   "cpi_score": 46.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.06,
+   "wgi_year": 2024
+  },
+  "MG": {
+   "name": "Madagascar",
+   "basel_aml_score": 6.77,
+   "basel_aml_rank": 16,
+   "cpi_score": 26.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -1.01,
+   "wgi_year": 2024
+  },
+  "MH": {
+   "name": "Marshall Islands",
+   "basel_aml_score": 4.89,
+   "basel_aml_rank": 109,
+   "wgi_control_of_corruption": 0.39,
+   "wgi_year": 2024
+  },
+  "MK": {
+   "name": "North Macedonia",
+   "basel_aml_score": 4.2,
+   "basel_aml_rank": 147,
+   "cpi_score": 40.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.33,
+   "wgi_year": 2024
+  },
+  "ML": {
+   "name": "Mali",
+   "basel_aml_score": 6.22,
+   "basel_aml_rank": 37,
+   "cpi_score": 27.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.98,
+   "wgi_year": 2024
+  },
+  "MM": {
+   "name": "Myanmar",
+   "basel_aml_score": 8.18,
+   "basel_aml_rank": 1,
+   "cpi_score": 16.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -1.25,
+   "wgi_year": 2024
+  },
+  "MN": {
+   "name": "Mongolia",
+   "basel_aml_score": 4.96,
+   "basel_aml_rank": 105,
+   "cpi_score": 33.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.49,
+   "wgi_year": 2024
+  },
+  "MO": {
+   "name": "Macao",
+   "wgi_control_of_corruption": 0.57,
+   "wgi_year": 2024
+  },
+  "MQ": {
+   "name": "Martinique",
+   "wgi_control_of_corruption": 0.55,
+   "wgi_year": 2024
+  },
+  "MR": {
+   "name": "Mauritania",
+   "basel_aml_score": 6.29,
+   "basel_aml_rank": 35,
+   "cpi_score": 30.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.93,
+   "wgi_year": 2024
+  },
+  "MT": {
+   "name": "Malta",
+   "basel_aml_score": 5.15,
+   "basel_aml_rank": 95,
+   "cpi_score": 46.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 0.27,
+   "wgi_year": 2024
+  },
+  "MU": {
+   "name": "Mauritius",
+   "basel_aml_score": 4.65,
+   "basel_aml_rank": 123,
+   "cpi_score": 51.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 0.34,
+   "wgi_year": 2024
+  },
+  "MV": {
+   "name": "Maldives",
+   "cpi_score": 38.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.34,
+   "wgi_year": 2024
+  },
+  "MW": {
+   "name": "Malawi",
+   "basel_aml_score": 5.44,
+   "basel_aml_rank": 79,
+   "cpi_score": 34.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.65,
+   "wgi_year": 2024
+  },
+  "MX": {
+   "name": "Mexico",
+   "basel_aml_score": 5.52,
+   "basel_aml_rank": 71,
+   "cpi_score": 26.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.94,
+   "wgi_year": 2024
+  },
+  "MY": {
+   "name": "Malaysia",
+   "basel_aml_score": 5.6,
+   "basel_aml_rank": 66,
+   "cpi_score": 50.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 0.5,
+   "wgi_year": 2024
+  },
+  "MZ": {
+   "name": "Mozambique",
+   "basel_aml_score": 6.38,
+   "basel_aml_rank": 32,
+   "cpi_score": 25.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -1.06,
+   "wgi_year": 2024
+  },
+  "NA": {
+   "name": "Namibia",
+   "basel_aml_score": 4.78,
+   "basel_aml_rank": 116,
+   "cpi_score": 49.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 0.13,
+   "wgi_year": 2024
+  },
+  "NC": {
+   "name": "New Caledonia",
+   "wgi_control_of_corruption": 0.13,
+   "wgi_year": 2024
+  },
+  "NE": {
+   "name": "Niger",
+   "basel_aml_score": 6.84,
+   "basel_aml_rank": 14,
+   "cpi_score": 34.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.62,
+   "wgi_year": 2024
+  },
+  "NG": {
+   "name": "Nigeria",
+   "basel_aml_score": 6.18,
+   "basel_aml_rank": 38,
+   "cpi_score": 26.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -1.11,
+   "wgi_year": 2024
+  },
+  "NI": {
+   "name": "Nicaragua",
+   "basel_aml_score": 6.61,
+   "basel_aml_rank": 21,
+   "cpi_score": 14.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -1.43,
+   "wgi_year": 2024
+  },
+  "NL": {
+   "name": "Netherlands",
+   "basel_aml_score": 4.53,
+   "basel_aml_rank": 129,
+   "cpi_score": 78.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 1.91,
+   "wgi_year": 2024
+  },
+  "NO": {
+   "name": "Norway",
+   "basel_aml_score": 3.73,
+   "basel_aml_rank": 169,
+   "cpi_score": 81.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 1.96,
+   "wgi_year": 2024
+  },
+  "NP": {
+   "name": "Nepal",
+   "basel_aml_score": 5.88,
+   "basel_aml_rank": 49,
+   "cpi_score": 34.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.63,
+   "wgi_year": 2024
+  },
+  "NR": {
+   "name": "Nauru",
+   "basel_aml_score": 3.88,
+   "basel_aml_rank": 165,
+   "wgi_control_of_corruption": 0.5,
+   "wgi_year": 2024
+  },
+  "NU": {
+   "name": "Niue",
+   "wgi_control_of_corruption": -0.49,
+   "wgi_year": 2024
+  },
+  "NZ": {
+   "name": "New Zealand",
+   "basel_aml_score": 3.76,
+   "basel_aml_rank": 168,
+   "cpi_score": 83.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 1.93,
+   "wgi_year": 2024
+  },
+  "OM": {
+   "name": "Oman",
+   "basel_aml_score": 4.25,
+   "basel_aml_rank": 143,
+   "cpi_score": 55.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 0.51,
+   "wgi_year": 2024
+  },
+  "PA": {
+   "name": "Panama",
+   "basel_aml_score": 5.83,
+   "basel_aml_rank": 51,
+   "cpi_score": 33.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.55,
+   "wgi_year": 2024
+  },
+  "PE": {
+   "name": "Peru",
+   "basel_aml_score": 4.88,
+   "basel_aml_rank": 110,
+   "cpi_score": 31.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.72,
+   "wgi_year": 2024
+  },
+  "PF": {
+   "name": "French Polynesia",
+   "wgi_control_of_corruption": -0.21,
+   "wgi_year": 2024
+  },
+  "PG": {
+   "name": "Papua New Guinea",
+   "basel_aml_score": 6.61,
+   "basel_aml_rank": 22,
+   "cpi_score": 31.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.8,
+   "wgi_year": 2024
+  },
+  "PH": {
+   "name": "Philippines",
+   "basel_aml_score": 5.48,
+   "basel_aml_rank": 74,
+   "cpi_score": 33.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.58,
+   "wgi_year": 2024
+  },
+  "PK": {
+   "name": "Pakistan",
+   "basel_aml_score": 5.63,
+   "basel_aml_rank": 63,
+   "cpi_score": 27.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -1.07,
+   "wgi_year": 2024
+  },
+  "PL": {
+   "name": "Poland",
+   "basel_aml_score": 4.49,
+   "basel_aml_rank": 132,
+   "cpi_score": 53.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 0.79,
+   "wgi_year": 2024
+  },
+  "PR": {
+   "name": "Puerto Rico",
+   "cpi_score": 63.0,
+   "cpi_year": 2014,
+   "wgi_control_of_corruption": 0.4,
+   "wgi_year": 2024
+  },
+  "PS": {
+   "name": "Palestine, State of",
+   "wgi_control_of_corruption": -0.57,
+   "wgi_year": 2024
+  },
+  "PT": {
+   "name": "Portugal",
+   "basel_aml_score": 3.83,
+   "basel_aml_rank": 166,
+   "cpi_score": 57.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 0.82,
+   "wgi_year": 2024
+  },
+  "PW": {
+   "name": "Palau",
+   "wgi_control_of_corruption": 0.5,
+   "wgi_year": 2024
+  },
+  "PY": {
+   "name": "Paraguay",
+   "basel_aml_score": 4.91,
+   "basel_aml_rank": 108,
+   "cpi_score": 24.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -1.02,
+   "wgi_year": 2024
+  },
+  "QA": {
+   "name": "Qatar",
+   "basel_aml_score": 5.25,
+   "basel_aml_rank": 86,
+   "cpi_score": 59.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 0.75,
+   "wgi_year": 2024
+  },
+  "RE": {
+   "name": "Réunion",
+   "wgi_control_of_corruption": 0.55,
+   "wgi_year": 2024
+  },
+  "RO": {
+   "name": "Romania",
+   "basel_aml_score": 4.81,
+   "basel_aml_rank": 114,
+   "cpi_score": 46.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 0.03,
+   "wgi_year": 2024
+  },
+  "RS": {
+   "name": "Serbia",
+   "basel_aml_score": 5.21,
+   "basel_aml_rank": 88,
+   "cpi_score": 35.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.56,
+   "wgi_year": 2024
+  },
+  "RU": {
+   "name": "Russian Federation",
+   "cpi_score": 22.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.89,
+   "wgi_year": 2024
+  },
+  "RW": {
+   "name": "Rwanda",
+   "basel_aml_score": 5.71,
+   "basel_aml_rank": 55,
+   "cpi_score": 57.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 0.63,
+   "wgi_year": 2024
+  },
+  "SA": {
+   "name": "Saudi Arabia",
+   "basel_aml_score": 5.87,
+   "basel_aml_rank": 50,
+   "cpi_score": 59.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 0.75,
+   "wgi_year": 2024
+  },
+  "SB": {
+   "name": "Solomon Islands",
+   "basel_aml_score": 6.31,
+   "basel_aml_rank": 34,
+   "cpi_score": 43.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.14,
+   "wgi_year": 2024
+  },
+  "SC": {
+   "name": "Seychelles",
+   "basel_aml_score": 4.6,
+   "basel_aml_rank": 126,
+   "cpi_score": 72.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 1.23,
+   "wgi_year": 2024
+  },
+  "SD": {
+   "name": "Sudan",
+   "cpi_score": 15.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -1.56,
+   "wgi_year": 2024
+  },
+  "SE": {
+   "name": "Sweden",
+   "basel_aml_score": 3.48,
+   "basel_aml_rank": 172,
+   "cpi_score": 80.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 1.97,
+   "wgi_year": 2024
+  },
+  "SG": {
+   "name": "Singapore",
+   "basel_aml_score": 4.73,
+   "basel_aml_rank": 122,
+   "cpi_score": 84.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 1.97,
+   "wgi_year": 2024
+  },
+  "SI": {
+   "name": "Slovenia",
+   "basel_aml_score": 3.49,
+   "basel_aml_rank": 170,
+   "cpi_score": 60.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 0.67,
+   "wgi_year": 2024
+  },
+  "SK": {
+   "name": "Slovakia",
+   "basel_aml_score": 4.38,
+   "basel_aml_rank": 137,
+   "cpi_score": 49.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 0.11,
+   "wgi_year": 2024
+  },
+  "SL": {
+   "name": "Sierra Leone",
+   "basel_aml_score": 6.41,
+   "basel_aml_rank": 31,
+   "cpi_score": 33.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.7,
+   "wgi_year": 2024
+  },
+  "SM": {
+   "name": "San Marino",
+   "basel_aml_score": 3.08,
+   "basel_aml_rank": 175,
+   "wgi_control_of_corruption": 1.18,
+   "wgi_year": 2024
+  },
+  "SN": {
+   "name": "Senegal",
+   "basel_aml_score": 5.36,
+   "basel_aml_rank": 83,
+   "cpi_score": 45.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 0.11,
+   "wgi_year": 2024
+  },
+  "SO": {
+   "name": "Somalia",
+   "cpi_score": 9.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -1.79,
+   "wgi_year": 2024
+  },
+  "SR": {
+   "name": "Suriname",
+   "basel_aml_score": 6.42,
+   "basel_aml_rank": 29,
+   "cpi_score": 40.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.38,
+   "wgi_year": 2024
+  },
+  "SS": {
+   "name": "South Sudan",
+   "cpi_score": 8.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -2.06,
+   "wgi_year": 2024
+  },
+  "ST": {
+   "name": "Sao Tome and Principe",
+   "basel_aml_score": 5.96,
+   "basel_aml_rank": 46,
+   "cpi_score": 45.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 0.18,
+   "wgi_year": 2024
+  },
+  "SV": {
+   "name": "El Salvador",
+   "basel_aml_score": 5.65,
+   "basel_aml_rank": 61,
+   "cpi_score": 30.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.58,
+   "wgi_year": 2024
+  },
+  "SY": {
+   "name": "Syrian Arab Republic",
+   "cpi_score": 12.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -1.7,
+   "wgi_year": 2024
+  },
+  "SZ": {
+   "name": "Eswatini",
+   "basel_aml_score": 6.51,
+   "basel_aml_rank": 25,
+   "cpi_score": 27.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.79,
+   "wgi_year": 2024
+  },
+  "TD": {
+   "name": "Chad",
+   "basel_aml_score": 7.56,
+   "basel_aml_rank": 4,
+   "cpi_score": 21.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -1.39,
+   "wgi_year": 2024
+  },
+  "TG": {
+   "name": "Togo",
+   "basel_aml_score": 6.44,
+   "basel_aml_rank": 27,
+   "cpi_score": 32.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.66,
+   "wgi_year": 2024
+  },
+  "TH": {
+   "name": "Thailand",
+   "basel_aml_score": 5.98,
+   "basel_aml_rank": 44,
+   "cpi_score": 34.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.53,
+   "wgi_year": 2024
+  },
+  "TJ": {
+   "name": "Tajikistan",
+   "basel_aml_score": 6.44,
+   "basel_aml_rank": 26,
+   "cpi_score": 19.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -1.22,
+   "wgi_year": 2024
+  },
+  "TL": {
+   "name": "Timor-Leste",
+   "basel_aml_score": 5.58,
+   "basel_aml_rank": 68,
+   "cpi_score": 44.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.38,
+   "wgi_year": 2024
+  },
+  "TM": {
+   "name": "Turkmenistan",
+   "basel_aml_score": 6.73,
+   "basel_aml_rank": 17,
+   "cpi_score": 17.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -1.3,
+   "wgi_year": 2024
+  },
+  "TN": {
+   "name": "Tunisia",
+   "basel_aml_score": 4.75,
+   "basel_aml_rank": 119,
+   "cpi_score": 39.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.22,
+   "wgi_year": 2024
+  },
+  "TO": {
+   "name": "Tonga",
+   "basel_aml_score": 5.67,
+   "basel_aml_rank": 58,
+   "wgi_control_of_corruption": -0.4,
+   "wgi_year": 2024
+  },
+  "TR": {
+   "name": "Türkiye",
+   "basel_aml_score": 5.65,
+   "basel_aml_rank": 62,
+   "cpi_score": 34.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.56,
+   "wgi_year": 2024
+  },
+  "TT": {
+   "name": "Trinidad and Tobago",
+   "basel_aml_score": 4.12,
+   "basel_aml_rank": 152,
+   "cpi_score": 41.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.34,
+   "wgi_year": 2024
+  },
+  "TV": {
+   "name": "Tuvalu",
+   "wgi_control_of_corruption": 0.58,
+   "wgi_year": 2024
+  },
+  "TW": {
+   "name": "Taiwan, Province of China",
+   "basel_aml_score": 4.49,
+   "basel_aml_rank": 131,
+   "cpi_score": 67.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 1.18,
+   "wgi_year": 2024
+  },
+  "TZ": {
+   "name": "Tanzania, United Republic of",
+   "basel_aml_score": 5.51,
+   "basel_aml_rank": 72,
+   "cpi_score": 41.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.29,
+   "wgi_year": 2024
+  },
+  "UA": {
+   "name": "Ukraine",
+   "basel_aml_score": 5.38,
+   "basel_aml_rank": 81,
+   "cpi_score": 35.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.67,
+   "wgi_year": 2024
+  },
+  "UG": {
+   "name": "Uganda",
+   "basel_aml_score": 5.72,
+   "basel_aml_rank": 54,
+   "cpi_score": 26.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -1.12,
+   "wgi_year": 2024
+  },
+  "US": {
+   "name": "United States",
+   "basel_aml_score": 4.83,
+   "basel_aml_rank": 113,
+   "cpi_score": 65.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 1.09,
+   "wgi_year": 2024
+  },
+  "UY": {
+   "name": "Uruguay",
+   "basel_aml_score": 4.23,
+   "basel_aml_rank": 145,
+   "cpi_score": 76.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 1.53,
+   "wgi_year": 2024
+  },
+  "UZ": {
+   "name": "Uzbekistan",
+   "basel_aml_score": 5.27,
+   "basel_aml_rank": 85,
+   "cpi_score": 32.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.75,
+   "wgi_year": 2024
+  },
+  "VC": {
+   "name": "Saint Vincent and the Grenadines",
+   "basel_aml_score": 4.05,
+   "basel_aml_rank": 156,
+   "cpi_score": 63.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": 0.71,
+   "wgi_year": 2024
+  },
+  "VE": {
+   "name": "Venezuela, Bolivarian Republic of",
+   "basel_aml_score": 7.55,
+   "basel_aml_rank": 6,
+   "cpi_score": 10.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -1.59,
+   "wgi_year": 2024
+  },
+  "VI": {
+   "name": "Virgin Islands, U.S.",
+   "wgi_control_of_corruption": -0.07,
+   "wgi_year": 2024
+  },
+  "VN": {
+   "name": "Viet Nam",
+   "basel_aml_score": 6.69,
+   "basel_aml_rank": 19,
+   "cpi_score": 40.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.25,
+   "wgi_year": 2024
+  },
+  "VU": {
+   "name": "Vanuatu",
+   "basel_aml_score": 4.97,
+   "basel_aml_rank": 104,
+   "cpi_score": 50.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.15,
+   "wgi_year": 2024
+  },
+  "WS": {
+   "name": "Samoa",
+   "basel_aml_score": 4.56,
+   "basel_aml_rank": 128,
+   "wgi_control_of_corruption": 0.69,
+   "wgi_year": 2024
+  },
+  "XK": {
+   "name": "XK",
+   "wgi_control_of_corruption": -0.25,
+   "wgi_year": 2024
+  },
+  "YE": {
+   "name": "Yemen",
+   "cpi_score": 13.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -1.64,
+   "wgi_year": 2024
+  },
+  "ZA": {
+   "name": "South Africa",
+   "basel_aml_score": 5.63,
+   "basel_aml_rank": 64,
+   "cpi_score": 41.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.19,
+   "wgi_year": 2024
+  },
+  "ZM": {
+   "name": "Zambia",
+   "basel_aml_score": 5.31,
+   "basel_aml_rank": 84,
+   "cpi_score": 39.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -0.46,
+   "wgi_year": 2024
+  },
+  "ZW": {
+   "name": "Zimbabwe",
+   "basel_aml_score": 5.99,
+   "basel_aml_rank": 43,
+   "cpi_score": 21.0,
+   "cpi_year": 2024,
+   "wgi_control_of_corruption": -1.25,
+   "wgi_year": 2024
+  }
+ }
+}
