@@ -8,6 +8,11 @@ export interface SearchParams {
   maxNodes: number;
 }
 
+const LIVE_EXAMPLES = [
+  { q: "TotalEnergies", type: "company" as const, hint: "FR registry + leaks screening" },
+  { q: "Danone", type: "company" as const, hint: "officers from data.gouv.fr" },
+];
+
 const EXAMPLES = [
   { q: "Mohamed Qadrany", type: "person" as const, hint: "homonyms + transliteration" },
   { q: "Meridian Capital Holdings", type: "company" as const, hint: "LU holding, circular ownership" },
@@ -18,11 +23,12 @@ const EXAMPLES = [
 interface Props {
   initial: SearchParams;
   demo: boolean;
+  live?: boolean;
   onSearch: (p: SearchParams) => void;
   compact?: boolean;
 }
 
-export default function SearchPanel({ initial, demo, onSearch, compact }: Props) {
+export default function SearchPanel({ initial, demo, live, onSearch, compact }: Props) {
   const [p, setP] = useState<SearchParams>(initial);
   const submit = (e: FormEvent) => {
     e.preventDefault();
@@ -95,10 +101,14 @@ export default function SearchPanel({ initial, demo, onSearch, compact }: Props)
           <Search className="h-4 w-4" /> Search
         </button>
       </div>
-      {demo && !compact && (
-        <div className="mt-4 flex flex-wrap items-center gap-2 text-xs">
-          <span className="text-slate-500">Try the demo scenario:</span>
-          {EXAMPLES.map((ex) => (
+      {!compact &&
+        ([
+          ...(demo ? [["Fictitious demo scenario:", EXAMPLES] as const] : []),
+          ...(live ? [["Real public data:", LIVE_EXAMPLES] as const] : []),
+        ] as const).map(([title, list]) => (
+        <div key={title} className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+          <span className="text-slate-500">{title}</span>
+          {list.map((ex) => (
             <button
               key={ex.q}
               type="button"
@@ -114,7 +124,7 @@ export default function SearchPanel({ initial, demo, onSearch, compact }: Props)
             </button>
           ))}
         </div>
-      )}
+        ))}
     </form>
   );
 }

@@ -30,4 +30,4 @@ jobs:
           else
             echo "url=${{ github.event.deployment_status.environment_url }}" >> "$GITHUB_OUTPUT"
           fi
-      - run: python scripts/smoke_test.py "${{ steps.target.outputs.url }}"
+      - run: python scripts/smoke_test.py "${{ steps.target.outputs.url }}" --live

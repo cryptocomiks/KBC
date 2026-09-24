@@ -124,8 +124,10 @@ Import the repository in Vercel (no framework preset needed, `vercel.json` sets 
 npm i -g vercel && vercel deploy
 ```
 
-`DEMO_MODE` defaults to `true`. To use real sources, add the API keys as environment variables in the
-Vercel project settings.
+`DEMO_MODE` and `LIVE_SOURCES` both default to `true`. The keyless real sources (data.gouv.fr, ICIJ)
+work immediately. Add API keys as environment variables in the Vercel project settings to enable the
+other sources. After each Vercel deployment, a GitHub Actions workflow (`smoke.yml`) exercises the live
+site end to end, demo and real sources included.
 </details>
 
 ## Demo walkthrough (5 minutes)
@@ -299,7 +301,7 @@ Screening hits below 70% are displayed as *"weak — likely false positive"* and
 
 | File | Purpose |
 |---|---|
-| `.env` (copy `.env.example`) | `DEMO_MODE`, API keys, cache path/TTL. A missing key simply disables its connector, with a clear message in the UI (*"Disabled: PAPPERS_API_KEY is not set in .env"*). |
+| `.env` (copy `.env.example`) | `DEMO_MODE`, API keys, cache path/TTL. `LIVE_SOURCES`. A missing key simply disables its connector, with a clear message in the UI (*"Disabled: PAPPERS_API_KEY is not set"*). Empty values are treated as unset. |
 | `config/risk.yaml` | Factor weights, match thresholds, proximity multipliers, level boundaries. |
 | `config/jurisdictions.yaml` | FATF black and grey lists, EU tax blacklist and offshore centres (ISO-2). **Review them against the latest FATF/EU publications before real use.** The file shows its `as_of` date. |
 
@@ -310,15 +312,32 @@ Every source implements the same `BaseConnector` interface:
 optional `get_person_roles`, `get_subsidiaries`, `search_address` and `screen`. Adding a source such as
 **Zefix (CH)** or **LBR/RBE (LU)** means writing one class and registering it in `connectors/registry.py`.
 
-| Source | Coverage | Status |
-|---|---|---|
-| Demo connectors (4) | Fictitious registries, sanctions/PEP, leaks | ✅ available |
-| OpenSanctions | Sanctions & PEP (API) | 🔜 phase B |
-| Companies House | UK officers & persons with significant control | 🔜 phase B |
-| Pappers | FR officers, shareholders, beneficial owners, accounts | 🔜 phase B |
-| OpenCorporates | International registries | 🔜 phase B |
-| OCCRP Aleph | Registries, leaks, documents | 🔜 phase B |
-| ICIJ Offshore Leaks | Local import of the public CSV dataset | 🔜 phase B |
+**Hybrid mode.** The fictitious demo scenario and the real sources are searchable side by side, but an
+investigation never mixes them. An investigation started on a demo entity queries only the demo
+connectors, and vice versa. Entities from the two realms are never merged, and every candidate carries
+a *Demo · fictitious* or *Real public data* badge.
+
+| Source | Coverage | Key | Env variable |
+|---|---|---|---|
+| **Annuaire des Entreprises** (data.gouv.fr) | FR companies, officers with partial date of birth, status, published financial years | none, public API | — |
+| **ICIJ Offshore Leaks** | Panama, Paradise, Pandora Papers, Bahamas Leaks, Offshore Leaks. One batched query per investigation, so each hit is attributed to its leak | none, public API | — |
+| ICIJ Offshore Leaks, local copy | Full bulk dataset, offline (`python scripts/import_icij.py`) | none | `ICIJ_DB_PATH` |
+| **Pappers** | FR declared beneficial owners (%), officers, filed accounts | [pappers.fr/api](https://www.pappers.fr/api) (credits) | `PAPPERS_API_KEY` |
+| **Companies House** | UK companies, officers and all their appointments, persons with significant control | [free key](https://developer.company-information.service.gov.uk) | `COMPANIES_HOUSE_API_KEY` |
+| **OpenCorporates** | 140+ company registries worldwide | [api.opencorporates.com](https://api.opencorporates.com) | `OPENCORPORATES_API_TOKEN` |
+| **OpenSanctions** | Consolidated sanctions lists, PEPs, watchlists (batched `/match`) | [opensanctions.org/api](https://www.opensanctions.org/api/) | `OPENSANCTIONS_API_KEY` |
+| **OCCRP Aleph** | Leaks, registries, court records, gazettes | [free account](https://aleph.occrp.org) | `ALEPH_API_KEY` |
+| Demo connectors (4) | Fictitious registries, sanctions/PEP, leaks | none | `DEMO_MODE` |
+
+On Vercel, add the keys under *Project → Settings → Environment Variables*, then redeploy. The
+"Sources" menu shows the status of each connector.
+
+**Licences and fair use.**
+
+- ICIJ Offshore Leaks data is under the ODbL (attribution: International Consortium of Investigative
+  Journalists). Appearing in it does not imply wrongdoing.
+- OpenSanctions data is CC BY-NC 4.0: commercial use requires a licence.
+- Respect each provider's terms and rate limits. Answers are cached for 72 h by default.
 
 ## Testing & quality
 
@@ -328,8 +347,9 @@ make lint   # ruff check + ruff format --check + TypeScript typecheck
 ```
 
 CI (GitHub Actions) runs the backend lint and tests and the frontend build on every push. The real
-connectors (phase B) are tested against **mocked HTTP responses** (`respx`), so the test suite never calls
-external APIs.
+connectors are tested against **mocked HTTP responses** shaped like each API's documentation (`respx`), so
+the unit tests never call external APIs. The live behaviour is checked after each deployment by
+`scripts/smoke_test.py --live`.
 
 ## Compliance & ethics
 
@@ -358,7 +378,6 @@ external APIs.
 
 ## Roadmap
 
-- Phase B: real connectors (OpenSanctions → Companies House → Pappers → OpenCorporates → Aleph → ICIJ import)
 - Zefix (Switzerland) and LBR/RBE (Luxembourg) connectors
 - Analyst workflow: mark a hit as confirmed or false positive, with the decision recorded in the report
 - Adverse media screening

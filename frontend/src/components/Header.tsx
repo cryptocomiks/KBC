@@ -27,6 +27,7 @@ export default function Header({ meta, theme, onToggleTheme, onHome }: Props) {
     },
   });
   const enabled = connectors.data?.filter((c) => c.enabled).length ?? 0;
+  const live = connectors.data?.some((c) => c.enabled && !c.demo);
 
   return (
     <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/85 backdrop-blur dark:border-slate-800 dark:bg-slate-950/85">
@@ -40,7 +41,7 @@ export default function Header({ meta, theme, onToggleTheme, onHome }: Props) {
         </button>
         {meta?.demo_mode && (
           <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
-            Demo mode · fictitious data
+            {live ? "Demo + live public sources" : "Demo mode · fictitious data"}
           </span>
         )}
         <div className="ml-auto flex items-center gap-1">
@@ -56,7 +57,7 @@ export default function Header({ meta, theme, onToggleTheme, onHome }: Props) {
               <div className="card absolute right-0 mt-2 w-[420px] p-3 shadow-lg" onMouseLeave={() => setOpen(false)}>
                 <div className="label mb-2">Data sources (connectors)</div>
                 <ul className="space-y-2">
-                  {connectors.data?.map((c) => (
+                  {[...(connectors.data ?? [])].sort((a, b) => Number(b.enabled) - Number(a.enabled)).map((c) => (
                     <li key={c.name} className="flex items-start gap-2 text-sm">
                       {c.enabled ? (
                         <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-green-600" />

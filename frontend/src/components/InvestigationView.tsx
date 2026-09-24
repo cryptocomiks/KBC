@@ -52,7 +52,16 @@ export default function InvestigationView({ investigation: inv, theme, refreshin
           <button onClick={onBack} className="mb-1 inline-flex items-center gap-1 text-xs text-slate-500 hover:text-brand-600">
             <ArrowLeft className="h-3 w-3" /> Back to candidates
           </button>
-          <h1 className="text-xl font-bold tracking-tight">{subject.name}</h1>
+          <h1 className="flex items-center gap-2 text-xl font-bold tracking-tight">
+            {subject.name}
+            <span
+              className={`rounded px-1.5 py-0.5 text-[10px] font-bold uppercase ${
+                inv.demo ? "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300" : "bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-300"
+              }`}
+            >
+              {inv.demo ? "Demo · fictitious" : "Real public data"}
+            </span>
+          </h1>
           <p className="text-xs text-slate-500">
             {subject.type === "person"
               ? `Person · born ${subject.birth_date ?? "?"} · ${subject.nationalities.map(countryName).join(", ")}`

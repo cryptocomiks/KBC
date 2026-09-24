@@ -10,7 +10,7 @@ import SearchPanel, { type SearchParams } from "./components/SearchPanel";
 import { useTheme } from "./lib/theme";
 import type { InvestigationParams } from "./types";
 
-const DEFAULT_SEARCH: SearchParams = { q: "", type: "any", depth: 3, maxNodes: 60 };
+const DEFAULT_SEARCH: SearchParams = { q: "", type: "any", depth: 2, maxNodes: 60 };
 
 export default function App() {
   const [theme, toggleTheme] = useTheme();
@@ -18,6 +18,8 @@ export default function App() {
   const [target, setTarget] = useState<InvestigationParams | null>(null);
 
   const meta = useQuery({ queryKey: ["meta"], queryFn: api.meta, staleTime: Infinity });
+  const connectors = useQuery({ queryKey: ["connectors"], queryFn: api.connectors });
+  const live = !!connectors.data?.some((c) => c.enabled && !c.demo);
   const results = useQuery({
     queryKey: ["search", search?.q, search?.type],
     queryFn: () => api.search(search!.q, search!.type),
@@ -52,7 +54,7 @@ export default function App() {
                 </p>
               </div>
             )}
-            <SearchPanel initial={search ?? DEFAULT_SEARCH} demo={!!meta.data?.demo_mode} onSearch={setSearch} />
+            <SearchPanel initial={search ?? DEFAULT_SEARCH} demo={!!meta.data?.demo_mode} live={live} onSearch={setSearch} />
             {results.isFetching && (
               <div className="flex items-center gap-2 text-sm text-slate-500">
                 <Loader2 className="h-4 w-4 animate-spin" /> Searching sources…

@@ -46,6 +46,15 @@ export default function CandidateList({ data, onPick }: Props) {
                   <div className="font-semibold leading-tight">{e.name}</div>
                   {e.aliases.length > 0 && <div className="truncate text-xs text-slate-500">aka {e.aliases.join(", ")}</div>}
                 </div>
+                {e.demo ? (
+                  <span className="rounded-md bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold uppercase text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
+                    Demo · fictitious
+                  </span>
+                ) : (
+                  <span className="rounded-md bg-sky-100 px-1.5 py-0.5 text-[10px] font-bold uppercase text-sky-800 dark:bg-sky-900/40 dark:text-sky-300">
+                    Real public data
+                  </span>
+                )}
                 <span
                   className={`rounded-md px-2 py-0.5 text-xs font-semibold ${matchScoreClass(c.score)}`}
                   title={c.explanation.join("\n")}
