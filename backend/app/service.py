@@ -296,7 +296,10 @@ def build_tables(net: Network, risk: RiskAssessment) -> dict[str, list[dict[str,
             "score": h.score,
             "status": _hit_status(h.score),
             "explanation": "; ".join(h.explanation),
-            "details": "; ".join(f"{k}: {v}" for k, v in h.details.items()),
+            "details": "; ".join(
+                f"{k.replace('_', ' ')}: {', '.join(map(str, v)) if isinstance(v, list) else v}"
+                for k, v in h.details.items()
+            ),
             "source": h.provenance.source_label,
             "url": h.provenance.url,
             "retrieved_at": h.provenance.retrieved_at,

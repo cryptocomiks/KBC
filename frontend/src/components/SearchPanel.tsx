@@ -1,0 +1,120 @@
+import { Building2, Search, User, Users } from "lucide-react";
+import { type FormEvent, useState } from "react";
+
+export interface SearchParams {
+  q: string;
+  type: "any" | "person" | "company";
+  depth: number;
+  maxNodes: number;
+}
+
+const EXAMPLES = [
+  { q: "Mohamed Qadrany", type: "person" as const, hint: "homonyms + transliteration" },
+  { q: "Meridian Capital Holdings", type: "company" as const, hint: "LU holding, circular ownership" },
+  { q: "Henri Castelnau", type: "person" as const, hint: "professional director" },
+  { q: "Rouslan Terekhov", type: "person" as const, hint: "sanctions match" },
+];
+
+interface Props {
+  initial: SearchParams;
+  demo: boolean;
+  onSearch: (p: SearchParams) => void;
+  compact?: boolean;
+}
+
+export default function SearchPanel({ initial, demo, onSearch, compact }: Props) {
+  const [p, setP] = useState<SearchParams>(initial);
+  const submit = (e: FormEvent) => {
+    e.preventDefault();
+    if (p.q.trim().length >= 2) onSearch({ ...p, q: p.q.trim() });
+  };
+  const typeBtn = (t: SearchParams["type"], label: string, Icon: typeof User) => (
+    <button
+      type="button"
+      onClick={() => setP({ ...p, type: t })}
+      className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium ${
+        p.type === t ? "bg-white shadow-sm dark:bg-slate-700" : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+      }`}
+    >
+      <Icon className="h-3.5 w-3.5" /> {label}
+    </button>
+  );
+
+  return (
+    <form onSubmit={submit} className={compact ? "" : "card p-5"}>
+      <div className="flex flex-wrap items-end gap-3">
+        <div className="min-w-[280px] flex-1">
+          <label className="label mb-1 block" htmlFor="q">
+            Person or company name
+          </label>
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+            <input
+              id="q"
+              className="input w-full pl-9 text-base"
+              placeholder="e.g. Mohamed Qadrany, Meridian Capital…"
+              value={p.q}
+              onChange={(e) => setP({ ...p, q: e.target.value })}
+              autoFocus={!compact}
+            />
+          </div>
+        </div>
+        <div>
+          <span className="label mb-1 block">Type</span>
+          <div className="flex rounded-lg bg-slate-100 p-0.5 dark:bg-slate-800">
+            {typeBtn("any", "Any", Users)}
+            {typeBtn("person", "Person", User)}
+            {typeBtn("company", "Company", Building2)}
+          </div>
+        </div>
+        <div>
+          <label className="label mb-1 block" htmlFor="depth">
+            Depth
+          </label>
+          <select id="depth" className="input" value={p.depth} onChange={(e) => setP({ ...p, depth: Number(e.target.value) })}>
+            <option value={1}>1 level</option>
+            <option value={2}>2 levels</option>
+            <option value={3}>3 levels</option>
+          </select>
+        </div>
+        <div>
+          <label className="label mb-1 block" htmlFor="nodes">
+            Max nodes
+          </label>
+          <input
+            id="nodes"
+            type="number"
+            min={5}
+            max={250}
+            className="input w-24"
+            value={p.maxNodes}
+            onChange={(e) => setP({ ...p, maxNodes: Math.max(5, Math.min(250, Number(e.target.value) || 60)) })}
+          />
+        </div>
+        <button className="btn-primary h-[38px] px-5" type="submit">
+          <Search className="h-4 w-4" /> Search
+        </button>
+      </div>
+      {demo && !compact && (
+        <div className="mt-4 flex flex-wrap items-center gap-2 text-xs">
+          <span className="text-slate-500">Try the demo scenario:</span>
+          {EXAMPLES.map((ex) => (
+            <button
+              key={ex.q}
+              type="button"
+              className="rounded-full border border-slate-300 px-3 py-1 hover:border-brand-500 hover:text-brand-600 dark:border-slate-700"
+              onClick={() => {
+                const next = { ...p, q: ex.q, type: ex.type };
+                setP(next);
+                onSearch(next);
+              }}
+              title={ex.hint}
+            >
+              {ex.q} <span className="text-slate-400">· {ex.hint}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </form>
+  );
+}
