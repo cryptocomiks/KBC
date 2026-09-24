@@ -1,0 +1,111 @@
+"""REST API routes (mounted under /api)."""
+
+from __future__ import annotations
+
+from typing import Literal
+
+from fastapi import APIRouter, HTTPException, Query
+from fastapi.responses import Response
+
+from app import __version__
+from app.cache import get_cache
+from app.risk.config import get_jurisdictions, get_risk_config
+from app.schemas import (
+    DISCLAIMER,
+    Investigation,
+    InvestigationRequest,
+    ReportRequest,
+    SearchResponse,
+)
+from app.service import KbcService
+from app.settings import get_settings
+
+router = APIRouter()
+
+
+def service() -> KbcService:
+    return KbcService()
+
+
+@router.get("/health")
+def health() -> dict:
+    return {"status": "ok", "version": __version__}
+
+
+@router.get("/meta")
+def meta() -> dict:
+    s = get_settings()
+    return {
+        "version": __version__,
+        "demo_mode": s.demo_mode,
+        "disclaimer": DISCLAIMER,
+        "max_depth": s.max_depth,
+        "max_nodes_limit": s.max_nodes_limit,
+    }
+
+
+@router.get("/connectors")
+def connectors() -> list[dict]:
+    return service().registry.statuses()
+
+
+@router.get("/search", response_model=SearchResponse)
+def search(
+    q: str = Query(min_length=2, max_length=200),
+    type: Literal["any", "person", "company"] = "any",
+) -> SearchResponse:
+    return service().search(q.strip(), type)
+
+
+@router.post("/investigations", response_model=Investigation)
+def investigate(req: InvestigationRequest) -> Investigation:
+    try:
+        return service().investigate(req)
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@router.post("/reports/pdf")
+def report_pdf(req: ReportRequest) -> Response:
+    from app.report.pdf import build_pdf
+
+    try:
+        inv = service().investigate(
+            InvestigationRequest(**req.model_dump(include={"record_ids", "depth", "max_nodes"}))
+        )
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    pdf = build_pdf(inv, graph_png_b64=req.graph_png, analyst=req.analyst, reference=req.reference)
+    subject = next(e for e in inv.entities if e.id == inv.subject_id)
+    safe = "".join(ch if ch.isalnum() else "_" for ch in subject.name)[:60]
+    filename = f"due_diligence_{safe}_{inv.generated_at:%Y%m%d}.pdf"
+    return Response(
+        content=pdf,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+@router.get("/config/risk")
+def risk_config() -> dict:
+    jur = get_jurisdictions()
+    return {
+        "risk": get_risk_config().model_dump(),
+        "jurisdictions": {
+            "as_of": jur.as_of,
+            "fatf_blacklist": sorted(jur.fatf_blacklist),
+            "fatf_greylist": sorted(jur.fatf_greylist),
+            "eu_tax_blacklist": sorted(jur.eu_tax_blacklist),
+            "offshore_centres": sorted(jur.offshore_centres),
+        },
+    }
+
+
+@router.get("/cache")
+def cache_stats() -> dict:
+    return {"entries": get_cache().stats()}
+
+
+@router.delete("/cache")
+def clear_cache() -> dict:
+    return {"deleted": get_cache().clear()}
