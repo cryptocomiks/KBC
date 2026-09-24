@@ -1,0 +1,33 @@
+name: Deployment smoke test
+
+# Runs after each successful Vercel deployment (Vercel reports deployments to
+# GitHub) and exercises the live site end to end. Can also be run by hand.
+on:
+  deployment_status:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: "Base URL to test"
+        default: "https://kbc-lemon.vercel.app"
+
+jobs:
+  smoke:
+    if: github.event_name == 'workflow_dispatch' || github.event.deployment_status.state == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Pick the URL to test
+        id: target
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "url=${{ inputs.url }}" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event.deployment.environment }}" = "Production" ]; then
+            # Stable production alias (preview URLs are behind Vercel authentication).
+            echo "url=${{ vars.PRODUCTION_URL || 'https://kbc-lemon.vercel.app' }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "url=${{ github.event.deployment_status.environment_url }}" >> "$GITHUB_OUTPUT"
+          fi
+      - run: python scripts/smoke_test.py "${{ steps.target.outputs.url }}"
