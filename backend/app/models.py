@@ -12,7 +12,7 @@ from datetime import UTC, date, datetime
 from enum import StrEnum
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 def utcnow() -> datetime:
@@ -99,6 +99,15 @@ class Entity(BaseModel):
     sources: list[Provenance] = Field(default_factory=list)
     extra: dict[str, Any] = Field(default_factory=dict)
 
+    @field_validator("incorporation_date", "dissolution_date", "last_accounts_date", mode="before")
+    @classmethod
+    def _exact_dates_only(cls, value: Any) -> Any:
+        """Sources sometimes give only a year or a year-month: never fail on it,
+        keep the field empty rather than invent a day."""
+        if isinstance(value, str) and len(value.strip()) < 10:
+            return None
+        return value
+
     @property
     def is_company(self) -> bool:
         return self.type == EntityType.COMPANY
@@ -118,6 +127,13 @@ class Relationship(BaseModel):
     start_date: date | None = None
     end_date: date | None = None
     sources: list[Provenance] = Field(default_factory=list)
+
+    @field_validator("start_date", "end_date", mode="before")
+    @classmethod
+    def _exact_dates_only(cls, value: Any) -> Any:
+        if isinstance(value, str) and len(value.strip()) < 10:
+            return None
+        return value
 
     @property
     def is_active(self) -> bool:

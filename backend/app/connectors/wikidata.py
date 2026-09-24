@@ -244,14 +244,15 @@ class _WikidataClient(BaseConnector):
             birth_date=d["birth"] if human else None,
             nationalities=d["countries"] if human else [],
             jurisdiction=None if human or not d["countries"] else d["countries"][0],
-            incorporation_date=None if human else d["inception"],
+            incorporation_date=None if human else _full(d["inception"]),
             status=None if human else (CompanyStatus.DISSOLVED if d["dissolution"] else None),
-            dissolution_date=None if human else d["dissolution"],
+            dissolution_date=None if human else _full(d["dissolution"]),
             identifiers={"Wikidata": d["qid"], **({"LEI": d["lei"]} if d.get("lei") else {})},
             extra={
                 k: v
                 for k, v in {
                     "description": d["description"],
+                    "founded": None if human or _full(d["inception"]) else d["inception"],
                     "accounts_unknown": None if human else True,
                     "positions_held": "; ".join(_fmt_position(p) for p in d["positions"][:8])
                     or None,
@@ -260,6 +261,11 @@ class _WikidataClient(BaseConnector):
             },
             sources=[self.provenance(rid, ITEM_URL.format(qid=d["qid"]))],
         )
+
+
+def _full(value: str | None) -> str | None:
+    """Only exact dates go into date fields (Wikidata often knows just the year)."""
+    return value if value and len(value) == 10 else None
 
 
 def _fmt_position(p: tuple[str, str | None, str | None]) -> str:

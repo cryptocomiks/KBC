@@ -229,3 +229,17 @@ def test_demo_pep_relative_is_flagged(registry):
     assert rel, "spouse link expected"
     factors = {f.key: f for f in RiskEngine().assess(net).factors}
     assert "pep_relative" in factors and "Mirela" in factors["pep_relative"].evidence[0]
+
+
+def test_year_only_dates_never_break_a_search():
+    e = Entity(
+        id="x",
+        type=EntityType.COMPANY,
+        name="Acme",
+        incorporation_date="2000",
+        dissolution_date="2010-05",
+    )
+    assert e.incorporation_date is None and e.dissolution_date is None
+    from app.connectors.wikidata import _full
+
+    assert _full("2000") is None and _full("2000-03-01") == "2000-03-01"
