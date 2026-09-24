@@ -21,6 +21,10 @@ os.environ.setdefault("CACHE_PATH", ":memory:")
 from app.connectors.aleph import AlephConnector  # noqa: E402
 from app.connectors.annuaire_fr import AnnuaireEntreprisesConnector  # noqa: E402
 from app.connectors.bodacc import BodaccConnector  # noqa: E402
+from app.connectors.casino_secrets import (  # noqa: E402
+    CasinoSecretsConnector,
+    CasinoSecretsLeakConnector,
+)
 from app.connectors.chains import BitcoinConnector, EthereumConnector, TronConnector  # noqa: E402
 from app.connectors.companies_house import CompaniesHouseConnector  # noqa: E402
 from app.connectors.gdelt import API as GDELT_API  # noqa: E402
@@ -421,6 +425,21 @@ def check_sec() -> None:
     )
 
 
+def check_casino_secrets() -> None:
+    reg = CasinoSecretsConnector(settings)
+    found = reg.search_company("Medium Rare N.V.")
+    expect(
+        "licence holder found",
+        any(c.name == "Medium Rare N.V." for c in found),
+        "; ".join(f"{c.name} — {c.extra.get('casino_domains', '')}" for c in found[:3]),
+    )
+    stake = Entity(id="t:stake", type=EntityType.COMPANY, name="Medium Rare N.V.")
+    hits = CasinoSecretsLeakConnector(settings).screen(stake)
+    for h in hits[:3]:
+        print(f"      hit: {h.matched_name} | {h.score} | {h.provenance.url}")
+    expect("screening hit with link", any(h.score >= 85 and h.provenance.url for h in hits))
+
+
 def check_country_risk() -> None:
     from app.risk.config import get_country_risk
 
@@ -494,6 +513,7 @@ guarded("GDELT adverse media", check_gdelt)
 guarded("Zefix (Swiss commercial register)", check_zefix)
 guarded("SEC EDGAR (US filings, 13D/13G owners)", check_sec)
 guarded("Country risk indicators", check_country_risk)
+guarded("Casino Secrets (Curaçao gaming leak)", check_casino_secrets)
 for key, title, fn in [
     ("OPENSANCTIONS_API_KEY", "OpenSanctions", check_opensanctions),
     ("COMPANIES_HOUSE_API_KEY", "Companies House", check_companies_house),

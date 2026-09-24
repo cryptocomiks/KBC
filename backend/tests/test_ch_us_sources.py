@@ -334,3 +334,84 @@ def test_wayback_first_and_last_capture():
     docs = WaybackConnector(LIVE).get_documents(company)
     assert [str(d.date) for d in docs] == ["2005-03-01", "2026-09-10"]
     assert docs[0].url == "https://web.archive.org/web/20050301000000/http://acme.example/"
+
+
+CASINO = {
+    "stake.com": [
+        {
+            "type": "domain",
+            "name": "stake.com",
+            "company": "Medium Rare N.V.",
+            "businessType": "B2C Operator",
+            "href": "/casinos/1451-medium-rare-n-v?tab=domains&domain=stake.com",
+        },
+        {
+            "type": "domain",
+            "name": "mystake.com",
+            "company": "GTW B.V.",
+            "businessType": "B2C Operator",
+            "href": "/casinos/250-gtw-b-v?tab=domains&domain=mystake.com",
+        },
+    ],
+    "Medium Rare N.V.": [
+        {
+            "type": "company",
+            "name": "Medium Rare N.V.",
+            "company": "Medium Rare N.V.",
+            "businessType": "B2C Operator",
+            "href": "/casinos/1451-medium-rare-n-v",
+        },
+        {
+            "type": "domain",
+            "name": "stake.com",
+            "company": "Medium Rare N.V.",
+            "businessType": "B2C Operator",
+            "href": "/casinos/1451-medium-rare-n-v?tab=domains&domain=stake.com",
+        },
+    ],
+}
+
+
+@respx.mock
+def test_casino_secrets_search_and_screening():
+    from app.connectors.casino_secrets import CasinoSecretsConnector, CasinoSecretsLeakConnector
+    from app.models import Document, ListType
+
+    def reply(request):
+        q = request.url.params["q"]
+        hits = (
+            CASINO.get(q) or CASINO.get("Medium Rare N.V.")
+            if q.lower().startswith("medium rare")
+            else CASINO.get(q, [])
+        )
+        return httpx.Response(200, json={"results": hits or []})
+
+    respx.get("https://casinosecrets.lol/api/search.json").mock(side_effect=reply)
+    registry = CasinoSecretsConnector(LIVE)
+    [company] = registry.search_company("Medium Rare N.V.")
+    assert company.name == "Medium Rare N.V." and company.extra["casino_domains"] == "stake.com"
+    assert company.sources[0].url == "https://casinosecrets.lol/casinos/1451-medium-rare-n-v"
+    again = registry.get_company_details(company.id)
+    assert again is not None and again.id == company.id
+    docs = registry.get_documents(company)
+    assert docs[0].kind == "leak" and any("stake.com" in d.title for d in docs)
+
+    screening = CasinoSecretsLeakConnector(LIVE)
+    operator = Entity(
+        id="x",
+        type=EntityType.COMPANY,
+        name="Stake Operations Ltd",
+        documents=[
+            Document(
+                title="Official website",
+                kind="official_profile",
+                url="https://stake.com",
+                source="Wikidata",
+            )
+        ],
+    )
+    namesake = Entity(id="y", type=EntityType.COMPANY, name="Medium Rare NV")
+    hits = screening.screen_many([operator, namesake])
+    by_entity = {h.entity_id: h for h in hits}
+    assert by_entity["x"].score == 100 and "Medium Rare N.V." in by_entity["x"].matched_name
+    assert by_entity["y"].list_type == ListType.LEAK and by_entity["y"].score >= 85
