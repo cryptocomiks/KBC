@@ -344,6 +344,9 @@ class OfficialSanctionsConnector(BaseConnector):
         self, entity: Entity, include_transfers: bool = True
     ) -> list[LinkedEntity]:
         """Wallet -> its sanctioned owner; sanctioned owner -> its other listed addresses."""
+        is_listed_owner = any(r.startswith(f"{self.name}:") for r in entity.record_ids)
+        if entity.type != EntityType.WALLET and not is_listed_owner:
+            return []  # nothing to do: never wait for the list download for ordinary entities
         index = self._index()
         out: list[LinkedEntity] = []
         if entity.type == EntityType.WALLET:

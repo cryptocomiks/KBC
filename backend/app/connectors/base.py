@@ -51,6 +51,8 @@ class BaseConnector(ABC):
     crossref_max_depth: ClassVar[int | None] = None
     #: retries on rate limits / transient errors (0 for sources that ask clients not to retry)
     max_retries: ClassVar[int] = MAX_RETRIES
+    #: per-connector HTTP timeout in seconds (None = settings.http_timeout_seconds)
+    timeout_seconds: ClassVar[float | None] = None
     #: documents: entity types handled and maximum distance from the subject
     document_types: ClassVar[set[str]] = {"company"}
     documents_max_depth: ClassVar[int | None] = None
@@ -218,7 +220,7 @@ class BaseConnector(ABC):
                     auth=auth,
                     json=json_body,
                     data=form,
-                    timeout=self.settings.http_timeout_seconds,
+                    timeout=self.timeout_seconds or self.settings.http_timeout_seconds,
                     follow_redirects=True,
                 )
             except httpx.HTTPError as exc:
