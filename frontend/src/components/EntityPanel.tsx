@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowRight, Building2, ExternalLink, FileText, Flag, Landmark, MapPin, User } from "lucide-react";
+import { ArrowLeft, ArrowRight, Building2, ExternalLink, FileText, Flag, Landmark, MapPin, User, Wallet } from "lucide-react";
 import { countryName, ENTITY_COLORS, ENTITY_LEVEL_LABEL, fmtDate, fmtPct, flag, scoreClass } from "../lib/format";
 import type { Entity, Investigation, RiskLevel } from "../types";
 
@@ -8,12 +8,14 @@ interface Props {
   onSelect: (id: string) => void;
 }
 
-const ICONS = { person: User, company: Building2, address: MapPin };
+const ICONS = { person: User, company: Building2, address: MapPin, wallet: Wallet };
 const REL_LABEL: Record<string, string> = {
   officer: "Officer",
   shareholder: "Shareholder",
   beneficial_owner: "Declared UBO",
   registered_at: "Registered at",
+  controls: "Controls",
+  transfer: "Flows",
 };
 
 export default function EntityPanel({ investigation: inv, entityId, onSelect }: Props) {
@@ -48,7 +50,15 @@ export default function EntityPanel({ investigation: inv, entityId, onSelect }: 
               ([k, v]) => [k.charAt(0).toUpperCase() + k.slice(1).replace(/_/g, " "), String(v)] as [string, React.ReactNode],
             ),
           ]
-        : [["Companies registered here", e.extra.companies_registered as number | undefined]];
+        : e.type === "wallet"
+          ? [
+              ["Blockchain", e.chain],
+              ["Address", <span className="break-all font-mono">{e.name}</span>],
+              ...Object.entries(e.extra).map(
+                ([k, v]) => [k.charAt(0).toUpperCase() + k.slice(1).replace(/_/g, " "), String(v)] as [string, React.ReactNode],
+              ),
+            ]
+          : [["Companies registered here", e.extra.companies_registered as number | undefined]];
 
   const relRow = (other: Entity | undefined, label: string, detail: string, dir: "in" | "out", ended: boolean, key: string) =>
     other && (
@@ -155,10 +165,10 @@ export default function EntityPanel({ investigation: inv, entityId, onSelect }: 
             <div className="label mb-1.5">Relationships</div>
             <ul className="space-y-0.5 text-xs">
               {incoming.map((r) =>
-                relRow(byId.get(r.source_id), REL_LABEL[r.type], [r.role, r.share_pct != null ? fmtPct(r.share_pct) : ""].filter(Boolean).join(" · "), "in", !!r.end_date, r.id),
+                relRow(byId.get(r.source_id), r.type === "transfer" ? "Received from" : REL_LABEL[r.type], [r.role, r.share_pct != null ? fmtPct(r.share_pct) : ""].filter(Boolean).join(" · "), "in", !!r.end_date, r.id),
               )}
               {outgoing.map((r) =>
-                relRow(byId.get(r.target_id), `${REL_LABEL[r.type]} of`, [r.role, r.share_pct != null ? fmtPct(r.share_pct) : ""].filter(Boolean).join(" · "), "out", !!r.end_date, r.id),
+                relRow(byId.get(r.target_id), r.type === "transfer" ? "Sent to" : r.type === "controls" ? "Controls" : `${REL_LABEL[r.type]} of`, [r.role, r.share_pct != null ? fmtPct(r.share_pct) : ""].filter(Boolean).join(" · "), "out", !!r.end_date, r.id),
               )}
             </ul>
           </section>

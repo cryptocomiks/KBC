@@ -143,6 +143,30 @@ export default function TablesSection({ investigation: inv, onSelect }: Props) {
       ],
     },
     {
+      key: "crypto",
+      label: "Crypto wallets & flows",
+      rows: t.crypto ?? [],
+      click: "to_id",
+      empty: "No crypto wallet in this network.",
+      columns: [
+        { key: "relation", label: "Relation" },
+        { key: "from", label: "From", render: (r) => <span className="break-all font-mono text-[11px]">{String(r.from)}</span> },
+        { key: "to", label: "To", render: (r) => <span className="break-all font-mono text-[11px]">{String(r.to)}</span> },
+        { key: "chain", label: "Chain" },
+        { key: "amount", label: "Amount", render: (r) => (r.amount != null ? Number(r.amount).toLocaleString("en", { maximumFractionDigits: 4 }) : "—") },
+        { key: "currency", label: "Currency" },
+        { key: "tx_count", label: "Tx" },
+        { key: "since", label: "Since", render: (r) => fmtDate(r.since) },
+        {
+          key: "sanctioned_party",
+          label: "Sanctioned party",
+          render: (r) =>
+            r.sanctioned_party ? <span className="rounded bg-red-100 px-1.5 py-0.5 font-semibold text-red-800 dark:bg-red-900/40 dark:text-red-300">{String(r.sanctioned_party)}</span> : "",
+        },
+        { key: "urls", label: "Explorer", render: urls, value: (r) => (r.urls as string[]).join(" ") },
+      ],
+    },
+    {
       key: "documents",
       label: "Documents & filings",
       rows: t.documents ?? [],

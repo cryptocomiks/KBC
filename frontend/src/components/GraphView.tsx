@@ -11,6 +11,7 @@ cytoscape.use(fcose);
 
 export type GraphLayout = "hierarchy" | "network";
 export interface GraphFilters {
+  crypto: boolean;
   addresses: boolean;
   officers: boolean;
   ended: boolean;
@@ -40,14 +41,16 @@ function buildElements(inv: Investigation, filters: GraphFilters): ElementDefini
   const nodes: ElementDefinition[] = [];
   for (const e of inv.entities) {
     if (e.type === "address" && !filters.addresses) continue;
+    if (e.type === "wallet" && !filters.crypto) continue;
     visible.add(e.id);
     const level: RiskLevel = inv.risk.entity_levels[e.id] ?? "none";
     const kind = e.type === "company" ? (e.is_offshore ? "offshore" : "company") : e.type;
+    const walletLabel = e.type === "wallet" ? `${e.name.slice(0, 6)}…${e.name.slice(-4)}\n${e.chain ?? ""}${e.extra.label ? ` · ${String(e.extra.label).slice(0, 28)}` : ""}` : "";
     const suffix = e.type === "company" && e.jurisdiction ? `\n${e.jurisdiction}${e.status === "dissolved" ? " · dissolved" : ""}` : "";
     nodes.push({
       data: {
         id: e.id,
-        label: e.type === "address" ? e.name.split(",")[0] : `${e.name}${suffix}`,
+        label: e.type === "address" ? e.name.split(",")[0] : e.type === "wallet" ? walletLabel : `${e.name}${suffix}`,
         kind,
         color: ENTITY_COLORS[level],
         level,
@@ -66,6 +69,9 @@ function buildElements(inv: Investigation, filters: GraphFilters): ElementDefini
     if (r.type === "shareholder") label = r.share_pct != null ? `${r.share_pct}%` : "shareholder";
     else if (r.type === "beneficial_owner") label = `UBO${r.share_pct != null ? ` ${r.share_pct}%` : ""}`;
     else if (r.type === "officer") label = shortRole(r.role);
+    else if (r.type === "transfer")
+      label = `${(r.amount ?? 0).toLocaleString("en", { maximumFractionDigits: r.currency === "BTC" || r.currency === "ETH" ? 4 : 0 })} ${r.currency ?? ""}`;
+    else if (r.type === "controls") label = "controls";
     edges.push({
       data: { id: r.id, source: r.source_id, target: r.target_id, rel: r.type, label: ended ? `${label} (ended)` : label, ended },
     });
@@ -106,6 +112,7 @@ function buildStyle(theme: Theme): StylesheetJson {
       selector: 'node[kind = "address"]',
       style: { shape: "round-tag", width: 22, height: 22, "background-color": dark ? "#475569" : "#cbd5e1", "font-size": 8, color: dark ? "#94a3b8" : "#64748b" },
     },
+    { selector: 'node[kind = "wallet"]', style: { shape: "hexagon", width: 36, height: 32, "font-family": "ui-monospace, monospace", "font-size": 9 } },
     { selector: "node[dissolved = 1]", style: { "background-opacity": 0.45, "border-style": "dashed", "border-color": edge } },
     {
       selector: "node[subject = 1]",
@@ -135,6 +142,8 @@ function buildStyle(theme: Theme): StylesheetJson {
     // Officer roles would clutter the chart: their labels only show around the selected node.
     { selector: 'edge[rel = "officer"]', style: { "line-style": "dotted", "line-color": dark ? "#64748b" : "#94a3b8", "target-arrow-color": dark ? "#64748b" : "#94a3b8", label: "" } },
     { selector: 'edge[rel = "officer"].show-label', style: { label: "data(label)" } },
+    { selector: 'edge[rel = "transfer"]', style: { width: 2.2, "line-color": "#f59e0b", "target-arrow-color": "#f59e0b", color: dark ? "#fcd34d" : "#b45309" } },
+    { selector: 'edge[rel = "controls"]', style: { "line-style": "dashed", "line-color": "#14b8a6", "target-arrow-color": "#14b8a6", color: "#0f766e" } },
     { selector: 'edge[rel = "registered_at"]', style: { width: 1, "line-style": "dotted", "line-color": dark ? "#334155" : "#cbd5e1", "target-arrow-shape": "none", label: "" } },
     { selector: "edge[ended = 1]", style: { opacity: 0.4 } },
     { selector: ".faded", style: { opacity: 0.12 } },
@@ -267,6 +276,8 @@ export function GraphLegend() {
       {item(<span className="inline-block h-2.5 w-3.5 rounded-sm bg-slate-400" />, "Company")}
       {item(<span className="inline-block h-2.5 w-2.5 rotate-45 bg-slate-400" />, "Offshore entity")}
       {item(<span className="inline-block h-2.5 w-2.5 rounded-sm bg-slate-300 dark:bg-slate-600" />, "Address")}
+      {item(<span className="inline-block h-3 w-3 bg-slate-400 [clip-path:polygon(25%_0,75%_0,100%_50%,75%_100%,25%_100%,0_50%)]" />, "Crypto wallet")}
+      {item(<span className="inline-block h-0.5 w-5 bg-amber-500" />, "On-chain flow")}
       {item(<span className="inline-block h-0.5 w-5 bg-blue-800 dark:bg-blue-300" />, "Shareholding %")}
       {item(<span className="inline-block w-5 border-t-2 border-dashed border-violet-500" />, "Declared UBO")}
       {item(<span className="inline-block w-5 border-t-2 border-dotted border-slate-400" />, "Officer")}

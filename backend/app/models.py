@@ -23,6 +23,7 @@ class EntityType(StrEnum):
     PERSON = "person"
     COMPANY = "company"
     ADDRESS = "address"
+    WALLET = "wallet"  # crypto address (name = the address, chain in `chain`)
 
 
 class CompanyStatus(StrEnum):
@@ -36,6 +37,8 @@ class RelationType(StrEnum):
     SHAREHOLDER = "shareholder"  # owner -> owned company, with share_pct
     BENEFICIAL_OWNER = "beneficial_owner"  # declared UBO / PSC -> company
     REGISTERED_AT = "registered_at"  # company -> address
+    CONTROLS = "controls"  # person/company -> wallet (e.g. address attributed by OFAC)
+    TRANSFER = "transfer"  # wallet -> wallet, aggregated on-chain flows (amount, currency)
 
 
 class Provenance(BaseModel):
@@ -86,6 +89,7 @@ class Entity(BaseModel):
     address: str | None = None
     identifiers: dict[str, str] = Field(default_factory=dict)
     is_offshore: bool = False
+    chain: str | None = None  # "BTC", "ETH", "TRON" for wallets
     demo: bool = False  # fictitious record (demo dataset)
 
     documents: list[Document] = Field(default_factory=list)  # linked filings / notices / registers
@@ -106,6 +110,10 @@ class Relationship(BaseModel):
     target_id: str  # company / address (arrow target)
     role: str | None = None
     share_pct: float | None = None
+    # On-chain transfers (aggregated between two wallets)
+    amount: float | None = None
+    currency: str | None = None
+    tx_count: int | None = None
     start_date: date | None = None
     end_date: date | None = None
     sources: list[Provenance] = Field(default_factory=list)

@@ -1,4 +1,4 @@
-import { ArrowRight, Building2, Info, User } from "lucide-react";
+import { ArrowRight, Building2, Info, User, Wallet } from "lucide-react";
 import { countryName, flag, matchScoreClass } from "../lib/format";
 import type { SearchCandidate, SearchResponse } from "../types";
 
@@ -40,10 +40,10 @@ export default function CandidateList({ data, onPick }: Props) {
             <div key={e.id} className="card flex flex-col p-4">
               <div className="flex items-start gap-3">
                 <div className="rounded-lg bg-slate-100 p-2 dark:bg-slate-800">
-                  {e.type === "person" ? <User className="h-5 w-5" /> : <Building2 className="h-5 w-5" />}
+                  {e.type === "person" ? <User className="h-5 w-5" /> : e.type === "wallet" ? <Wallet className="h-5 w-5" /> : <Building2 className="h-5 w-5" />}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="font-semibold leading-tight">{e.name}</div>
+                  <div className={`font-semibold leading-tight ${e.type === "wallet" ? "break-all font-mono text-sm" : ""}`}>{e.name}</div>
                   {e.aliases.length > 0 && <div className="truncate text-xs text-slate-500">aka {e.aliases.join(", ")}</div>}
                 </div>
                 {e.demo ? (
@@ -63,7 +63,18 @@ export default function CandidateList({ data, onPick }: Props) {
                 </span>
               </div>
               <dl className="mt-3 grid grid-cols-[110px_1fr] gap-y-1 text-xs">
-                {e.type === "person" ? (
+                {e.type === "wallet" ? (
+                  <>
+                    <dt className="text-slate-500">Blockchain</dt>
+                    <dd className="font-medium">{e.chain}</dd>
+                    {Object.entries(e.extra).map(([k, v]) => (
+                      <div key={k} className="contents">
+                        <dt className="capitalize text-slate-500">{k.replace(/_/g, " ")}</dt>
+                        <dd>{String(v)}</dd>
+                      </div>
+                    ))}
+                  </>
+                ) : e.type === "person" ? (
                   <>
                     <dt className="text-slate-500">Date of birth</dt>
                     <dd className="font-medium">{e.birth_date ?? "—"}</dd>
@@ -82,7 +93,7 @@ export default function CandidateList({ data, onPick }: Props) {
                     <dd>{e.status ?? "—"}</dd>
                   </>
                 )}
-                <dt className="text-slate-500">{e.type === "person" ? "Companies" : "Linked parties"}</dt>
+                <dt className="text-slate-500">{e.type === "person" ? "Companies" : e.type === "wallet" ? "Attributed to" : "Linked parties"}</dt>
                 <dd>{c.linked_companies.length ? c.linked_companies.join(" · ") : "—"}</dd>
                 <dt className="text-slate-500">Sources</dt>
                 <dd className="text-slate-600 dark:text-slate-400">{[...new Set(e.sources.map((s) => s.source_label))].join(" · ")}</dd>

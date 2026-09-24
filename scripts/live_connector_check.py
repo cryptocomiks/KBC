@@ -21,6 +21,7 @@ os.environ.setdefault("CACHE_PATH", ":memory:")
 from app.connectors.aleph import AlephConnector  # noqa: E402
 from app.connectors.annuaire_fr import AnnuaireEntreprisesConnector  # noqa: E402
 from app.connectors.bodacc import BodaccConnector  # noqa: E402
+from app.connectors.chains import BitcoinConnector, EthereumConnector, TronConnector  # noqa: E402
 from app.connectors.companies_house import CompaniesHouseConnector  # noqa: E402
 from app.connectors.gleif import GleifConnector  # noqa: E402
 from app.connectors.icij import RECONCILE, IcijReconcileConnector  # noqa: E402
@@ -143,6 +144,36 @@ def check_official_sanctions() -> None:
     print(f"      index: {len(_INDEX.entries)} listed entries; load errors: {_INDEX.errors}")
 
 
+def check_crypto() -> None:
+    from app.connectors.official_sanctions import _INDEX
+
+    sanctions = OfficialSanctionsConnector(settings)
+    sanctions._index()
+    by_chain: dict[str, str] = {}
+    for address, (_, _, chain) in _INDEX.wallets.items():
+        by_chain.setdefault(chain or "?", address)
+    print(f"      OFAC crypto addresses indexed: {len(_INDEX.wallets)}; sample: {by_chain}")
+    expect("OFAC crypto addresses extracted", len(_INDEX.wallets) > 50)
+
+    for conn, sample in ((BitcoinConnector(settings), by_chain.get("BTC")),
+                         (EthereumConnector(settings), "0xdAC17F958D2ee523a2206206994597C13D831ec7"),
+                         (TronConnector(settings), by_chain.get("TRON") or "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t")):
+        if not sample:
+            expect(f"{conn.chain}: sample address available", False)
+            continue
+        wallet = conn.get_wallet(sample)
+        expect(f"{conn.chain}: wallet profile", wallet is not None,
+               f"{sample} {wallet.extra if wallet else ''}")
+        links = conn.get_wallet_links(wallet) if wallet else []
+        expect(f"{conn.chain}: flows aggregated", bool(links),
+               "; ".join(f"{link.relationship.amount} {link.relationship.currency} x{link.relationship.tx_count}"
+                         for link in links[:3]))
+        if conn.chain != "ETH":
+            hits = sanctions.screen(wallet)
+            expect(f"{conn.chain}: OFAC-listed address flagged", any(h.score == 100 for h in hits),
+                   "; ".join(h.matched_name for h in hits))
+
+
 def check_opensanctions() -> None:
     conn = OpenSanctionsConnector(settings)
     hits = conn.screen_many([person("Vladimir Putin", "1952-10-07")])
@@ -183,6 +214,7 @@ guarded("ICIJ Offshore Leaks reconcile API", check_icij)
 guarded("GLEIF (LEI + parent companies)", check_gleif)
 guarded("BODACC legal announcements", check_bodacc)
 guarded("Official sanctions lists (OFAC SDN + UN)", check_official_sanctions)
+guarded("Crypto: OFAC addresses + BTC/ETH/TRON explorers", check_crypto)
 for key, title, fn in [
     ("OPENSANCTIONS_API_KEY", "OpenSanctions", check_opensanctions),
     ("COMPANIES_HOUSE_API_KEY", "Companies House", check_companies_house),

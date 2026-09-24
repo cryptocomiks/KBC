@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Any, ClassVar
 
 from app.connectors.base import BaseConnector
+from app.connectors.crypto_util import normalize_address, wallet_id
 from app.matching.matcher import match_entities, match_name
 from app.matching.names import tokenize
 from app.models import (
@@ -71,7 +72,7 @@ class _DemoBase(BaseConnector):
         fields = {
             k: resolve_date(v) if k.endswith("_date") else v
             for k, v in rec.items()
-            if k not in {"id", "list_type", "dataset", "details"}
+            if k not in {"id", "list_type", "dataset", "details", "addresses"}
         }
         if "status" in fields:
             fields["status"] = CompanyStatus(fields["status"])
@@ -185,7 +186,56 @@ class DemoRegistryConnector(_DemoBase):
 
 
 class DemoScreeningConnector(_DemoBase):
+    def _listed_wallet(self, entity: Entity) -> dict[str, Any] | None:
+        target = normalize_address(entity.name, entity.chain)
+        for rec in self.data["entries"]:
+            for a in rec.get("addresses", []):
+                if normalize_address(a["address"], a["chain"]) == target:
+                    return rec
+        return None
+
+    def get_wallet_links(
+        self, entity: Entity, include_transfers: bool = True
+    ) -> list[LinkedEntity]:
+        """A listed wallet is linked to the sanctioned entity it is attributed to."""
+        if entity.type != EntityType.WALLET:
+            return []
+        rec = self._listed_wallet(entity)
+        if not rec:
+            return []
+        owner = self._to_entity({k: v for k, v in rec.items() if k != "addresses"})
+        rel = Relationship(
+            id=f"{self.name}:ctrl:{rec['id']}",
+            type=RelationType.CONTROLS,
+            source_id=owner.id,
+            target_id=entity.id,
+            role="Address attributed by the sanctions list",
+            sources=owner.sources,
+        )
+        return [LinkedEntity(relationship=rel, entity=owner)]
+
     def screen(self, entity: Entity) -> list[ScreeningHit]:
+        if entity.type == EntityType.WALLET:
+            rec = self._listed_wallet(entity)
+            if not rec:
+                return []
+            return [
+                ScreeningHit(
+                    entity_id=entity.id,
+                    list_type=ListType(rec["list_type"]),
+                    dataset=rec["dataset"],
+                    matched_name=f"{entity.name} ({rec['name']})",
+                    score=100.0,
+                    explanation=[
+                        "address listed verbatim on the sanctions list",
+                        f"attributed to {rec['name']}",
+                    ],
+                    details={**rec.get("details", {}), "listed_owner": rec["name"]},
+                    provenance=self.provenance(
+                        self.record_id(rec["id"]), f"{self.base_url}/company/{rec['id']}"
+                    ),
+                )
+            ]
         if entity.type == EntityType.ADDRESS:
             return []
         hits = []
@@ -217,6 +267,115 @@ class DemoScreeningConnector(_DemoBase):
                 )
             )
         return hits
+
+
+class DemoChainConnector(_DemoBase):
+    """Fictitious wallets and aggregated flows (app/demo/data/chain.json)."""
+
+    name = "demo_chain"
+    label = "Demo blockchain explorer (fictitious)"
+    kind = "chain"
+    filename = "chain.json"
+
+    def _wallet(self, rec: dict[str, Any]) -> Entity:
+        rid = wallet_id(rec["chain"], rec["address"])
+        extra = {
+            k: resolve_date(v) if k in ("first_seen", "last_seen") else v
+            for k, v in rec.items()
+            if k in ("balance", "tx_count", "first_seen", "last_seen", "label")
+        }
+        return Entity(
+            id=rid,
+            record_ids=[rid],
+            type=EntityType.WALLET,
+            name=rec["address"],
+            chain=rec["chain"],
+            demo=True,
+            identifiers={f"{rec['chain']} address": rec["address"]},
+            extra=extra,
+            sources=[self.provenance(rid, f"{self.base_url}/address/{rec['address']}")],
+        )
+
+    def _find(self, address: str) -> dict[str, Any] | None:
+        key = normalize_address(address)
+        return next(
+            (w for w in self.data["wallets"] if normalize_address(w["address"], w["chain"]) == key),
+            None,
+        )
+
+    def get_wallet(self, address: str) -> Entity | None:
+        rec = self._find(address)
+        return self._wallet(rec) if rec else None
+
+    def get_wallet_links(
+        self, entity: Entity, include_transfers: bool = True
+    ) -> list[LinkedEntity]:
+        out: list[LinkedEntity] = []
+        if entity.type == EntityType.WALLET:
+            rec = self._find(entity.name)
+            if not rec:
+                return []
+            me = wallet_id(rec["chain"], rec["address"])
+            for owner_rid in rec.get("controlled_by", []):
+                owner = self._owner(owner_rid)
+                if owner:
+                    out.append(
+                        LinkedEntity(relationship=self._control(owner.id, me, rec), entity=owner)
+                    )
+            if include_transfers:
+                for i, t in enumerate(self.data["transfers"]):
+                    if rec["address"] not in (t["from"], t["to"]):
+                        continue
+                    other = self._find(t["to"] if t["from"] == rec["address"] else t["from"])
+                    if not other:
+                        continue
+                    rel = Relationship(
+                        id=f"{self.name}:flow:{i}",
+                        type=RelationType.TRANSFER,
+                        source_id=wallet_id(rec["chain"], t["from"]),
+                        target_id=wallet_id(rec["chain"], t["to"]),
+                        amount=t["amount"],
+                        currency=t["currency"],
+                        tx_count=t["count"],
+                        start_date=resolve_date(t.get("first")),
+                        role=f"{t['count']} tx · {t['amount']:,} {t['currency']} · last {resolve_date(t.get('last'))}",
+                        sources=[self.provenance(me, f"{self.base_url}/address/{rec['address']}")],
+                    )
+                    out.append(LinkedEntity(relationship=rel, entity=self._wallet(other)))
+            return out
+        # Company / person: wallets it controls
+        for rec in self.data["wallets"]:
+            if set(rec.get("controlled_by", [])) & set(entity.record_ids):
+                wallet = self._wallet(rec)
+                out.append(
+                    LinkedEntity(
+                        relationship=self._control(entity.id, wallet.id, rec), entity=wallet
+                    )
+                )
+        return out
+
+    def _control(self, owner_id: str, wallet_rid: str, rec: dict[str, Any]) -> Relationship:
+        return Relationship(
+            id=f"{self.name}:ctrl:{owner_id}>{rec['address']}",
+            type=RelationType.CONTROLS,
+            source_id=owner_id,
+            target_id=wallet_rid,
+            role=rec.get("label") or "Wallet attributed to the entity",
+            sources=[self.provenance(wallet_rid, f"{self.base_url}/address/{rec['address']}")],
+        )
+
+    @staticmethod
+    def _owner(record_id: str) -> Entity | None:
+        for cls in (DemoIntlRegistry, DemoFrRegistry):
+            if record_id.startswith(f"{cls.name}:"):
+                conn = cls()
+                native = conn.native_id(record_id)
+                return (
+                    conn.get_company_details(record_id) or conn.get_person_details(record_id)
+                    if native
+                    else None
+                )
+        return None
 
 
 class DemoFrRegistry(DemoRegistryConnector):
@@ -251,4 +410,5 @@ DEMO_CONNECTORS: list[type[BaseConnector]] = [
     DemoIntlRegistry,
     DemoSanctions,
     DemoLeaks,
+    DemoChainConnector,
 ]

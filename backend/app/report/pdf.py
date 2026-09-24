@@ -491,6 +491,32 @@ def build_pdf(
         )
     )
 
+    if t.get("crypto"):
+        story.append(Paragraph("10b. Crypto wallets and on-chain flows", st["h2"]))
+        story.append(
+            Paragraph(
+                "Aggregated recent transfers per counterparty (one hop) from public explorers; "
+                "wallets attributed to entities by sanctions lists or registries.",
+                st["muted"],
+            )
+        )
+        story.append(
+            _table(
+                t["crypto"],
+                [
+                    ("relation", "Relation", 1.2),
+                    ("from", "From", 2.6),
+                    ("to", "To", 2.6),
+                    ("amount", "Amount", 0.9),
+                    ("currency", "Cur.", 0.5),
+                    ("tx_count", "Tx", 0.4),
+                    ("since", "Since", 0.8),
+                    ("sanctioned_party", "Sanctioned party", 2.2),
+                ],
+                st,
+            )
+        )
+
     dated = [d for d in t.get("documents", []) if d.get("date") or d.get("flags")]
     story.append(Paragraph("11. Linked documents (legal notices, filings)", st["h2"]))
     story.append(

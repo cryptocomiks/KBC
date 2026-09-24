@@ -89,6 +89,13 @@ class EntityResolver:
     def same_entity(a: Entity, b: Entity) -> tuple[bool, float, list[str]]:
         if a.type != b.type or a.demo != b.demo:  # never mix fictitious and real data
             return False, 0.0, []
+        if a.type == EntityType.WALLET:
+            from app.connectors.crypto_util import normalize_address
+
+            same = a.chain == b.chain and normalize_address(a.name, a.chain) == normalize_address(
+                b.name, b.chain
+            )
+            return same, 100.0 if same else 0.0, ["same blockchain address"] if same else []
         if a.type == EntityType.ADDRESS:
             score = fuzz.token_set_ratio(address_key(a.name), address_key(b.name))
             return score >= ADDRESS_MERGE_SCORE, score, [f"address similarity {score:.0f}%"]

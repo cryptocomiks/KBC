@@ -23,10 +23,24 @@ from dataclasses import dataclass, field
 import httpx
 
 from app.connectors.base import USER_AGENT, BaseConnector, ConnectorError
+from app.connectors.crypto_util import (
+    OFAC_CURRENCY_CHAIN,
+    detect_chain,
+    normalize_address,
+    wallet_id,
+)
 from app.connectors.util import nationality_iso
 from app.matching.matcher import match_entities
 from app.matching.names import canonical, normalize_company, normalize_person, phonetic
-from app.models import Entity, EntityType, ListType, ScreeningHit
+from app.models import (
+    Entity,
+    EntityType,
+    LinkedEntity,
+    ListType,
+    Relationship,
+    RelationType,
+    ScreeningHit,
+)
 
 OFAC_SDN = "https://www.treasury.gov/ofac/downloads/sdn.csv"
 OFAC_ALT = "https://www.treasury.gov/ofac/downloads/alt.csv"
@@ -81,14 +95,19 @@ class _Index:
 
     def __init__(self) -> None:
         self.entries: list[ListedEntry] = []
+        # normalised crypto address -> (entry index, OFAC currency code, network)
+        self.wallets: dict[str, tuple[int, str, str | None]] = {}
         self.by_key: dict[str, list[int]] = {}
         self.loaded_at = 0.0
         self.errors: list[str] = []
         self.lock = threading.Lock()
 
-    def add(self, entry: ListedEntry) -> None:
+    def add(self, entry: ListedEntry, addresses: list[tuple[str, str]] = ()) -> None:
         idx = len(self.entries)
         self.entries.append(entry)
+        for currency, address in addresses:
+            chain = detect_chain(address) or OFAC_CURRENCY_CHAIN.get(currency)
+            self.wallets[normalize_address(address, chain)] = (idx, currency, chain)
         for name in [entry.entity.name, *entry.entity.aliases]:
             for key in _keys(entry.entity.type, name):
                 self.by_key.setdefault(key, []).append(idx)
@@ -134,8 +153,10 @@ def _load_ofac(index: _Index, timeout: float) -> None:
         remarks = clean(remarks)
         nats = nationality_iso(" / ".join(re.findall(r"[Nn]ationality ([A-Za-z ]+?)[;.]", remarks)))
         etype = EntityType.PERSON if is_person else EntityType.COMPANY
+        wallets = re.findall(r"Digital Currency Address - ([A-Z0-9]+) ([A-Za-z0-9]+)", remarks)
         index.add(
-            ListedEntry(
+            addresses=wallets,
+            entry=ListedEntry(
                 entity=Entity(
                     id=f"ofac:{ent_num}",
                     type=etype,
@@ -148,7 +169,7 @@ def _load_ofac(index: _Index, timeout: float) -> None:
                 url=OFAC_UI.format(id=ent_num),
                 program=clean(program),
                 details={"remarks": remarks[:300] or None},
-            )
+            ),
         )
 
 
@@ -248,10 +269,13 @@ class OfficialSanctionsConnector(BaseConnector):
                     fresh.by_key,
                     fresh.errors,
                 )
+                _INDEX.wallets = fresh.wallets
                 _INDEX.loaded_at = time.time()
             return _INDEX
 
     def screen(self, entity: Entity) -> list[ScreeningHit]:
+        if entity.type == EntityType.WALLET:
+            return self._screen_wallet(entity)
         if entity.type not in (EntityType.PERSON, EntityType.COMPANY):
             return []
         hits = []
@@ -278,6 +302,78 @@ class OfficialSanctionsConnector(BaseConnector):
                 )
             )
         return hits
+
+    def _screen_wallet(self, entity: Entity) -> list[ScreeningHit]:
+        index = self._index()
+        found = index.wallets.get(normalize_address(entity.name, entity.chain))
+        if not found:
+            return []
+        idx, currency, _ = found
+        entry = index.entries[idx]
+        return [
+            ScreeningHit(
+                entity_id=entity.id,
+                list_type=ListType.SANCTION,
+                dataset=entry.dataset,
+                matched_name=f"{entity.name} ({entry.entity.name})",
+                score=100.0,
+                explanation=[
+                    f"address listed verbatim on the OFAC SDN list (Digital Currency Address - {currency})",
+                    f"attributed to {entry.entity.name}",
+                ],
+                details={
+                    "program": entry.program or None,
+                    "listed_owner": entry.entity.name,
+                    "currency": currency,
+                },
+                provenance=self.provenance(self.record_id(entry.entity.id), entry.url),
+            )
+        ]
+
+    def get_wallet_links(
+        self, entity: Entity, include_transfers: bool = True
+    ) -> list[LinkedEntity]:
+        """Wallet -> its sanctioned owner; sanctioned owner -> its other listed addresses."""
+        index = self._index()
+        out: list[LinkedEntity] = []
+        if entity.type == EntityType.WALLET:
+            found = index.wallets.get(normalize_address(entity.name, entity.chain))
+            if found:
+                owner = self._owner_entity(index.entries[found[0]])
+                out.append(self._control(owner, entity, found[1], other=owner))
+            return out
+        own_ids = {r.split(":", 1)[1] for r in entity.record_ids if r.startswith(f"{self.name}:")}
+        for address, (idx, currency, chain) in index.wallets.items():
+            entry = index.entries[idx]
+            if entry.entity.id in own_ids and chain in ("BTC", "ETH", "TRON"):
+                wallet = Entity(
+                    id=wallet_id(chain, address),
+                    record_ids=[],
+                    type=EntityType.WALLET,
+                    name=address,
+                    chain=chain,
+                    sources=[self.provenance(self.record_id(entry.entity.id), entry.url)],
+                )
+                out.append(self._control(entity, wallet, currency, other=wallet))
+        return out[:20]
+
+    def _owner_entity(self, entry: ListedEntry) -> Entity:
+        rid = self.record_id(entry.entity.id)
+        return entry.entity.model_copy(
+            update={"id": rid, "record_ids": [rid], "sources": [self.provenance(rid, entry.url)]}
+        )
+
+    def _control(self, owner: Entity, wallet: Entity, currency: str, other: Entity) -> LinkedEntity:
+        """CONTROLS edge owner -> wallet; `other` is the end returned to the caller."""
+        rel = Relationship(
+            id=f"{self.name}:ctrl:{owner.id}>{wallet.name}",
+            type=RelationType.CONTROLS,
+            source_id=owner.id,
+            target_id=wallet.id,
+            role=f"Address attributed by OFAC (Digital Currency Address - {currency})",
+            sources=[self.provenance(owner.id, OFAC_UI.format(id=owner.id.rsplit(":", 1)[-1]))],
+        )
+        return LinkedEntity(relationship=rel, entity=other)
 
     def screen_many(self, entities: list[Entity]) -> list[ScreeningHit]:
         # The list is in memory: one pass is cheap, and it avoids parallel downloads.

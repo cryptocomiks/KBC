@@ -1,6 +1,6 @@
 // Mirrors backend/app/models.py and backend/app/schemas.py
 
-export type EntityType = "person" | "company" | "address";
+export type EntityType = "person" | "company" | "address" | "wallet";
 export type RiskLevel = "none" | "low" | "medium" | "high" | "critical";
 
 export interface Provenance {
@@ -39,6 +39,7 @@ export interface Entity {
   address: string | null;
   identifiers: Record<string, string>;
   is_offshore: boolean;
+  chain: string | null;
   demo: boolean;
   documents: DocumentRef[];
   record_ids: string[];
@@ -46,7 +47,7 @@ export interface Entity {
   extra: Record<string, unknown>;
 }
 
-export type RelationType = "officer" | "shareholder" | "beneficial_owner" | "registered_at";
+export type RelationType = "officer" | "shareholder" | "beneficial_owner" | "registered_at" | "controls" | "transfer";
 
 export interface Relationship {
   id: string;
@@ -55,6 +56,9 @@ export interface Relationship {
   target_id: string;
   role: string | null;
   share_pct: number | null;
+  amount: number | null;
+  currency: string | null;
+  tx_count: number | null;
   start_date: string | null;
   end_date: string | null;
   sources: Provenance[];
@@ -140,7 +144,7 @@ export interface Investigation {
   hits: ScreeningHit[];
   risk: RiskAssessment;
   tables: Record<
-    "mandates" | "companies" | "shareholders" | "ownership" | "screening" | "leaks" | "sources" | "documents",
+    "mandates" | "companies" | "shareholders" | "ownership" | "screening" | "leaks" | "sources" | "documents" | "crypto",
     Row[]
   >;
   queries: QueryLog[];

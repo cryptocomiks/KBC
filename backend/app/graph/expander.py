@@ -83,6 +83,9 @@ class NetworkExpander:
         self.warnings: list[str] = []
         self.truncated = False
         self._crossrefd: set[str] = set()
+        # Wallets whose on-chain flows are fetched: the subject wallet and wallets
+        # controlled by an entity of the network (one hop of flows, not beyond).
+        self._flow_wallets: set[str] = set()
 
     # ------------------------------------------------------------ utilities
     def _call(self, conn: BaseConnector, operation: str, target: str, fn: Callable, *args: Any):
@@ -159,7 +162,7 @@ class NetworkExpander:
             return
         self._crossrefd.add(cid)
         entity = self.entities[cid]
-        if entity.type == EntityType.ADDRESS:
+        if entity.type in (EntityType.ADDRESS, EntityType.WALLET):
             return
         have = {rid.split(":", 1)[0] for rid in entity.record_ids}
         for conn in self.registry.enabled("registry", demo=self.demo_realm):
@@ -204,6 +207,29 @@ class NetworkExpander:
                 links += self._call(
                     conn, "get_person_roles", entity.name, conn.get_person_roles, rid
                 )
+        # Crypto: wallets controlled by the entity, owners of a wallet, on-chain flows.
+        include_transfers = cid in self._flow_wallets
+        for conn in self.registry.enabled(demo=self.demo_realm):
+            if type(conn).get_wallet_links is BaseConnector.get_wallet_links:
+                continue
+            found = (
+                self._call(
+                    conn,
+                    "get_wallet_links",
+                    entity.name,
+                    conn.get_wallet_links,
+                    entity,
+                    include_transfers,
+                )
+                or []
+            )
+            for link in found:
+                if (
+                    link.relationship.type == RelationType.CONTROLS
+                    and link.entity.type == EntityType.WALLET
+                ):
+                    self._flow_wallets.add(link.entity.id)  # resolved to its canonical id below
+            links += found
         return links
 
     def _address_links(self, cid: str, depth: int) -> None:
@@ -266,6 +292,8 @@ class NetworkExpander:
         assert subject_id is not None
         self.depth[subject_id] = 0
         self._decorate(self.entities[subject_id])
+        if self.entities[subject_id].type == EntityType.WALLET:
+            self._flow_wallets.add(subject_id)
         self._cross_reference(subject_id)
 
         queue: deque[str] = deque([subject_id])
@@ -306,6 +334,8 @@ class NetworkExpander:
                 other_cid = self._add_entity(link.entity, depth + 1, allow_new)
                 if other_cid is None:
                     continue
+                if link.entity.id in self._flow_wallets:
+                    self._flow_wallets.add(other_cid)
                 if other_cid not in expanded:
                     self._cross_reference(other_cid)
                     queue.append(other_cid)

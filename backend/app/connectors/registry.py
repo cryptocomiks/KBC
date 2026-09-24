@@ -10,6 +10,7 @@ def _connector_classes() -> list[type[BaseConnector]]:
     from app.connectors.aleph import AlephConnector
     from app.connectors.annuaire_fr import AnnuaireEntreprisesConnector
     from app.connectors.bodacc import BodaccConnector
+    from app.connectors.chains import CHAIN_CONNECTORS
     from app.connectors.companies_house import CompaniesHouseConnector
     from app.connectors.demo import DEMO_CONNECTORS
     from app.connectors.gleif import GleifConnector
@@ -34,6 +35,7 @@ def _connector_classes() -> list[type[BaseConnector]]:
         IcijReconcileConnector,
         IcijLocalConnector,
         AlephConnector,
+        *CHAIN_CONNECTORS,
     ]
 
 

@@ -24,6 +24,7 @@ weights:
   dissolved_company: 3
   missing_accounts: 5
   nominee_director: 5          # one person sitting on many boards at one address
+  sanctioned_counterparty: 30  # direct on-chain flows with a sanctioned wallet
   insolvency_proceedings: 10   # safeguard / receivership / liquidation published in a legal gazette
   ubo_discrepancy: 12          # computed UBO (>= threshold) missing from declared beneficial owners
 

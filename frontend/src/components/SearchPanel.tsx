@@ -18,6 +18,7 @@ const EXAMPLES = [
   { q: "Meridian Capital Holdings", type: "company" as const, hint: "LU holding, circular ownership" },
   { q: "Henri Castelnau", type: "person" as const, hint: "professional director" },
   { q: "Rouslan Terekhov", type: "person" as const, hint: "sanctions match" },
+  { q: "TNRthgateMaritimeDEMwa111111111111", type: "any" as const, hint: "TRON wallet, sanctioned exposure" },
 ];
 
 interface Props {
@@ -51,14 +52,14 @@ export default function SearchPanel({ initial, demo, live, onSearch, compact }: 
       <div className="flex flex-wrap items-end gap-3">
         <div className="min-w-[280px] flex-1">
           <label className="label mb-1 block" htmlFor="q">
-            Person or company name
+            Person, company or crypto address
           </label>
           <div className="relative">
             <Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
             <input
               id="q"
               className="input w-full pl-9 text-base"
-              placeholder="e.g. Mohamed Qadrany, Meridian Capital…"
+              placeholder="Name, company… or a BTC / ETH / TRON address"
               value={p.q}
               onChange={(e) => setP({ ...p, q: e.target.value })}
               autoFocus={!compact}

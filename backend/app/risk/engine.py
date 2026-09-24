@@ -42,6 +42,7 @@ FACTOR_LABELS = {
     "nominee_director": "Possible nominee / professional director",
     "ubo_discrepancy": "Undeclared beneficial owner (computed vs declared)",
     "insolvency_proceedings": "Insolvency proceedings (legal notice)",
+    "sanctioned_counterparty": "Crypto flows with a sanctioned wallet",
 }
 
 
@@ -195,6 +196,27 @@ class RiskEngine:
                         "ubo_discrepancy",
                         pid,
                         f"{p.name}: undeclared UBO of {name(cid)} ({pct:g}%)",
+                    )
+
+        # Crypto: direct on-chain flows with a sanctioned wallet (exposure)
+        sanctioned = {
+            h.entity_id
+            for h in net.hits
+            if h.list_type == ListType.SANCTION and h.score >= t["strong_match_score"]
+        }
+        for r in net.relationships.values():
+            if r.type != RelationType.TRANSFER:
+                continue
+            for mine, other, verb in (
+                (r.target_id, r.source_id, "received from"),
+                (r.source_id, r.target_id, "sent to"),
+            ):
+                if other in sanctioned and mine not in sanctioned and mine in ents:
+                    amount = f"{r.amount:,.2f} {r.currency}" if r.amount is not None else "funds"
+                    flag(
+                        "sanctioned_counterparty",
+                        mine,
+                        f"{ents[mine].name} {verb} sanctioned wallet {name(other)}: {amount} in {r.tx_count or '?'} tx",
                     )
 
         # 4. Addresses and nominee directors

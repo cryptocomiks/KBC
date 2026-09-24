@@ -20,7 +20,7 @@ interface Props {
 export default function InvestigationView({ investigation: inv, theme, refreshing, onBack, onDepthChange }: Props) {
   const graph = useRef<GraphHandle>(null);
   const [layout, setLayout] = useState<GraphLayout>("hierarchy");
-  const [filters, setFilters] = useState<GraphFilters>({ addresses: true, officers: true, ended: true });
+  const [filters, setFilters] = useState<GraphFilters>({ crypto: true, addresses: true, officers: true, ended: true });
   const [selected, setSelected] = useState<string | null>(null);
   const [pdfState, setPdfState] = useState<"idle" | "busy" | "error">("idle");
   const [reference, setReference] = useState("");
@@ -65,7 +65,9 @@ export default function InvestigationView({ investigation: inv, theme, refreshin
           <p className="text-xs text-slate-500">
             {subject.type === "person"
               ? `Person · born ${subject.birth_date ?? "?"} · ${subject.nationalities.map(countryName).join(", ")}`
-              : `Company · ${countryName(subject.jurisdiction)} · ${subject.registration_number ?? ""}`}
+              : subject.type === "wallet"
+                ? `Crypto wallet · ${subject.chain} · ${String(subject.extra.balance ?? "")}`
+                : `Company · ${countryName(subject.jurisdiction)} · ${subject.registration_number ?? ""}`}
             {subject.aliases.length > 0 && ` · aka ${subject.aliases.join(", ")}`}
           </p>
           <p className="mt-1 text-[11px] text-slate-500">
@@ -136,6 +138,7 @@ export default function InvestigationView({ investigation: inv, theme, refreshin
             {(
               [
                 ["officers", "Officers"],
+                ["crypto", "Crypto"],
                 ["addresses", "Addresses"],
                 ["ended", "Ended links"],
               ] as const

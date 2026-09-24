@@ -1,0 +1,122 @@
+{
+ "_comment": "FICTITIOUS DATA for demonstration purposes only. Addresses are invented and do not exist on any blockchain.",
+ "source": {
+  "name": "demo_chain",
+  "label": "Demo blockchain explorer (fictitious)",
+  "base_url": "https://example.org/kbc-demo/chain"
+ },
+ "wallets": [
+  {
+   "address": "TNRthgateMaritimeDEMwa111111111111",
+   "chain": "TRON",
+   "balance": "412,600 USDT",
+   "tx_count": 38,
+   "first_seen": "2021-03-02",
+   "last_seen": "@-1m",
+   "controlled_by": [
+    "demo_intl_registry:vg/1874412"
+   ],
+   "label": "Treasury wallet declared in a KYC file (fictitious)"
+  },
+  {
+   "address": "TSLenneHDingsDEMwa1111111111111111",
+   "chain": "TRON",
+   "balance": "5,200 USDT",
+   "tx_count": 12,
+   "first_seen": "2021-06-11",
+   "last_seen": "@-2m",
+   "controlled_by": [
+    "demo_intl_registry:cy/HE345678"
+   ]
+  },
+  {
+   "address": "TVKvExchangeSanctDEM11111111111111",
+   "chain": "TRON",
+   "balance": "n/a",
+   "tx_count": 18430,
+   "label": "Volkov Exchange OÜ hot wallet (fictitious)"
+  },
+  {
+   "address": "TQtcDeskAsiaDEM1111111111111111111",
+   "chain": "TRON",
+   "tx_count": 902,
+   "label": "Unidentified OTC desk (fictitious)"
+  },
+  {
+   "address": "TPaymentGatewayDEM1111111111111111",
+   "chain": "TRON",
+   "tx_count": 5510
+  },
+  {
+   "address": "bc1qterekhvdemcldwaetqqqqqqqqqqqqqqqqqqqqq",
+   "chain": "BTC",
+   "balance": "31.4 BTC",
+   "tx_count": 9,
+   "controlled_by": [
+    "demo_intl_registry:OP-1004"
+   ]
+  },
+  {
+   "address": "bc1qunknwnmxerdemqqqqqqqqqqqqqqqqqqqqqqqqq",
+   "chain": "BTC",
+   "tx_count": 40211,
+   "label": "Suspected mixing service (fictitious)"
+  }
+ ],
+ "transfers": [
+  {
+   "from": "TVKvExchangeSanctDEM11111111111111",
+   "to": "TNRthgateMaritimeDEMwa111111111111",
+   "amount": 1250000,
+   "currency": "USDT",
+   "count": 7,
+   "first": "2022-05-03",
+   "last": "2023-01-18"
+  },
+  {
+   "from": "TNRthgateMaritimeDEMwa111111111111",
+   "to": "TSLenneHDingsDEMwa1111111111111111",
+   "amount": 600000,
+   "currency": "USDT",
+   "count": 4,
+   "first": "2022-06-01",
+   "last": "2023-02-10"
+  },
+  {
+   "from": "TNRthgateMaritimeDEMwa111111111111",
+   "to": "TQtcDeskAsiaDEM1111111111111111111",
+   "amount": 520000,
+   "currency": "USDT",
+   "count": 9,
+   "first": "2022-07-15",
+   "last": "@-1m"
+  },
+  {
+   "from": "TPaymentGatewayDEM1111111111111111",
+   "to": "TNRthgateMaritimeDEMwa111111111111",
+   "amount": 180000,
+   "currency": "USDT",
+   "count": 5,
+   "first": "2021-03-02",
+   "last": "2021-12-20"
+  },
+  {
+   "from": "TSLenneHDingsDEMwa1111111111111111",
+   "to": "TQtcDeskAsiaDEM1111111111111111111",
+   "amount": 590000,
+   "currency": "USDT",
+   "count": 6,
+   "first": "2022-06-05",
+   "last": "@-2m"
+  },
+  {
+   "from": "bc1qunknwnmxerdemqqqqqqqqqqqqqqqqqqqqqqqqq",
+   "to": "bc1qterekhvdemcldwaetqqqqqqqqqqqqqqqqqqqqq",
+   "amount": 31.4,
+   "currency": "BTC",
+   "count": 9,
+   "first": "2022-03-01",
+   "last": "2022-11-30"
+  }
+ ]
+}

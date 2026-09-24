@@ -105,6 +105,18 @@ class BaseConnector(ABC):
         """Companies in which the company holds shares."""
         return []
 
+    # Crypto extensions (wallets are entities of type "wallet")
+    def get_wallet(self, address: str) -> Entity | None:
+        """Wallet profile (balance, activity) for an address on the connector's chain."""
+        return None
+
+    def get_wallet_links(
+        self, entity: Entity, include_transfers: bool = True
+    ) -> list[LinkedEntity]:
+        """Crypto links of an entity: aggregated on-chain transfers of a wallet
+        (counterparties) and/or wallets controlled by / controlling the entity."""
+        return []
+
     def get_documents(self, entity: Entity) -> list[Document]:
         """Documents / official records about an entity (filings, legal notices...)."""
         return []

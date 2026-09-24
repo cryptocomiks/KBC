@@ -9,6 +9,7 @@ from typing import Any
 
 from app.cache import get_cache
 from app.connectors.base import ConnectorError
+from app.connectors.crypto_util import detect_chain
 from app.connectors.registry import ConnectorRegistry
 from app.graph.expander import Network, NetworkExpander
 from app.graph.ownership import indirect_stakes, ownership_graph
@@ -30,6 +31,8 @@ class KbcService:
 
     # ------------------------------------------------------------- search
     def search(self, query: str, etype: str = "any") -> SearchResponse:
+        if detect_chain(query):
+            return self._search_wallet(query.strip())
         registries = self.registry.enabled("registry")
         warnings: list[str] = []
 
@@ -84,6 +87,39 @@ class KbcService:
             candidates=candidates,
             sources=[c.label for c in registries],
             warnings=list(dict.fromkeys(warnings)),
+        )
+
+    def _search_wallet(self, address: str) -> SearchResponse:
+        """A crypto address was typed: return the wallet (demo and/or real chain)."""
+        chains = self.registry.enabled("chain")
+        warnings: list[str] = []
+        candidates = []
+        for conn in chains:
+            try:
+                wallet = conn.get_wallet(address)
+            except ConnectorError as exc:
+                warnings.append(str(exc))
+                continue
+            if wallet:
+                owners = [
+                    link.entity.name
+                    for link in conn.get_wallet_links(wallet, include_transfers=False)
+                ]
+                candidates.append(
+                    SearchCandidate(
+                        entity=wallet,
+                        score=100.0,
+                        explanation=[f"{wallet.chain} address detected", "exact address"],
+                        linked_companies=owners,
+                        roles_count=len(owners),
+                    )
+                )
+        return SearchResponse(
+            query=address,
+            type="wallet",
+            candidates=candidates,
+            sources=[c.label for c in chains],
+            warnings=warnings,
         )
 
     def _linked_summary(self, ent: Entity, warnings: list[str]) -> tuple[list[str], int]:
@@ -158,6 +194,14 @@ class KbcService:
     def _load_seeds(self, record_ids: list[str]) -> list[Entity]:
         seeds = []
         for rid in record_ids:
+            if rid.startswith("wallet:"):
+                address = rid.split(":", 2)[2]
+                for conn in self.registry.enabled("chain"):
+                    wallet = conn.get_wallet(address)
+                    if wallet:  # demo connector first (registry order), then public explorers
+                        seeds.append(wallet)
+                        break
+                continue
             conn = self.registry.for_record(rid)
             if conn is None:
                 continue
@@ -373,9 +417,41 @@ def build_tables(net: Network, risk: RiskAssessment) -> dict[str, list[dict[str,
         reverse=False,
     )
 
+    sanctioned = {
+        h.entity_id for h in net.hits if h.list_type == ListType.SANCTION and h.score >= 85
+    }
+    crypto = []
+    for r in rels:
+        if r.type not in (RelationType.TRANSFER, RelationType.CONTROLS):
+            continue
+        crypto.append(
+            {
+                "from_id": r.source_id,
+                "from": name(r.source_id),
+                "to_id": r.target_id,
+                "to": name(r.target_id),
+                "relation": "On-chain transfers"
+                if r.type == RelationType.TRANSFER
+                else "Controls wallet",
+                "chain": ents[r.target_id].chain if r.target_id in ents else None,
+                "amount": r.amount,
+                "currency": r.currency,
+                "tx_count": r.tx_count,
+                "since": r.start_date,
+                "details": r.role,
+                "sanctioned_party": ", ".join(
+                    name(x) for x in (r.source_id, r.target_id) if x in sanctioned
+                ),
+                "sources": _sources(r.sources),
+                "urls": _source_urls(r.sources),
+            }
+        )
+    crypto.sort(key=lambda row: (row["relation"], -(row["amount"] or 0)))
+
     return {
         "mandates": mandates,
         "documents": documents,
+        "crypto": crypto,
         "companies": companies,
         "shareholders": shareholders,
         "ownership": ownership,
