@@ -5,7 +5,7 @@ import respx
 
 from app.connectors import open_datasets as od
 from app.connectors.gdelt import GdeltConnector
-from app.connectors.wikidata import SPARQL, WikidataConnector, WikidataPepConnector
+from app.connectors.wikidata import WikidataConnector, WikidataPepConnector
 from app.graph.expander import NetworkExpander
 from app.models import Entity, EntityType, ListType, RelationType
 from app.risk.engine import RiskEngine
@@ -51,71 +51,74 @@ def test_open_watchlists_index_and_classify(monkeypatch):
     )  # vessels skipped
 
 
-def binding(**kw):
-    return {k: {"type": "literal", "value": v} for k, v in kw.items()}
+def item(qid, label, description=None, **claims):
+    """Minimal wbgetentities entity: claim values are item ids (Q...), strings or (value, qualifiers)."""
+
+    def snak(v):
+        if isinstance(v, str) and v.startswith("Q") and v[1:].isdigit():
+            return {"datavalue": {"type": "wikibase-entityid", "value": {"id": v}}}
+        if isinstance(v, str) and v.startswith("+"):
+            return {"datavalue": {"type": "time", "value": {"time": v}}}
+        return {"datavalue": {"type": "string", "value": v}}
+
+    out = {"id": qid, "labels": {"en": {"value": label}}, "claims": {}}
+    if description:
+        out["descriptions"] = {"en": {"value": description}}
+    for prop, values in claims.items():
+        out["claims"][prop] = []
+        for v in values if isinstance(values, list) else [values]:
+            claim = {"mainsnak": snak(v[0] if isinstance(v, tuple) else v)}
+            if isinstance(v, tuple):
+                claim["qualifiers"] = {q: [snak(t)] for q, t in v[1].items()}
+            out["claims"][prop].append(claim)
+    return out
 
 
-def sparql_reply(request):
-    query = request.url.params["query"]
-    if "GROUP_CONCAT" in query:  # details
-        rows = []
-        if "Q1001" in query:
-            rows.append(
-                binding(
-                    item="http://www.wikidata.org/entity/Q1001",
-                    itemLabel="Ana Minister",
-                    itemDescription="Minister of Finance",
-                    birth="1970-02-03T00:00:00Z",
-                    countries="RS",
-                    types="Q5",
-                    positions="Minister of Finance|2019-01-01T00:00:00Z|;;Member of Parliament|2010-01-01T00:00:00Z|2018-12-31T00:00:00Z",
-                    twitter="anaminister",
-                    email="mailto:ana@private.example",
-                    website="https://ana.example",
-                )
-            )
-        if "Q2002" in query:
-            rows.append(
-                binding(
-                    item="http://www.wikidata.org/entity/Q2002",
-                    itemLabel="Acme Group",
-                    itemDescription="company",
-                    countries="FR",
-                    types="Q4830453",
-                    website="https://acme.example",
-                    email="mailto:contact@acme.example",
-                    linkedin_org="acme-group",
-                    leiCode="969500ABCDEF12345678",
-                )
-            )
-        return httpx.Response(200, json={"results": {"bindings": rows}})
-    return httpx.Response(
-        200,
-        json={
-            "results": {
-                "bindings": [
-                    binding(
-                        item="http://www.wikidata.org/entity/Q1001",
-                        prop="http://www.wikidata.org/prop/direct/P26",
-                        other="http://www.wikidata.org/entity/Q1002",
-                        otherLabel="Marko Minister",
-                        isHuman="true",
-                    ),
-                    binding(
-                        item="http://www.wikidata.org/entity/Q1001",
-                        prop="http://www.wikidata.org/prop/direct/P1830",
-                        other="http://www.wikidata.org/entity/Q2002",
-                        otherLabel="Acme Group",
-                        isHuman="false",
-                    ),
-                ]
-            }
-        },
-    )
+ENTITIES = {
+    "Q1001": item(
+        "Q1001",
+        "Ana Minister",
+        "Minister of Finance",
+        P31="Q5",
+        P569="+1970-02-03T00:00:00Z",
+        P27="Q403",
+        P39=[
+            ("Q501", {"P580": "+2019-01-01T00:00:00Z"}),
+            ("Q502", {"P580": "+2010-01-01T00:00:00Z", "P582": "+2018-12-31T00:00:00Z"}),
+        ],
+        P2002="anaminister",
+        P968="mailto:ana@private.example",
+        P856="https://ana.example",
+        P26="Q1002",
+        P1830="Q2002",
+    ),
+    "Q1002": item("Q1002", "Marko Minister", P31="Q5"),
+    "Q2002": item(
+        "Q2002",
+        "Acme Group",
+        "company",
+        P31="Q4830453",
+        P17="Q142",
+        P856="https://acme.example",
+        P968="mailto:contact@acme.example",
+        P4264="acme-group",
+        P1278="969500ABCDEF12345678",
+    ),
+    "Q403": item("Q403", "Serbia", P297="RS"),
+    "Q142": item("Q142", "France", P297="FR"),
+    "Q501": item("Q501", "Minister of Finance"),
+    "Q502": item("Q502", "Member of Parliament"),
+}
 
 
-def search_reply(request):
-    term = request.url.params["search"]
+def api_reply(request):
+    params = request.url.params
+    if params["action"] == "wbgetentities":
+        ids = params["ids"].split("|")
+        return httpx.Response(
+            200, json={"entities": {i: ENTITIES[i] for i in ids if i in ENTITIES}}
+        )
+    term = params["search"]
     if "Ana" in term:
         return httpx.Response(
             200,
@@ -136,8 +139,7 @@ def search_reply(request):
 
 @respx.mock
 def test_wikidata_pep_relatives_and_contacts():
-    respx.get("https://www.wikidata.org/w/api.php").mock(side_effect=search_reply)
-    respx.get(SPARQL).mock(side_effect=sparql_reply)
+    respx.get("https://www.wikidata.org/w/api.php").mock(side_effect=api_reply)
     wd = WikidataConnector(LIVE)
 
     [ana] = wd.search_person("Ana Minister")
@@ -198,17 +200,24 @@ def test_gdelt_adverse_media_documents():
     )
 
 
+RSS = """<?xml version="1.0"?><rss><channel>
+<item><title>Acme Group fined for bribery - Example Times</title><link>https://news.example/b</link>
+<pubDate>Mon, 03 Aug 2026 10:00:00 GMT</pubDate><source url="https://news.example">Example Times</source></item>
+</channel></rss>"""
+
+
 @respx.mock
-def test_gdelt_non_json_answer_is_ignored():
-    respx.get("https://api.gdeltproject.org/api/v2/doc/doc").mock(
-        return_value=httpx.Response(200, text="Please limit requests")
+def test_gdelt_rate_limited_falls_back_to_google_news():
+    gdelt = respx.get("https://api.gdeltproject.org/api/v2/doc/doc").mock(
+        return_value=httpx.Response(429, text="Please limit requests to one every 5 seconds")
     )
-    assert (
-        GdeltConnector(LIVE).get_documents(
-            Entity(id="c", type=EntityType.COMPANY, name="Acme Group")
-        )
-        == []
+    respx.get("https://news.google.com/rss/search").mock(return_value=httpx.Response(200, text=RSS))
+    [doc] = GdeltConnector(LIVE).get_documents(
+        Entity(id="c", type=EntityType.COMPANY, name="Acme Group")
     )
+    assert gdelt.call_count == 1  # never retried: GDELT asks clients not to
+    assert doc.url == "https://news.example/b" and doc.date.isoformat() == "2026-08-03"
+    assert "Google News" in doc.source and doc.flags == ["adverse_media"]
 
 
 def test_demo_pep_relative_is_flagged(registry):

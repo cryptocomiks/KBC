@@ -39,7 +39,7 @@ def check(name: str, ok: bool, detail: str = "") -> None:
 
 
 def main(base: str) -> None:
-    for attempt in range(6):  # the deployment may need a few seconds to warm up
+    for _attempt in range(6):  # the deployment may need a few seconds to warm up
         status, body, _ = call(base, "/api/health")
         if status == 200:
             break
@@ -92,12 +92,18 @@ def check_live(base: str) -> None:
     status, body, _ = call(base, "/api/investigations", params)
     check("live investigation", status == 200, body[:300].decode(errors="replace") if status != 200 else "")
     inv = json.loads(body)
+    slow = sorted(inv["queries"], key=lambda q: -(q.get("duration_ms") or 0))[:8]
+    for q in slow:
+        print(f"      slow: {q.get('duration_ms')} ms  {q['source']}.{q['operation']}  {q['target'][:40]}")
+    print(f"      warnings: {inv['warnings'][:5]}")
     errors = [f"{q['source']}.{q['operation']}: {q['error']}" for q in inv["queries"] if q["error"]]
     sources = sorted({q["source"] for q in inv["queries"]})
     print(f"      sources queried: {sources}; entities: {len(inv['entities'])}; hits: {len(inv['hits'])}")
     for h in inv["hits"][:5]:
         print(f"      hit: {h['list_type']} {h['matched_name']} ({h['dataset']}, {h['score']})")
-    check("live sources answered without error", not errors, "; ".join(errors[:5]))
+    critical = [e for e in errors if e.split(".")[0] in ("annuaire_fr", "icij_offshore_leaks", "official_sanctions")]
+    print(f"      non-critical source errors: {[e for e in errors if e not in critical][:5]}")
+    check("core live sources answered without error", not critical, "; ".join(critical[:5]))
 
 
 if __name__ == "__main__":

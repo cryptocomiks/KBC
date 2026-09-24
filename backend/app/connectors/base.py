@@ -49,6 +49,8 @@ class BaseConnector(ABC):
     homepage: ClassVar[str | None] = None
     #: only cross-reference entities up to this distance from the subject (slow sources)
     crossref_max_depth: ClassVar[int | None] = None
+    #: retries on rate limits / transient errors (0 for sources that ask clients not to retry)
+    max_retries: ClassVar[int] = MAX_RETRIES
     #: documents: entity types handled and maximum distance from the subject
     document_types: ClassVar[set[str]] = {"company"}
     documents_max_depth: ClassVar[int | None] = None
@@ -130,6 +132,9 @@ class BaseConnector(ABC):
         """Companies registered at an address (detects domiciliation hubs)."""
         return []
 
+    def prefetch(self) -> None:  # noqa: B027 - optional hook, no-op by default
+        """Start slow downloads in the background (called when an investigation starts)."""
+
     def screen(self, entity: Entity) -> list[ScreeningHit]:
         """Sanctions / PEP / leaks screening of an entity."""
         return []
@@ -202,7 +207,8 @@ class BaseConnector(ABC):
             return cached
         headers = {"User-Agent": USER_AGENT, "Accept": "application/json", **(headers or {})}
         resp = None
-        for attempt in range(MAX_RETRIES + 1):
+        retries = self.max_retries
+        for attempt in range(retries + 1):
             try:
                 resp = httpx.request(
                     method,
@@ -216,12 +222,12 @@ class BaseConnector(ABC):
                     follow_redirects=True,
                 )
             except httpx.HTTPError as exc:
-                if attempt < MAX_RETRIES:
+                if attempt < retries:
                     time.sleep(RETRY_BACKOFF_SECONDS * (2**attempt))
                     continue
                 raise ConnectorError(f"{self.label}: network error ({exc})") from exc
             # Rate limited or transient server error: back off and retry.
-            if resp.status_code in (429, 502, 503, 504) and attempt < MAX_RETRIES:
+            if resp.status_code in (429, 502, 503, 504) and attempt < retries:
                 retry_after = resp.headers.get("Retry-After", "")
                 delay = (
                     float(retry_after)

@@ -18,7 +18,7 @@ from __future__ import annotations
 import time
 from collections import deque
 from collections.abc import Callable
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, wait
 from typing import Any
 
 from pydantic import BaseModel, Field
@@ -38,6 +38,8 @@ from app.models import (
 )
 from app.risk.config import get_jurisdictions
 
+FINISHING_SECONDS = 12  # screening + documents after the expansion budget (serverless limit ~60 s)
+
 
 class QueryLog(BaseModel):
     source: str
@@ -46,6 +48,7 @@ class QueryLog(BaseModel):
     target: str
     results: int = 0
     error: str | None = None
+    duration_ms: int | None = None
     retrieved_at: Any = Field(default_factory=utcnow)
 
 
@@ -93,12 +96,15 @@ class NetworkExpander:
             source=conn.name, source_label=conn.label, operation=operation, target=target
         )
         self.queries.append(log)
+        t0 = time.monotonic()
         try:
             result = fn(*args)
         except ConnectorError as exc:
             log.error = str(exc)
             self.warnings.append(str(exc))
             return [] if operation != "get_details" else None
+        finally:
+            log.duration_ms = int((time.monotonic() - t0) * 1000)
         log.results = len(result) if isinstance(result, list) else int(result is not None)
         return result
 
@@ -288,6 +294,10 @@ class NetworkExpander:
         # Investigations stay within one realm: fictitious demo data or real data.
         self.demo_realm = seeds[0].demo
         started = time.monotonic()
+        self.deadline = started + self.time_budget + FINISHING_SECONDS
+        # Large downloads (sanctions lists) start now, while the network is being expanded.
+        for conn in self.registry.enabled(demo=self.demo_realm):
+            conn.prefetch()
         subject_id = None
         for seed in seeds:  # several records of the same subject (already deduplicated by search)
             cid, _ = self.resolver.add(seed)
@@ -378,6 +388,24 @@ class NetworkExpander:
         )
 
     # ---------------------------------------------------------- screening
+    def _run_until_deadline(self, fn: Callable, tasks: list, workers: int, stage: str) -> list:
+        """Run tasks in parallel; results not ready at the deadline are dropped (with a
+        warning) so that the response always fits the host's time limit."""
+        if not tasks:
+            return []
+        pool = ThreadPoolExecutor(max_workers=workers)
+        futures = [pool.submit(fn, t) for t in tasks]
+        remaining = max(1.0, getattr(self, "deadline", time.monotonic() + 60) - time.monotonic())
+        done, pending = wait(futures, timeout=remaining)
+        pool.shutdown(wait=False, cancel_futures=True)
+        if pending:
+            self.truncated = True
+            self.warnings.append(
+                f"Time limit reached during {stage}: {len(pending)} of {len(tasks)} lookups were skipped. "
+                "Rerun the investigation (answers are cached) or reduce the depth."
+            )
+        return [f.result() for f in futures if f in done and f.exception() is None]
+
     def _collect_documents(self) -> None:
         """Linked documents (legal notices, filings, register pages) for every company."""
         companies = [
@@ -409,9 +437,10 @@ class NetworkExpander:
         found: dict[str, list] = {e.id: [] for e in companies}
         if tasks:
             workers = max(1, min(self.registry.settings.screening_workers, len(tasks)))
-            with ThreadPoolExecutor(max_workers=workers) as pool:
-                for entity, docs in pool.map(run, tasks):
-                    found[entity.id].extend(docs)
+            for entity, docs in self._run_until_deadline(
+                run, tasks, workers, "document collection"
+            ):
+                found[entity.id].extend(docs)
         for entity in companies:
             seen: set[tuple] = set()
             merged = []
@@ -445,10 +474,9 @@ class NetworkExpander:
 
         hits: dict[tuple, ScreeningHit] = {}
         workers = max(1, min(self.registry.settings.screening_workers, len(tasks) or 1))
-        with ThreadPoolExecutor(max_workers=workers) as pool:
-            for result in pool.map(run, tasks):
-                for hit in result:
-                    key = (hit.entity_id, hit.dataset, hit.provenance.record_id)
-                    if key not in hits or hits[key].score < hit.score:
-                        hits[key] = hit
+        for result in self._run_until_deadline(run, tasks, workers, "screening"):
+            for hit in result:
+                key = (hit.entity_id, hit.dataset, hit.provenance.record_id)
+                if key not in hits or hits[key].score < hit.score:
+                    hits[key] = hit
         return sorted(hits.values(), key=lambda h: (-h.score, h.entity_id))

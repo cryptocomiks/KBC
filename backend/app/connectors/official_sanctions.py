@@ -12,6 +12,7 @@ explainable matcher (name, date of birth, nationality).
 
 from __future__ import annotations
 
+import contextlib
 import csv
 import io
 import re
@@ -273,6 +274,14 @@ class OfficialSanctionsConnector(BaseConnector):
                 _INDEX.wallets = fresh.wallets
                 _INDEX.loaded_at = time.time()
             return _INDEX
+
+    def prefetch(self) -> None:
+        if not _INDEX.entries:
+            threading.Thread(target=self._safe_index, daemon=True).start()
+
+    def _safe_index(self) -> None:
+        with contextlib.suppress(ConnectorError):  # errors are reported when screening runs
+            self._index()
 
     def screen(self, entity: Entity) -> list[ScreeningHit]:
         if entity.type == EntityType.WALLET:

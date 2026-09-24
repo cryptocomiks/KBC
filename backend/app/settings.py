@@ -42,7 +42,7 @@ class Settings(BaseSettings):
     opensanctions_api_key: str = ""
     # Open watchlists downloaded as bulk files (OpenSanctions dataset names, comma-separated)
     open_datasets: str = (
-        "eu_fsf,gb_hmt_sanctions,ch_seco_sanctions,worldbank_debarred,interpol_red_notices"
+        "eu_fsf,gb_fcdo_sanctions,ch_seco_sanctions,worldbank_debarred,interpol_red_notices"
     )
     icij_db_path: str = str(REPO_ROOT / "data" / "icij_offshore_leaks.db")
 
@@ -54,7 +54,7 @@ class Settings(BaseSettings):
     max_nodes_limit: int = 250
     http_timeout_seconds: float = 15.0
     # Wall-clock budget for one investigation over live APIs (serverless time limits)
-    expansion_time_budget_seconds: float = 40.0
+    expansion_time_budget_seconds: float = 30.0
     screening_workers: int = 6
 
 

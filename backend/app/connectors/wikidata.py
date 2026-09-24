@@ -1,6 +1,6 @@
 """Wikidata — public figures, PEPs, their relatives and associates, official contacts.
 
-Open data (CC0), no key: search API + SPARQL endpoint (query.wikidata.org).
+Open data (CC0), no key: MediaWiki API (wbsearchentities + wbgetentities).
 
 * PEP screening: "position held" (P39) with start/end dates.
 * Relatives and close associates (RCA): spouse, children, parents,
@@ -32,7 +32,6 @@ from app.models import (
 )
 
 SEARCH = "https://www.wikidata.org/w/api.php"
-SPARQL = "https://query.wikidata.org/sparql"
 ITEM_URL = "https://www.wikidata.org/wiki/{qid}"
 HUMAN = "Q5"
 MIN_NAME = 85
@@ -76,62 +75,77 @@ CONTACTS = [
     ("youtube", "YouTube channel", "https://www.youtube.com/channel/{v}"),
 ]
 
-DETAILS_QUERY = """
-SELECT ?item ?itemLabel ?itemDescription (SAMPLE(?dob) AS ?birth) (SAMPLE(?inc) AS ?inception)
-  (SAMPLE(?dissolved) AS ?dissolution)
-  (GROUP_CONCAT(DISTINCT ?iso; separator=";") AS ?countries)
-  (GROUP_CONCAT(DISTINCT ?t; separator=";") AS ?types)
-  (GROUP_CONCAT(DISTINCT CONCAT(?posLabel, "|", COALESCE(STR(?ps), ""), "|", COALESCE(STR(?pe), "")); separator=";;") AS ?positions)
-  (SAMPLE(?web) AS ?website) (SAMPLE(?mail) AS ?email) (SAMPLE(?tel) AS ?phone) (SAMPLE(?tw) AS ?twitter)
-  (SAMPLE(?li) AS ?linkedin) (SAMPLE(?lic) AS ?linkedin_org) (SAMPLE(?fb) AS ?facebook)
-  (SAMPLE(?ig) AS ?instagram) (SAMPLE(?yt) AS ?youtube) (SAMPLE(?lei) AS ?leiCode)
-WHERE {
-  VALUES ?item { %s }
-  OPTIONAL { ?item wdt:P31 ?t0 . BIND(STRAFTER(STR(?t0), "entity/") AS ?t) }
-  OPTIONAL { ?item wdt:P569 ?dob }
-  OPTIONAL { ?item wdt:P571 ?inc }
-  OPTIONAL { ?item wdt:P576 ?dissolved }
-  OPTIONAL { ?item wdt:P27|wdt:P17 ?c . ?c wdt:P297 ?iso }
-  OPTIONAL { ?item p:P39 ?st . ?st ps:P39 ?pos . ?pos rdfs:label ?posLabel . FILTER(LANG(?posLabel) = "en")
-             OPTIONAL { ?st pq:P580 ?ps } OPTIONAL { ?st pq:P582 ?pe } }
-  OPTIONAL { ?item wdt:P856 ?web } OPTIONAL { ?item wdt:P968 ?mail } OPTIONAL { ?item wdt:P1329 ?tel }
-  OPTIONAL { ?item wdt:P2002 ?tw } OPTIONAL { ?item wdt:P6634 ?li } OPTIONAL { ?item wdt:P4264 ?lic }
-  OPTIONAL { ?item wdt:P2013 ?fb } OPTIONAL { ?item wdt:P2003 ?ig } OPTIONAL { ?item wdt:P2397 ?yt }
-  OPTIONAL { ?item wdt:P1278 ?lei }
-  OPTIONAL { ?item rdfs:label ?itemLabel . FILTER(LANG(?itemLabel) = "en") }
-  OPTIONAL { ?item schema:description ?itemDescription . FILTER(LANG(?itemDescription) = "en") }
+CONTACT_PROPS = {
+    "website": "P856",
+    "email": "P968",
+    "phone": "P1329",
+    "twitter": "P2002",
+    "linkedin": "P6634",
+    "linkedin_org": "P4264",
+    "facebook": "P2013",
+    "instagram": "P2003",
+    "youtube": "P2397",
 }
-GROUP BY ?item ?itemLabel ?itemDescription
-"""
-
-RELATIONS_QUERY = """
-SELECT ?item ?prop ?other ?otherLabel ?isHuman WHERE {
-  VALUES ?item { %s }
-  VALUES ?prop { %s }
-  ?item ?prop ?other .
-  BIND(EXISTS { ?other wdt:P31 wd:Q5 } AS ?isHuman)
-  OPTIONAL { ?other rdfs:label ?otherLabel . FILTER(LANG(?otherLabel) = "en") }
-} LIMIT 300
-"""
 
 
-def _v(row: dict[str, Any], key: str) -> str | None:
-    cell = row.get(key)
-    return cell.get("value") if isinstance(cell, dict) else None
+def _snak_value(claim: dict[str, Any]) -> Any:
+    return ((claim.get("mainsnak") or {}).get("datavalue") or {}).get("value")
 
 
-def _qid(uri: str | None) -> str:
-    return (uri or "").rsplit("/", 1)[-1]
+def _claim_item(claim: dict[str, Any]) -> str | None:
+    value = _snak_value(claim)
+    return value.get("id") if isinstance(value, dict) else None
+
+
+def _item_ids(entity: dict[str, Any] | None, prop: str) -> list[str]:
+    return [
+        i for i in (_claim_item(c) for c in ((entity or {}).get("claims") or {}).get(prop, [])) if i
+    ]
+
+
+def _strings(entity: dict[str, Any], prop: str) -> list[str]:
+    return [
+        v
+        for v in (_snak_value(c) for c in (entity.get("claims") or {}).get(prop, []))
+        if isinstance(v, str)
+    ]
+
+
+def _time(entity: dict[str, Any], prop: str) -> str | None:
+    for claim in (entity.get("claims") or {}).get(prop, []):
+        value = _snak_value(claim)
+        if isinstance(value, dict) and value.get("time"):
+            return _date(value["time"].lstrip("+"))
+    return None
+
+
+def _qualifier_date(claim: dict[str, Any], prop: str) -> str | None:
+    for q in (claim.get("qualifiers") or {}).get(prop, []):
+        value = (q.get("datavalue") or {}).get("value")
+        if isinstance(value, dict) and value.get("time"):
+            return _date(value["time"].lstrip("+"))
+    return None
+
+
+def _label(entity: dict[str, Any] | None) -> str | None:
+    labels = (entity or {}).get("labels") or {}
+    return (labels.get("en") or labels.get("fr") or next(iter(labels.values()), {})).get("value")
+
+
+def _description(entity: dict[str, Any]) -> str | None:
+    d = entity.get("descriptions") or {}
+    return (d.get("en") or d.get("fr") or {}).get("value")
 
 
 def _date(value: str | None) -> str | None:
     if not value or value.startswith("-"):
         return None
-    return value[:10]
+    value = value[:10]
+    return value.replace("-00", "") if "-00" in value else value  # "1952-00-00" -> year precision
 
 
 class _WikidataClient(BaseConnector):
-    """Shared HTTP helpers (search + SPARQL, cached)."""
+    """Shared HTTP helpers (MediaWiki API: search + wbgetentities, cached)."""
 
     def _search(self, name: str, limit: int = 7) -> list[dict[str, Any]]:
         data = (
@@ -155,42 +169,68 @@ class _WikidataClient(BaseConnector):
             if not any(w in (r.get("description") or "").lower() for w in NOT_ENTITIES[:4])
         ]
 
-    def _sparql(self, query: str) -> list[dict[str, Any]]:
-        data = (
-            self.http_get_json(
-                SPARQL,
-                params={"query": query, "format": "json"},
-                headers={"Accept": "application/sparql-results+json"},
+    def _entities(
+        self, ids: list[str], props: str = "labels|descriptions|claims"
+    ) -> dict[str, dict[str, Any]]:
+        """wbgetentities, 50 ids per call (the SPARQL endpoint refuses cloud clients)."""
+        ids = [i for i in dict.fromkeys(ids) if i and i.startswith("Q")]
+        out: dict[str, dict[str, Any]] = {}
+        for start in range(0, len(ids), 50):
+            data = (
+                self.http_get_json(
+                    SEARCH,
+                    params={
+                        "action": "wbgetentities",
+                        "ids": "|".join(ids[start : start + 50]),
+                        "props": props,
+                        "languages": "en|fr",
+                        "languagefallback": "1",
+                        "format": "json",
+                    },
+                )
+                or {}
             )
-            or {}
-        )
-        return (data.get("results") or {}).get("bindings", [])
+            out.update(
+                {k: v for k, v in (data.get("entities") or {}).items() if "missing" not in v}
+            )
+        return out
 
     def details(self, qids: list[str]) -> dict[str, dict[str, Any]]:
-        qids = [q for q in dict.fromkeys(qids) if q.startswith("Q")]
+        items = self._entities(qids)
+        # Second call: labels of positions and countries (+ ISO code of countries).
+        refs = [i for e in items.values() for p in ("P39", "P27", "P17") for i in _item_ids(e, p)]
+        linked = self._entities(refs, props="labels|claims")
         out: dict[str, dict[str, Any]] = {}
-        for start in range(0, len(qids), 40):
-            values = " ".join(f"wd:{q}" for q in qids[start : start + 40])
-            for row in self._sparql(DETAILS_QUERY % values):
-                qid = _qid(_v(row, "item"))
-                positions = []
-                for chunk in (_v(row, "positions") or "").split(";;"):
-                    if chunk.strip("|"):
-                        label, ps, pe = (chunk.split("|") + ["", ""])[:3]
-                        positions.append((label, _date(ps), _date(pe)))
-                out[qid] = {
-                    "qid": qid,
-                    "label": _v(row, "itemLabel") or qid,
-                    "description": _v(row, "itemDescription"),
-                    "birth": _date(_v(row, "birth")),
-                    "inception": _date(_v(row, "inception")),
-                    "dissolution": _date(_v(row, "dissolution")),
-                    "countries": [c for c in (_v(row, "countries") or "").split(";") if c],
-                    "types": set((_v(row, "types") or "").split(";")) - {""},
-                    "positions": positions,
-                    "lei": _v(row, "leiCode"),
-                    **{k: _v(row, k) for k, _, _ in CONTACTS},
-                }
+        for qid, e in items.items():
+            positions = []
+            for claim in (e.get("claims") or {}).get("P39", []):
+                pos = _claim_item(claim)
+                if pos:
+                    positions.append(
+                        (
+                            _label(linked.get(pos)) or pos,
+                            _qualifier_date(claim, "P580"),
+                            _qualifier_date(claim, "P582"),
+                        )
+                    )
+            countries = []
+            for cid in [*_item_ids(e, "P27"), *_item_ids(e, "P17")]:
+                iso = (_strings(linked.get(cid) or {}, "P297") or [None])[0]
+                if iso and iso not in countries:
+                    countries.append(iso)
+            out[qid] = {
+                "qid": qid,
+                "label": _label(e) or qid,
+                "description": _description(e),
+                "birth": _time(e, "P569"),
+                "inception": _time(e, "P571"),
+                "dissolution": _time(e, "P576"),
+                "countries": countries,
+                "types": set(_item_ids(e, "P31")),
+                "positions": positions,
+                "lei": (_strings(e, "P1278") or [None])[0],
+                **{key: (_strings(e, prop) or [None])[0] for key, prop in CONTACT_PROPS.items()},
+            }
         return out
 
     def entity_from(self, d: dict[str, Any]) -> Entity:
@@ -267,15 +307,12 @@ class WikidataConnector(_WikidataClient):
         return self.entity_from(d) if d and HUMAN not in d["types"] else None
 
     def _relations(self, qid: str, props: list[str]) -> list[tuple[str, str, str, bool]]:
-        rows = self._sparql(RELATIONS_QUERY % (f"wd:{qid}", " ".join(f"wdt:{p}" for p in props)))
+        item = self._entities([qid], props="claims").get(qid) or {}
+        pairs = [(p, other) for p in props for other in _item_ids(item, p)][:80]
+        others = self._entities([o for _, o in pairs], props="labels|claims")
         return [
-            (
-                _qid(_v(r, "prop")),
-                _qid(_v(r, "other")),
-                _v(r, "otherLabel") or _qid(_v(r, "other")),
-                _v(r, "isHuman") == "true",
-            )
-            for r in rows
+            (p, o, _label(others.get(o)) or o, HUMAN in _item_ids(others.get(o) or {}, "P31"))
+            for p, o in pairs
         ]
 
     def _stub(self, qid: str, label: str, human: bool) -> Entity:

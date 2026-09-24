@@ -12,6 +12,7 @@ Licence: OpenSanctions data is CC BY-NC 4.0 — free for non-commercial use
 
 from __future__ import annotations
 
+import contextlib
 import csv
 import io
 import threading
@@ -31,6 +32,7 @@ MIN_SCORE = 60
 
 DATASETS = {
     "eu_fsf": ("EU Financial Sanctions Files (consolidated list)", ListType.SANCTION),
+    "gb_fcdo_sanctions": ("UK Sanctions List (FCDO)", ListType.SANCTION),
     "gb_hmt_sanctions": ("UK financial sanctions (HM Treasury / OFSI)", ListType.SANCTION),
     "ch_seco_sanctions": ("Swiss sanctions (SECO)", ListType.SANCTION),
     "worldbank_debarred": ("World Bank debarred firms and individuals", ListType.ADVERSE),
@@ -63,6 +65,7 @@ def _load(dataset: str, index: _Index, timeout: float) -> None:
         headers={"User-Agent": USER_AGENT},
     )
     resp.raise_for_status()
+    before = len(index.entries)
     for row in csv.DictReader(io.StringIO(resp.content.decode("utf-8", errors="replace"))):
         schema = row.get("schema") or ""
         if schema in SKIPPED_SCHEMAS or not row.get("name"):
@@ -92,6 +95,8 @@ def _load(dataset: str, index: _Index, timeout: float) -> None:
                 list_type=list_type,
             )
         )
+    if len(index.entries) == before:
+        raise ValueError(f"{dataset}: file downloaded but empty (list discontinued or renamed?)")
 
 
 class OpenDatasetsConnector(BaseConnector):
@@ -117,6 +122,14 @@ class OpenDatasetsConnector(BaseConnector):
                     raise ConnectorError(f"{self.label}: " + "; ".join(errors or ["no data"]))
                 _STATE.index, _STATE.errors, _STATE.loaded_at = fresh, errors, time.time()
             return _STATE.index
+
+    def prefetch(self) -> None:
+        if not _STATE.index.entries:
+            threading.Thread(target=self._safe_index, daemon=True).start()
+
+    def _safe_index(self) -> None:
+        with contextlib.suppress(ConnectorError):  # errors are reported when screening runs
+            self._index()
 
     def screen(self, entity: Entity) -> list[ScreeningHit]:
         if entity.type not in (EntityType.PERSON, EntityType.COMPANY):
