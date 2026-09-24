@@ -70,6 +70,20 @@ class AnnuaireEntreprisesConnector(BaseConnector):
                 extra["revenue_eur"] = f"{last['ca']:,}"
             if last.get("resultat_net") is not None:
                 extra["net_income_eur"] = f"{last['resultat_net']:,}"
+            extra["financials"] = [
+                {
+                    "year": y,
+                    "revenue": f"{(finances[y] or {})['ca']:,}"
+                    if (finances[y] or {}).get("ca") is not None
+                    else None,
+                    "net_income": f"{(finances[y] or {})['resultat_net']:,}"
+                    if (finances[y] or {}).get("resultat_net") is not None
+                    else None,
+                    "currency": "EUR",
+                    "source": "Filed accounts (INPI, via Annuaire des Entreprises)",
+                }
+                for y in years[:5]
+            ]
         else:
             # Many small French companies legally opt out of publishing accounts:
             # absence here is not evidence of non-filing.

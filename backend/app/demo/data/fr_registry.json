@@ -63,7 +63,25 @@
    "address": "22 rue Hélène-Vasseur, 75008 Paris, France",
    "extra": {
     "share_capital": "EUR 1,500,000",
-    "employees": "0"
+    "employees": "0",
+    "financials": [
+     {
+      "year": "2025",
+      "revenue": "12,000",
+      "net_income": "2,140,000",
+      "total_assets": "9,800,000",
+      "currency": "EUR",
+      "source": "Filed accounts (fictitious)"
+     },
+     {
+      "year": "2024",
+      "revenue": "0",
+      "net_income": "1,870,000",
+      "total_assets": "9,450,000",
+      "currency": "EUR",
+      "source": "Filed accounts (fictitious)"
+     }
+    ]
    }
   },
   {
@@ -94,7 +112,27 @@
    "dissolution_date": "2021-06-30",
    "last_accounts_date": "2019-12-31",
    "activity": "Building renovation works (NAF 43.39Z)",
-   "address": "5 impasse des Artisans-Unis, 93100 Montreuil, France"
+   "address": "5 impasse des Artisans-Unis, 93100 Montreuil, France",
+   "extra": {
+    "financials": [
+     {
+      "year": "2019",
+      "revenue": "420,000",
+      "net_income": "-310,000",
+      "total_assets": "260,000",
+      "currency": "EUR",
+      "source": "Filed accounts (fictitious)"
+     },
+     {
+      "year": "2018",
+      "revenue": "850,000",
+      "net_income": "-95,000",
+      "total_assets": "540,000",
+      "currency": "EUR",
+      "source": "Filed accounts (fictitious)"
+     }
+    ]
+   }
   },
   {
    "id": "900100404",
@@ -107,7 +145,19 @@
    "incorporation_date": "2012-06-20",
    "last_accounts_date": "@-15m",
    "activity": "Bakery (NAF 10.71C)",
-   "address": "3 place du Fournil, 69007 Lyon, France"
+   "address": "3 place du Fournil, 69007 Lyon, France",
+   "extra": {
+    "financials": [
+     {
+      "year": "2024",
+      "revenue": "312,000",
+      "net_income": "22,400",
+      "total_assets": "148,000",
+      "currency": "EUR",
+      "source": "Filed accounts (fictitious)"
+     }
+    ]
+   }
   },
   {
    "id": "LU-B198765",

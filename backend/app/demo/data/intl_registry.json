@@ -78,7 +78,33 @@
    "activity": "Holding and financing company (SOPARFI)",
    "address": "7 rue des Hêtres-Blancs, L-1835 Luxembourg",
    "extra": {
-    "share_capital": "EUR 12,000"
+    "share_capital": "EUR 12,000",
+    "financials": [
+     {
+      "year": "2025",
+      "revenue": "0",
+      "net_income": "-38,400",
+      "total_assets": "48,500,000",
+      "currency": "EUR",
+      "source": "Filed accounts (fictitious)"
+     },
+     {
+      "year": "2024",
+      "revenue": "0",
+      "net_income": "-41,900",
+      "total_assets": "48,620,000",
+      "currency": "EUR",
+      "source": "Filed accounts (fictitious)"
+     },
+     {
+      "year": "2023",
+      "revenue": "0",
+      "net_income": "1,250,000",
+      "total_assets": "47,100,000",
+      "currency": "EUR",
+      "source": "Filed accounts (fictitious)"
+     }
+    ]
    }
   },
   {
@@ -139,7 +165,19 @@
    "incorporation_date": "2015-02-10",
    "last_accounts_date": "2021-12-31",
    "activity": "Investment holding",
-   "address": "9 Odos Thalassinis, 3036 Limassol, Cyprus"
+   "address": "9 Odos Thalassinis, 3036 Limassol, Cyprus",
+   "extra": {
+    "financials": [
+     {
+      "year": "2021",
+      "revenue": "0",
+      "net_income": "-12,300",
+      "total_assets": "22,400,000",
+      "currency": "EUR",
+      "source": "Filed accounts (fictitious)"
+     }
+    ]
+   }
   },
   {
    "id": "lu/B201001",
@@ -213,7 +251,27 @@
    "incorporation_date": "2018-02-26",
    "last_accounts_date": "@-7m",
    "activity": "Freight transport by road (SIC 49410)",
-   "address": "Unit 12, Tyseley Park, Birmingham B11 2XX"
+   "address": "Unit 12, Tyseley Park, Birmingham B11 2XX",
+   "extra": {
+    "financials": [
+     {
+      "year": "2025",
+      "revenue": "3,420,000",
+      "net_income": "118,000",
+      "total_assets": "1,950,000",
+      "currency": "GBP",
+      "source": "Filed accounts (fictitious)"
+     },
+     {
+      "year": "2024",
+      "revenue": "3,050,000",
+      "net_income": "96,500",
+      "total_assets": "1,720,000",
+      "currency": "GBP",
+      "source": "Filed accounts (fictitious)"
+     }
+    ]
+   }
   },
   {
    "id": "OP-1007",

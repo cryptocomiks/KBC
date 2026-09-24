@@ -67,6 +67,10 @@ explained, and every fact carries **its source, its URL and the time it was retr
 | **Tables** | Positions, related companies, shareholders & UBOs, effective ownership, sanctions/PEP hits, leak appearances, sources consulted, entity-resolution log. All sortable and filterable, with **CSV export**. |
 | **PDF report** | Due diligence report with summary, explained score, graph, all tables, sources with retrieval dates and methodology. Watermarked in demo mode. |
 | **Linked documents** | For each company: dated legal notices and filings (BODACC, demo registries), plus direct links to the registers holding the documents themselves: INPI (deeds, articles, filed accounts), Companies House filing history, GLEIF record, BODACC, OpenCorporates. These appear in the details panel, a *Documents & filings* table and the PDF report. A published insolvency proceeding raises a red flag. |
+| **Key findings** | A short, sourced reading of the network at the top of each investigation: identity, ultimate owners with the path (“held at 34 % by X via A → B”), main risk drivers, sanctions / PEP / leak hits, latest accounts, high-risk countries, coverage gaps. Every sentence links to its entities and sources. Also in the PDF. |
+| **Timeline** | Every dated event of the network on one axis: incorporations and dissolutions, appointments and resignations, ownership changes, filings and legal notices, sanctions listings, press articles, first and last crypto transfers. Filterable by type. |
+| **Country risk** | Each jurisdiction of the network with the **Basel AML Index**, the **Corruption Perceptions Index** and the **World Bank control-of-corruption** indicator, next to the FATF / EU / offshore lists. Refreshed monthly by a workflow (`config/country_risk.json`). |
+| **Financials** | Revenue, net income and total assets by year (INPI accounts for France, SEC XBRL for US filers). A large balance sheet with no revenue raises a *shell-company indicator*. |
 | **Traceability** | `Provenance {source, record_id, url, retrieved_at}` is attached to every entity, relationship and screening hit. |
 | **Privacy** | Personal data is stored only in a local SQLite cache, which a **"Clear cache"** button wipes. |
 
@@ -311,7 +315,7 @@ Screening hits below 70% are displayed as *"weak — likely false positive"* and
 Every source implements the same `BaseConnector` interface:
 `search_person`, `search_company`, `get_company_details`, `get_officers`, `get_shareholders`, plus
 optional `get_person_roles`, `get_subsidiaries`, `search_address` and `screen`. Adding a source such as
-**Zefix (CH)** or **LBR/RBE (LU)** means writing one class and registering it in `connectors/registry.py`.
+**LBR/RBE (LU)** means writing one class and registering it in `connectors/registry.py`.
 
 **Hybrid mode.** The fictitious demo scenario and the real sources are searchable side by side, but an
 investigation never mixes them. An investigation started on a demo entity queries only the demo
@@ -322,6 +326,9 @@ a *Demo · fictitious* or *Real public data* badge.
 |---|---|---|---|
 | **Annuaire des Entreprises** (data.gouv.fr) | FR companies, officers with partial date of birth, status, published financial years | none, public API | — |
 | **GLEIF** (LEI index) | Legal entities worldwide, registration numbers, **direct parents and subsidiaries** (accounting consolidation) | none, public API | — |
+| **Zefix** (Swiss commercial register) | CH companies: UID, seat, legal form, purpose, address, auditor, mergers, former names. **Officers with appointment and departure dates**, read from the Swiss Official Gazette of Commerce (SOGC) notices; partners of GmbH / Sàrl as owners. SOGC notices as linked documents (bankruptcy raises the insolvency flag) | none, public service | — |
+| **SEC EDGAR** | US filers: profile, former names, state of incorporation, **financials from XBRL** (revenue, net income, assets), **shareholders above 5 % from Schedule 13D/13G with the exact percentage**, recent 10-K / 10-Q / 8-K filings | none (a contact in the User-Agent) | `SEC_USER_AGENT` |
+| **Country risk** | Basel AML Index (Basel Institute on Governance), Corruption Perceptions Index (Transparency International, via Our World in Data), World Bank WGI control of corruption | none, refreshed monthly by the *Country risk data* workflow | — |
 | **BODACC** (DILA) | French legal announcements: registrations, changes, **filed accounts**, **insolvency proceedings**, deregistrations. Each notice is a linked document | none, open data | — |
 | **Official sanctions lists** | **OFAC SDN** (US Treasury) and **UN Security Council** consolidated list, downloaded from the issuers and indexed in memory | none | — |
 | **Open watchlists** | **EU**, **UK (HMT/OFSI)** and **Swiss (SECO)** sanctions, **World Bank** debarments, **Interpol** public red notices, from the normalised OpenSanctions bulk exports (CC BY-NC) | none | `OPEN_DATASETS` |
@@ -384,12 +391,19 @@ the unit tests never call external APIs. The live behaviour is checked after eac
 - **On Vercel**, the cache is ephemeral and functions have a time limit. Deep expansions over live APIs
   are better run with Docker. The ICIJ dataset (several hundred MB) is meant for local or Docker use.
 - **Address matching** uses normalised token similarity. It can miss heavily reformatted addresses.
+- **Zefix officers** are parsed from the text of the SOGC notices (German, French, Italian). Unusual
+  wordings can be missed; the notices themselves are always linked. Only publications available in
+  Zefix are read.
+- **SEC 13D/13G percentages** are read from the structured filings (since December 2024). Older
+  ownership filings are linked as documents without a percentage.
+- **Beneficial ownership registers**: the UK PSC register is available through Companies House (free
+  key). Most EU registers restrict access since the 2022 CJEU ruling.
 - **Registry coverage** varies: some jurisdictions (BVI, for example) publish no officers or accounts.
   The absence of data is itself reported, not interpreted as "clean".
 
 ## Roadmap
 
-- Zefix (Switzerland) and LBR/RBE (Luxembourg) connectors
+- LBR/RBE (Luxembourg): no free API; the RBE is restricted to professionals since the 2022 CJEU ruling, so the tool links to the register instead
 - Analyst workflow: mark a hit as confirmed or false positive, with the decision recorded in the report
 - Adverse media screening
 

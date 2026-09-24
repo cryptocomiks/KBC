@@ -54,7 +54,10 @@ def test_investigation_payload(investigation):
         "sources",
         "documents",
         "crypto",
+        "jurisdictions",
+        "financials",
     }
+    assert inv["summary"] and inv["timeline"]
     for rel in inv["relationships"]:
         assert rel["sources"], rel  # traceability of every edge
     for ent in inv["entities"]:

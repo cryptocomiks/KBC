@@ -175,6 +175,12 @@ class BaseConnector(ABC):
         """GET with SQLite caching, so the same query never hits the API twice."""
         return self._request("GET", url, params=params, headers=headers, auth=auth)
 
+    def http_get_text(
+        self, url: str, params: dict[str, Any] | None = None, headers: dict[str, str] | None = None
+    ) -> str | None:
+        """GET a non-JSON document (XML, HTML) with the same caching and retry policy."""
+        return self._request("GET", url, params=params, headers=headers, as_text=True)
+
     def http_post_json(
         self,
         url: str,
@@ -198,16 +204,21 @@ class BaseConnector(ABC):
         auth: tuple[str, str] | None = None,
         json_body: Any = None,
         form: dict[str, str] | None = None,
+        as_text: bool = False,
     ) -> Any:
         cache = get_cache()
         key_material = json.dumps(
-            [method, url, sorted((params or {}).items()), json_body, form], default=str
+            [method, url, sorted((params or {}).items()), json_body, form, as_text], default=str
         )
         key = hashlib.sha256(key_material.encode()).hexdigest()
         cached = cache.get(f"http:{self.name}", key)
         if cached is not None:
             return cached
-        headers = {"User-Agent": USER_AGENT, "Accept": "application/json", **(headers or {})}
+        headers = {
+            "User-Agent": USER_AGENT,
+            "Accept": "*/*" if as_text else "application/json",
+            **(headers or {}),
+        }
         resp = None
         retries = self.max_retries
         for attempt in range(retries + 1):
@@ -248,6 +259,8 @@ class BaseConnector(ABC):
             )
         elif resp.status_code >= 400:
             raise ConnectorError(f"{self.label}: HTTP {resp.status_code}")
+        elif as_text:
+            data = resp.text
         else:
             try:
                 data = resp.json()

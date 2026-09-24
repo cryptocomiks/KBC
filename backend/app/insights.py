@@ -174,6 +174,39 @@ def build_summary(net: Network, risk: RiskAssessment, jur_name=lambda c: c or "?
                 )
             )
 
+    # --- Financial profile of the subject (latest published accounts)
+    fin = (
+        (subject.extra.get("financials") or [None])[0]
+        if subject.type == EntityType.COMPANY
+        else None
+    )
+    if fin:
+        figures = [
+            f"{label} {fin[key]} {fin.get('currency', '')}".strip()
+            for key, label in (
+                ("revenue", "revenue"),
+                ("net_income", "net income"),
+                ("total_assets", "total assets"),
+            )
+            if fin.get(key) is not None
+        ]
+        if figures:
+            out.append(
+                Finding(
+                    text=f"Latest published accounts ({fin['year']}): {', '.join(figures)} — {fin.get('source', '')}.",
+                    entity_ids=[subject.id],
+                )
+            )
+    elif subject.type == EntityType.COMPANY and subject.extra.get("accounts_unknown"):
+        out.append(
+            Finding(
+                text="No financial statement found in the sources queried: activity and size cannot be "
+                "checked (a large structure with no visible activity is a shell-company indicator).",
+                severity="warning",
+                entity_ids=[subject.id],
+            )
+        )
+
     # --- Risk drivers
     top = sorted(risk.factors, key=lambda f: f.points, reverse=True)[:3]
     if top:
@@ -265,6 +298,15 @@ def build_summary(net: Network, risk: RiskAssessment, jur_name=lambda c: c or "?
     )
     if offshore:
         shape += f" {len(offshore)} entit(ies) sit in offshore centres: {', '.join(e.name for e in offshore[:3])}."
+    high = next((f for f in risk.factors if f.key == "high_risk_country"), None)
+    if high:
+        out.append(
+            Finding(
+                text="High-risk countries in the network: " + "; ".join(high.evidence[:3]) + ".",
+                severity="warning",
+                entity_ids=high.entities[:3],
+            )
+        )
     out.append(
         Finding(
             text=shape,

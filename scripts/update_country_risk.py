@@ -17,14 +17,16 @@ import csv
 import io
 import json
 import re
-from datetime import date
+from datetime import UTC, datetime
 from pathlib import Path
 
 import httpx
 import pycountry
 
 OUT = Path(__file__).resolve().parents[1] / "config" / "country_risk.json"
-UA = {"User-Agent": "Mozilla/5.0 (compatible; KBC-corporate-mapping; +https://github.com/cryptocomiks/KBC)"}
+UA = {
+    "User-Agent": "Mozilla/5.0 (compatible; KBC-corporate-mapping; +https://github.com/cryptocomiks/KBC)"
+}
 BASEL = "https://index.baselgovernance.org/ranking"
 CPI = "https://ourworldindata.org/grapher/ti-corruption-perception-index.csv?v=1&csvType=full&useColumnShortNames=true"
 WGI = "https://api.worldbank.org/v2/country/all/indicator/GOV_WGI_CC.EST"
@@ -107,6 +109,13 @@ ALIASES = {
     "british virgin islands": "VG",
 }
 
+# Short names for display ("Russia" rather than "Russian Federation").
+COMMON_NAMES = {
+    "RU": "Russia", "KP": "North Korea", "KR": "South Korea", "IR": "Iran", "SY": "Syria", "VE": "Venezuela",
+    "BO": "Bolivia", "TZ": "Tanzania", "MD": "Moldova", "LA": "Laos", "VN": "Vietnam", "TW": "Taiwan",
+    "FM": "Micronesia", "PS": "Palestine", "CD": "DR Congo", "BN": "Brunei",
+}  # fmt: skip
+
 
 def iso2(name: str) -> str | None:
     key = re.sub(r"\s+", " ", name.strip().lower())
@@ -126,13 +135,20 @@ def iso2(name: str) -> str | None:
 def basel(client: httpx.Client) -> dict[str, dict]:
     page = client.get(BASEL).text
     out = {}
-    for row in re.findall(r"<tr[^>]*>(.*?)</tr>", page, re.S):
-        cells = [re.sub(r"<[^>]+>", "", c).strip() for c in re.findall(r"<td[^>]*>(.*?)</td>", row, re.S)]
+    for row in re.findall(r"<tr[^>]*>(.*?)</tr>", page, re.DOTALL):
+        cells = [
+            re.sub(r"<[^>]+>", "", c).strip()
+            for c in re.findall(r"<td[^>]*>(.*?)</td>", row, re.DOTALL)
+        ]
         if len(cells) < 3 or not re.fullmatch(r"\d+(\.\d+)?", cells[2]):
             continue
         code = iso2(cells[1])
         if code:
-            out[code] = {"basel_aml_score": float(cells[2]), "basel_aml_rank": int(cells[0]), "name": cells[1]}
+            out[code] = {
+                "basel_aml_score": float(cells[2]),
+                "basel_aml_rank": int(cells[0]),
+                "name": cells[1],
+            }
         else:
             print("basel: unmapped", cells[1])
     return out
@@ -157,8 +173,10 @@ def cpi(client: httpx.Client) -> dict[str, dict]:
 
 def wgi(client: httpx.Client) -> dict[str, dict]:
     out: dict[str, dict] = {}
-    for year in range(date.today().year - 1, date.today().year - 5, -1):
-        data = client.get(WGI, params={"format": "json", "date": str(year), "per_page": 400, "source": 3}).json()
+    for year in range(datetime.now(UTC).date().year - 1, datetime.now(UTC).date().year - 5, -1):
+        data = client.get(
+            WGI, params={"format": "json", "date": str(year), "per_page": 400, "source": 3}
+        ).json()
         if len(data) < 2 or not data[1]:
             continue
         for r in data[1]:
@@ -170,7 +188,10 @@ def wgi(client: httpx.Client) -> dict[str, dict]:
                 code = c.alpha_2 if c else None
             code = code or iso2((r.get("country") or {}).get("value") or "")
             if code and code not in out:
-                out[code] = {"wgi_control_of_corruption": round(float(r["value"]), 2), "wgi_year": year}
+                out[code] = {
+                    "wgi_control_of_corruption": round(float(r["value"]), 2),
+                    "wgi_year": year,
+                }
         if len(out) > 150:
             break
     return out
@@ -183,25 +204,56 @@ def main() -> None:
     countries = {}
     for code in codes:
         country = pycountry.countries.get(alpha_2=code)
-        entry = {"name": country.name if country else b.get(code, {}).get("name", code)}
+        name = COMMON_NAMES.get(code) or (
+            (getattr(country, "common_name", None) or country.name)
+            if country
+            else b.get(code, {}).get("name", code)
+        )
+        entry = {"name": name}
         for src in (b, c, w):
             entry.update({k: v for k, v in src.get(code, {}).items() if k != "name"})
         countries[code] = entry
     doc = {
-        "retrieved": date.today().isoformat(),
+        "retrieved": datetime.now(UTC).date().isoformat(),
         "sources": {
-            "basel_aml": {"label": "Basel AML Index (public ranking)", "url": BASEL, "scale": "0 low – 10 high risk"},
-            "cpi": {"label": "Corruption Perceptions Index (Transparency International, via Our World in Data)",
-                    "url": "https://www.transparency.org/en/cpi", "scale": "0 highly corrupt – 100 very clean"},
-            "wgi": {"label": "World Bank Worldwide Governance Indicators — Control of Corruption",
-                    "url": "https://www.worldbank.org/en/publication/worldwide-governance-indicators",
-                    "scale": "-2.5 weak – +2.5 strong"},
+            "basel_aml": {
+                "label": "Basel AML Index (public ranking)",
+                "url": BASEL,
+                "scale": "0 low – 10 high risk",
+            },
+            "cpi": {
+                "label": "Corruption Perceptions Index (Transparency International, via Our World in Data)",
+                "url": "https://www.transparency.org/en/cpi",
+                "scale": "0 highly corrupt – 100 very clean",
+            },
+            "wgi": {
+                "label": "World Bank Worldwide Governance Indicators — Control of Corruption",
+                "url": "https://www.worldbank.org/en/publication/worldwide-governance-indicators",
+                "scale": "-2.5 weak – +2.5 strong",
+            },
         },
         "countries": countries,
     }
-    OUT.write_text(json.dumps(doc, ensure_ascii=False, indent=1, sort_keys=False) + "\n", encoding="utf-8")
+    OUT.write_text(
+        json.dumps(doc, ensure_ascii=False, indent=1, sort_keys=False) + "\n", encoding="utf-8"
+    )
     print(f"basel={len(b)} cpi={len(c)} wgi={len(w)} countries={len(countries)} -> {OUT}")
-    for code in ("CH", "LU", "FR", "GB", "US", "VG", "KY", "CY", "AE", "RU", "IR", "KP", "MM", "HT"):
+    for code in (
+        "CH",
+        "LU",
+        "FR",
+        "GB",
+        "US",
+        "VG",
+        "KY",
+        "CY",
+        "AE",
+        "RU",
+        "IR",
+        "KP",
+        "MM",
+        "HT",
+    ):
         print(code, countries.get(code))
 
 

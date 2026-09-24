@@ -19,6 +19,42 @@ const REL_LABEL: Record<string, string> = {
   relative: "Family / associate",
 };
 
+const HIDDEN_EXTRA = new Set(["financials", "accounts_unknown"]);
+
+function financials(value: unknown): React.ReactNode {
+  const rows = (value as Record<string, string | null>[] | undefined) ?? [];
+  if (!rows.length) return undefined;
+  return (
+    <table className="w-full text-[11px]">
+      <thead className="text-slate-500">
+        <tr>
+          <th className="text-left font-medium">Year</th>
+          <th className="text-right font-medium">Revenue</th>
+          <th className="text-right font-medium">Net income</th>
+          <th className="text-right font-medium">Assets</th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows.slice(0, 4).map((r) => (
+          <tr key={String(r.year)}>
+            <td>{r.year}</td>
+            <td className="text-right font-mono">{r.revenue ?? "—"}</td>
+            <td className="text-right font-mono">{r.net_income ?? "—"}</td>
+            <td className="text-right font-mono">{r.total_assets ?? "—"}</td>
+          </tr>
+        ))}
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colSpan={4} className="pt-0.5 text-slate-500">
+            {rows[0].currency} · {rows[0].source}
+          </td>
+        </tr>
+      </tfoot>
+    </table>
+  );
+}
+
 export default function EntityPanel({ investigation: inv, entityId, onSelect }: Props) {
   const byId = new Map(inv.entities.map((e) => [e.id, e]));
   const e = byId.get(entityId);
@@ -29,6 +65,17 @@ export default function EntityPanel({ investigation: inv, entityId, onSelect }: 
   const hits = inv.hits.filter((h) => h.entity_id === e.id);
   const outgoing = inv.relationships.filter((r) => r.source_id === e.id);
   const incoming = inv.relationships.filter((r) => r.target_id === e.id);
+
+  const countryRisk = (code: string | null) => {
+    const row = (inv.tables.jurisdictions ?? []).find((r) => r.code === code);
+    if (!row) return undefined;
+    const bits = [
+      row.basel_aml_score != null && `Basel AML ${Number(row.basel_aml_score).toFixed(2)}/10`,
+      row.cpi_score != null && `CPI ${row.cpi_score}/100`,
+      row.lists && String(row.lists),
+    ].filter(Boolean);
+    return bits.length ? bits.join(" · ") : undefined;
+  };
 
   const attrs: [string, React.ReactNode][] =
     e.type === "person"
@@ -47,9 +94,11 @@ export default function EntityPanel({ investigation: inv, entityId, onSelect }: 
             ["Last accounts", e.last_accounts_date ?? "none on file"],
             ["Activity", e.activity],
             ["Address", e.address],
-            ...Object.entries(e.extra).map(
-              ([k, v]) => [k.charAt(0).toUpperCase() + k.slice(1).replace(/_/g, " "), String(v)] as [string, React.ReactNode],
-            ),
+            ["Country risk", countryRisk(e.jurisdiction)],
+            ...Object.entries(e.extra)
+              .filter(([k]) => !HIDDEN_EXTRA.has(k))
+              .map(([k, v]) => [k.charAt(0).toUpperCase() + k.slice(1).replace(/_/g, " "), String(v)] as [string, React.ReactNode]),
+            ["Financials", financials(e.extra.financials)],
           ]
         : e.type === "wallet"
           ? [

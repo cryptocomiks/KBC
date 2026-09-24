@@ -30,6 +30,8 @@ weights:
   adverse_media: 6             # keyword-filtered press mentions: leads, verify relevance  # direct on-chain flows with a sanctioned wallet
   insolvency_proceedings: 10   # safeguard / receivership / liquidation published in a legal gazette
   ubo_discrepancy: 12          # computed UBO (>= threshold) missing from declared beneficial owners
+  high_risk_country: 8         # company registered in a country with a high Basel AML Index / low CPI
+  shell_company_indicators: 5  # total assets >= shell_min_assets with revenue <= 1 % of assets
 
 # Distance (in hops) between the investigated subject and the affected entity.
 proximity_multiplier:
@@ -48,6 +50,10 @@ thresholds:
   accounts_overdue_months: 18
   nominee_min_mandates: 4
   ubo_threshold_pct: 25        # EU AMLD reference threshold for beneficial ownership
+  basel_high_score: 6.0        # Basel AML Index >= : high money-laundering risk country (0-10 scale)
+  cpi_low_score: 30            # Corruption Perceptions Index < : high corruption risk (0-100 scale)
+  shell_min_assets: 1000000    # shell-company indicator: minimum total assets (in the filing currency)
+  shell_max_revenue_ratio: 0.01
 
 levels:                        # global score -> level (lower bound inclusive)
   low: 0

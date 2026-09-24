@@ -211,7 +211,7 @@
    "wgi_year": 2024
   },
   "BN": {
-   "name": "Brunei Darussalam",
+   "name": "Brunei",
    "basel_aml_score": 4.22,
    "basel_aml_rank": 146,
    "cpi_score": 60.0,
@@ -220,7 +220,7 @@
    "wgi_year": 2024
   },
   "BO": {
-   "name": "Bolivia, Plurinational State of",
+   "name": "Bolivia",
    "basel_aml_score": 5.58,
    "basel_aml_rank": 67,
    "cpi_score": 28.0,
@@ -290,7 +290,7 @@
    "wgi_year": 2024
   },
   "CD": {
-   "name": "Congo, The Democratic Republic of the",
+   "name": "DR Congo",
    "basel_aml_score": 7.63,
    "basel_aml_rank": 3,
    "cpi_score": 20.0,
@@ -543,7 +543,7 @@
    "wgi_year": 2024
   },
   "FM": {
-   "name": "Micronesia, Federated States of",
+   "name": "Micronesia",
    "wgi_control_of_corruption": 0.71,
    "wgi_year": 2024
   },
@@ -770,7 +770,7 @@
    "wgi_year": 2024
   },
   "IR": {
-   "name": "Iran, Islamic Republic of",
+   "name": "Iran",
    "cpi_score": 23.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -1.15,
@@ -875,14 +875,14 @@
    "wgi_year": 2024
   },
   "KP": {
-   "name": "Korea, Democratic People's Republic of",
+   "name": "North Korea",
    "cpi_score": 15.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -1.56,
    "wgi_year": 2024
   },
   "KR": {
-   "name": "Korea, Republic of",
+   "name": "South Korea",
    "cpi_score": 64.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": 0.85,
@@ -912,7 +912,7 @@
    "wgi_year": 2024
   },
   "LA": {
-   "name": "Lao People's Democratic Republic",
+   "name": "Laos",
    "basel_aml_score": 7.5,
    "basel_aml_rank": 7,
    "cpi_score": 33.0,
@@ -1021,7 +1021,7 @@
    "wgi_year": 2024
   },
   "MD": {
-   "name": "Moldova, Republic of",
+   "name": "Moldova",
    "basel_aml_score": 4.64,
    "basel_aml_rank": 124,
    "cpi_score": 43.0,
@@ -1335,7 +1335,7 @@
    "wgi_year": 2024
   },
   "PS": {
-   "name": "Palestine, State of",
+   "name": "Palestine",
    "wgi_control_of_corruption": -0.57,
    "wgi_year": 2024
   },
@@ -1395,7 +1395,7 @@
    "wgi_year": 2024
   },
   "RU": {
-   "name": "Russian Federation",
+   "name": "Russia",
    "cpi_score": 22.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -0.89,
@@ -1547,7 +1547,7 @@
    "wgi_year": 2024
   },
   "SY": {
-   "name": "Syrian Arab Republic",
+   "name": "Syria",
    "cpi_score": 12.0,
    "cpi_year": 2024,
    "wgi_control_of_corruption": -1.7,
@@ -1656,7 +1656,7 @@
    "wgi_year": 2024
   },
   "TW": {
-   "name": "Taiwan, Province of China",
+   "name": "Taiwan",
    "basel_aml_score": 4.49,
    "basel_aml_rank": 131,
    "cpi_score": 67.0,
@@ -1665,7 +1665,7 @@
    "wgi_year": 2024
   },
   "TZ": {
-   "name": "Tanzania, United Republic of",
+   "name": "Tanzania",
    "basel_aml_score": 5.51,
    "basel_aml_rank": 72,
    "cpi_score": 41.0,
@@ -1728,7 +1728,7 @@
    "wgi_year": 2024
   },
   "VE": {
-   "name": "Venezuela, Bolivarian Republic of",
+   "name": "Venezuela",
    "basel_aml_score": 7.55,
    "basel_aml_rank": 6,
    "cpi_score": 10.0,
@@ -1742,7 +1742,7 @@
    "wgi_year": 2024
   },
   "VN": {
-   "name": "Viet Nam",
+   "name": "Vietnam",
    "basel_aml_score": 6.69,
    "basel_aml_rank": 19,
    "cpi_score": 40.0,

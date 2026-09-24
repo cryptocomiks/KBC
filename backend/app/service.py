@@ -17,7 +17,7 @@ from app.graph.resolver import EntityResolver
 from app.insights import build_summary, build_timeline
 from app.matching.matcher import match_name
 from app.models import Entity, EntityType, ListType, RelationType, SearchCandidate, utcnow
-from app.risk.config import get_jurisdictions, get_risk_config
+from app.risk.config import get_country_risk, get_jurisdictions, get_risk_config
 from app.risk.engine import RiskAssessment, RiskEngine
 from app.schemas import Investigation, InvestigationRequest, SearchResponse
 from app.settings import get_settings
@@ -455,10 +455,57 @@ def build_tables(net: Network, risk: RiskAssessment) -> dict[str, list[dict[str,
         )
     crypto.sort(key=lambda row: (row["relation"], -(row["amount"] or 0)))
 
+    # Jurisdictions of the network with their public risk indicators
+    countries = get_country_risk()
+    by_country: dict[str, list[str]] = {}
+    for e in ents.values():
+        codes = [e.jurisdiction] if e.type == EntityType.COMPANY else e.nationalities
+        for code in {c.upper() for c in codes if c}:
+            by_country.setdefault(code, []).append(e.name)
+    jurisdictions = []
+    for code, names in by_country.items():
+        c = countries.get(code)
+        lists = [
+            label
+            for label, members in (
+                ("FATF black list", jur.fatf_blacklist),
+                ("FATF grey list", jur.fatf_greylist),
+                ("EU tax blacklist", jur.eu_tax_blacklist),
+                ("Offshore centre", jur.offshore_centres),
+            )
+            if code in members
+        ]
+        jurisdictions.append(
+            {
+                "code": code,
+                "country": jur.name(code),
+                "entities": len(names),
+                "examples": ", ".join(sorted(names)[:4]),
+                "basel_aml_score": c.get("basel_aml_score"),
+                "basel_aml_rank": c.get("basel_aml_rank"),
+                "cpi_score": c.get("cpi_score"),
+                "cpi_year": c.get("cpi_year"),
+                "wgi_control_of_corruption": c.get("wgi_control_of_corruption"),
+                "lists": ", ".join(lists),
+            }
+        )
+    jurisdictions.sort(key=lambda r: -(r["basel_aml_score"] or 0))
+
+    # Financial statements published by the sources (latest years first)
+    financials = []
+    for e in ents.values():
+        for row in e.extra.get("financials") or []:
+            financials.append(
+                {"entity_id": e.id, "name": e.name, "jurisdiction": e.jurisdiction, **row}
+            )
+    financials.sort(key=lambda r: (r["name"], -int(str(r.get("year") or 0)[:4] or 0)))
+
     return {
         "mandates": mandates,
         "documents": documents,
         "crypto": crypto,
+        "jurisdictions": jurisdictions,
+        "financials": financials,
         "companies": companies,
         "shareholders": shareholders,
         "ownership": ownership,

@@ -144,7 +144,17 @@ export interface Investigation {
   hits: ScreeningHit[];
   risk: RiskAssessment;
   tables: Record<
-    "mandates" | "companies" | "shareholders" | "ownership" | "screening" | "leaks" | "sources" | "documents" | "crypto",
+    | "mandates"
+    | "companies"
+    | "shareholders"
+    | "ownership"
+    | "screening"
+    | "leaks"
+    | "sources"
+    | "documents"
+    | "crypto"
+    | "jurisdictions"
+    | "financials",
     Row[]
   >;
   queries: QueryLog[];

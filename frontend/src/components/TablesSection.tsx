@@ -28,6 +28,12 @@ const badge = (level: unknown) => {
     </span>
   );
 };
+const riskTone = (high: boolean, medium: boolean) =>
+  high
+    ? "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300"
+    : medium
+      ? "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300"
+      : "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300";
 const scoreBadge = (r: Row) => <span className={`rounded px-1.5 py-0.5 font-semibold ${scoreClass(Number(r.score))}`}>{Number(r.score).toFixed(0)}%</span>;
 const urls = (r: Row) => {
   const list = (r.urls as string[] | undefined) ?? [];
@@ -195,6 +201,56 @@ export default function TablesSection({ investigation: inv, onSelect }: Props) {
           render: (r) =>
             r.flags ? <span className="rounded bg-red-100 px-1.5 py-0.5 font-semibold text-red-800 dark:bg-red-900/40 dark:text-red-300">{String(r.flags)}</span> : "",
         },
+        { key: "source", label: "Source" },
+      ],
+    },
+    {
+      key: "jurisdictions",
+      label: "Country risk",
+      rows: t.jurisdictions ?? [],
+      empty: "No jurisdiction identified.",
+      columns: [
+        { key: "country", label: "Country", render: (r) => `${flag(String(r.code))} ${String(r.country)}` },
+        { key: "entities", label: "Entities" },
+        { key: "examples", label: "Examples" },
+        {
+          key: "basel_aml_score",
+          label: "Basel AML (0–10)",
+          render: (r) =>
+            r.basel_aml_score == null ? "—" : (
+              <span className={`rounded px-1.5 py-0.5 font-semibold ${riskTone(Number(r.basel_aml_score) >= 6, Number(r.basel_aml_score) >= 5)}`}>
+                {Number(r.basel_aml_score).toFixed(2)} · #{String(r.basel_aml_rank)}
+              </span>
+            ),
+        },
+        {
+          key: "cpi_score",
+          label: "CPI (0–100)",
+          render: (r) =>
+            r.cpi_score == null ? "—" : (
+              <span className={`rounded px-1.5 py-0.5 font-semibold ${riskTone(Number(r.cpi_score) < 30, Number(r.cpi_score) < 50)}`}>
+                {Number(r.cpi_score).toFixed(0)} ({String(r.cpi_year)})
+              </span>
+            ),
+        },
+        { key: "wgi_control_of_corruption", label: "WGI corruption control", render: (r) => (r.wgi_control_of_corruption == null ? "—" : Number(r.wgi_control_of_corruption).toFixed(2)) },
+        { key: "lists", label: "Lists" },
+      ],
+    },
+    {
+      key: "financials",
+      label: "Financials",
+      rows: t.financials ?? [],
+      click: "entity_id",
+      empty: "No published financial statement in the sources queried (many small companies are exempt or opt out).",
+      columns: [
+        { key: "name", label: "Company" },
+        { key: "jurisdiction", label: "Jur.", render: (r) => jur(r) },
+        { key: "year", label: "Year" },
+        { key: "revenue", label: "Revenue" },
+        { key: "net_income", label: "Net income" },
+        { key: "total_assets", label: "Total assets" },
+        { key: "currency", label: "Cur." },
         { key: "source", label: "Source" },
       ],
     },

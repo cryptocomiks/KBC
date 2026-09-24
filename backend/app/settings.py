@@ -48,6 +48,9 @@ class Settings(BaseSettings):
 
     risk_config_path: str = str(CONFIG_DIR / "risk.yaml")
     jurisdictions_config_path: str = str(CONFIG_DIR / "jurisdictions.yaml")
+    country_risk_path: str = str(CONFIG_DIR / "country_risk.json")
+    # The SEC blocks automated requests whose User-Agent does not name a contact.
+    sec_user_agent: str = "KBC Corporate Mapping research-contact@kbc-mapping.org"
 
     # Guard rails for network expansion
     max_depth: int = 3

@@ -21,7 +21,13 @@ from app.graph.ownership import (
     ownership_graph,
 )
 from app.models import CompanyStatus, EntityType, ListType, RelationType
-from app.risk.config import JurisdictionLists, RiskConfig, get_jurisdictions, get_risk_config
+from app.risk.config import (
+    JurisdictionLists,
+    RiskConfig,
+    get_country_risk,
+    get_jurisdictions,
+    get_risk_config,
+)
 
 FACTOR_LABELS = {
     "sanctions_match": "Sanctions list match",
@@ -46,6 +52,8 @@ FACTOR_LABELS = {
     "pep_relative": "Relative or close associate of a PEP",
     "watchlist_match": "Watchlist match (debarment, wanted notice, criminal / court records)",
     "adverse_media": "Adverse media (press mentions with risk keywords)",
+    "high_risk_country": "High-risk country (Basel AML Index / corruption perception)",
+    "shell_company_indicators": "Shell-company indicator (large balance sheet, no revenue)",
 }
 
 
@@ -71,6 +79,15 @@ class RiskAssessment(BaseModel):
     methodology: list[str] = Field(default_factory=list)
 
 
+def _amount(value) -> float | None:
+    if value is None:
+        return None
+    try:
+        return float(str(value).replace(",", "").replace(" ", ""))
+    except ValueError:
+        return None
+
+
 def _months_between(start: date, end: date) -> int:
     return (end.year - start.year) * 12 + (end.month - start.month)
 
@@ -84,7 +101,25 @@ class RiskEngine:
     ) -> None:
         self.cfg = config or get_risk_config()
         self.jur = jurisdictions or get_jurisdictions()
+        self.countries = get_country_risk()
         self.today = today or date.today()
+
+    def _shell_indicator(self, financials: list[dict]) -> str | None:
+        """Large balance sheet with (almost) no revenue in the latest published accounts."""
+        if not financials:
+            return None
+        latest = financials[0]
+        assets, revenue = _amount(latest.get("total_assets")), _amount(latest.get("revenue"))
+        t = self.cfg.thresholds
+        if assets is None or revenue is None or assets < t.get("shell_min_assets", 1_000_000):
+            return None
+        if revenue > assets * t.get("shell_max_revenue_ratio", 0.01):
+            return None
+        cur = latest.get("currency", "")
+        return (
+            f"total assets {latest['total_assets']} {cur} but revenue {latest['revenue']} {cur} "
+            f"({latest.get('year')}) — a holding or an empty shell: check the economic rationale"
+        )
 
     def assess(self, net: Network) -> RiskAssessment:
         hits: dict[str, list[tuple[str, str]]] = {}  # factor -> [(entity_id, evidence)]
@@ -125,6 +160,13 @@ class RiskEngine:
                 flag("eu_tax_blacklist", eid, label)
             if code in self.jur.offshore_centres:
                 flag("offshore_jurisdiction", eid, label)
+            indicators = self.countries.get(code)
+            basel = indicators.get("basel_aml_score")
+            cpi = indicators.get("cpi_score")
+            if (basel is not None and basel >= t.get("basel_high_score", 6.0)) or (
+                cpi is not None and cpi < t.get("cpi_low_score", 30)
+            ):
+                flag("high_risk_country", eid, f"{label}: {self.countries.describe(code)}")
 
             for doc in e.documents:
                 if "insolvency" in doc.flags:
@@ -135,6 +177,9 @@ class RiskEngine:
                         f"{e.name}: {doc.title}{when}"
                         + (f" — {doc.summary}" if doc.summary else ""),
                     )
+            shell = self._shell_indicator(e.extra.get("financials") or [])
+            if shell:
+                flag("shell_company_indicators", eid, f"{e.name}: {shell}")
             if e.status == CompanyStatus.DISSOLVED:
                 when = f" on {e.dissolution_date}" if e.dissolution_date else ""
                 flag("dissolved_company", eid, f"{e.name} dissolved{when}")
@@ -315,6 +360,8 @@ class RiskEngine:
                 f"Screening hits ≥ {t['strong_match_score']:.0f}% count as matches, "
                 f"{t['possible_match_score']:.0f}–{t['strong_match_score']:.0f}% as possible matches, "
                 "below are shown for review only.",
-                "Weights and thresholds: config/risk.yaml — jurisdiction lists: config/jurisdictions.yaml.",
+                "Weights and thresholds: config/risk.yaml — jurisdiction lists: config/jurisdictions.yaml"
+                " — country indicators (Basel AML Index, CPI, World Bank WGI): config/country_risk.json"
+                + (f", retrieved {self.countries.retrieved}." if self.countries.retrieved else "."),
             ],
         )

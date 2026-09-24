@@ -32,7 +32,9 @@ from app.connectors.open_datasets import OpenDatasetsConnector  # noqa: E402
 from app.connectors.opencorporates import OpenCorporatesConnector  # noqa: E402
 from app.connectors.opensanctions import OpenSanctionsConnector  # noqa: E402
 from app.connectors.pappers import PappersConnector  # noqa: E402
+from app.connectors.sec_edgar import SecEdgarConnector  # noqa: E402
 from app.connectors.wikidata import WikidataConnector, WikidataPepConnector  # noqa: E402
+from app.connectors.zefix import ZefixConnector  # noqa: E402
 from app.models import Entity, EntityType  # noqa: E402
 from app.settings import Settings  # noqa: E402
 
@@ -70,13 +72,26 @@ def person(name: str, dob: str | None = None) -> Entity:
 def check_annuaire() -> None:
     conn = AnnuaireEntreprisesConnector(settings)
     found = conn.search_company("Danone")
-    expect("company search returns results", bool(found), ", ".join(f"{c.name} ({c.registration_number})" for c in found[:3]))
+    expect(
+        "company search returns results",
+        bool(found),
+        ", ".join(f"{c.name} ({c.registration_number})" for c in found[:3]),
+    )
     top = found[0]
-    expect("company fields parsed", bool(top.registration_number and top.address and top.status),
-           f"status={top.status} created={top.incorporation_date} address={top.address}")
+    expect(
+        "company fields parsed",
+        bool(top.registration_number and top.address and top.status),
+        f"status={top.status} created={top.incorporation_date} address={top.address}",
+    )
     officers = conn.get_officers(top.id)
-    expect("officers returned", bool(officers),
-           "; ".join(f"{o.entity.name} [{o.relationship.role}] dob={o.entity.birth_date}" for o in officers[:4]))
+    expect(
+        "officers returned",
+        bool(officers),
+        "; ".join(
+            f"{o.entity.name} [{o.relationship.role}] dob={o.entity.birth_date}"
+            for o in officers[:4]
+        ),
+    )
     people = conn.search_person(officers[0].entity.name) if officers else []
     expect("person search finds that officer", bool(people), ", ".join(p.name for p in people[:3]))
     if people:
@@ -86,30 +101,49 @@ def check_annuaire() -> None:
 
 def check_icij() -> None:
     conn = IcijReconcileConnector(settings)
-    raw = conn.http_post_json(f"{RECONCILE}/panama-papers",
-                              form={"queries": json.dumps({"q0": {"query": "Mossack Fonseca", "limit": 3}})})
+    raw = conn.http_post_json(
+        f"{RECONCILE}/panama-papers",
+        form={"queries": json.dumps({"q0": {"query": "Mossack Fonseca", "limit": 3}})},
+    )
     print("raw reconcile sample:", json.dumps(raw)[:600])
     hits = conn.screen_many([company("Mossack Fonseca"), company("Portcullis TrustNet")])
     for h in hits[:8]:
-        print(f"      hit: {h.matched_name} | {h.dataset} | score {h.score} | {h.details.get('node_type')} | {h.provenance.url}")
-    expect("known Panama Papers name is found", any("mossack" in h.matched_name.lower() for h in hits),
-           f"{len(hits)} hits")
+        print(
+            f"      hit: {h.matched_name} | {h.dataset} | score {h.score} | {h.details.get('node_type')} | {h.provenance.url}"
+        )
+    expect(
+        "known Panama Papers name is found",
+        any("mossack" in h.matched_name.lower() for h in hits),
+        f"{len(hits)} hits",
+    )
     expect("hits are attributed to a leak", all(h.dataset.endswith(")") for h in hits))
-    expect("node types are parsed", all(h.details.get("node_type") not in (None, "unknown") for h in hits),
-           ", ".join(sorted({str(h.details.get("node_type")) for h in hits})))
+    expect(
+        "node types are parsed",
+        all(h.details.get("node_type") not in (None, "unknown") for h in hits),
+        ", ".join(sorted({str(h.details.get("node_type")) for h in hits})),
+    )
     exact = [h for h in hits if h.matched_name.upper().startswith("MOSSACK FONSECA &")]
     related = [h for h in hits if "GUATEMALA" in h.matched_name.upper()]
-    expect("exact name counts as a match (>= 85)", bool(exact) and exact[0].score >= 85,
-           f"{exact[0].matched_name}: {exact[0].score}" if exact else "")
-    expect("name with extra words is only a possible match (< 85)", all(h.score < 85 for h in related),
-           ", ".join(f"{h.matched_name}: {h.score}" for h in related))
+    expect(
+        "exact name counts as a match (>= 85)",
+        bool(exact) and exact[0].score >= 85,
+        f"{exact[0].matched_name}: {exact[0].score}" if exact else "",
+    )
+    expect(
+        "name with extra words is only a possible match (< 85)",
+        all(h.score < 85 for h in related),
+        ", ".join(f"{h.matched_name}: {h.score}" for h in related),
+    )
 
 
 def check_gleif() -> None:
     conn = GleifConnector(settings)
     found = conn.search_company("Danone")
-    expect("LEI search returns results", bool(found),
-           ", ".join(f"{c.name} [{c.jurisdiction}] reg={c.registration_number}" for c in found[:3]))
+    expect(
+        "LEI search returns results",
+        bool(found),
+        ", ".join(f"{c.name} [{c.jurisdiction}] reg={c.registration_number}" for c in found[:3]),
+    )
     expect("exact legal name ranked first", found[0].name.upper() == "DANONE", found[0].name)
     parents = []
     for c in found[1:6]:
@@ -119,20 +153,31 @@ def check_gleif() -> None:
             break
     expect("a parent company is returned for a Danone subsidiary", bool(parents))
     children = conn.get_subsidiaries(found[0].id)
-    expect("children returned for the group head", bool(children),
-           f"{len(children)}: " + ", ".join(ch.entity.name for ch in children[:4]))
+    expect(
+        "children returned for the group head",
+        bool(children),
+        f"{len(children)}: " + ", ".join(ch.entity.name for ch in children[:4]),
+    )
 
 
 def check_bodacc() -> None:
-    danone = Entity(id="check:danone", type=EntityType.COMPANY, name="DANONE", jurisdiction="FR",
-                    registration_number="552032534")
+    danone = Entity(
+        id="check:danone",
+        type=EntityType.COMPANY,
+        name="DANONE",
+        jurisdiction="FR",
+        registration_number="552032534",
+    )
     docs = BodaccConnector(settings).get_documents(danone)
     for d in docs[:4]:
         print(f"      {d.date} | {d.title} | {d.summary} | {d.url}")
     expect("legal notices returned for Danone", bool(docs), f"{len(docs)} notices")
     expect("notices are dated and linked", all(d.date and d.url for d in docs))
-    expect("accounts filings recognised", any(d.kind == "accounts" for d in docs),
-           ", ".join(sorted({d.kind for d in docs})))
+    expect(
+        "accounts filings recognised",
+        any(d.kind == "accounts" for d in docs),
+        ", ".join(sorted({d.kind for d in docs})),
+    )
 
 
 def check_official_sanctions() -> None:
@@ -140,11 +185,18 @@ def check_official_sanctions() -> None:
     hits = conn.screen(person("Vladimir Putin", "1952-10-07"))
     for h in hits[:3]:
         print(f"      hit: {h.matched_name} | {h.dataset} | {h.score} | {h.details.get('program')}")
-    expect("OFAC SDN: sanctioned reference person found", any(h.score >= 85 and "OFAC" in h.dataset for h in hits))
+    expect(
+        "OFAC SDN: sanctioned reference person found",
+        any(h.score >= 85 and "OFAC" in h.dataset for h in hits),
+    )
     un_hits = conn.screen(person("Ayman al-Zawahiri"))
-    expect("UN list: reference person found", any("UN" in h.dataset for h in un_hits),
-           "; ".join(f"{h.matched_name} ({h.score})" for h in un_hits[:3]))
+    expect(
+        "UN list: reference person found",
+        any("UN" in h.dataset for h in un_hits),
+        "; ".join(f"{h.matched_name} ({h.score})" for h in un_hits[:3]),
+    )
     from app.connectors.official_sanctions import _INDEX
+
     print(f"      index: {len(_INDEX.entries)} listed entries; load errors: {_INDEX.errors}")
 
 
@@ -168,23 +220,36 @@ def check_crypto() -> None:
         print(f"        {address} | {entry.entity.name} | {entry.program}")
     expect("OFAC crypto addresses extracted", len(_INDEX.wallets) > 50)
 
-    for conn, sample in ((BitcoinConnector(settings), by_chain.get("BTC")),
-                         (EthereumConnector(settings), "0xdAC17F958D2ee523a2206206994597C13D831ec7"),
-                         (TronConnector(settings), by_chain.get("TRON") or "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t")):
+    for conn, sample in (
+        (BitcoinConnector(settings), by_chain.get("BTC")),
+        (EthereumConnector(settings), "0xdAC17F958D2ee523a2206206994597C13D831ec7"),
+        (TronConnector(settings), by_chain.get("TRON") or "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"),
+    ):
         if not sample:
             expect(f"{conn.chain}: sample address available", False)
             continue
         wallet = conn.get_wallet(sample)
-        expect(f"{conn.chain}: wallet profile", wallet is not None,
-               f"{sample} {wallet.extra if wallet else ''}")
+        expect(
+            f"{conn.chain}: wallet profile",
+            wallet is not None,
+            f"{sample} {wallet.extra if wallet else ''}",
+        )
         links = conn.get_wallet_links(wallet) if wallet else []
-        expect(f"{conn.chain}: flows aggregated", bool(links),
-               "; ".join(f"{link.relationship.amount} {link.relationship.currency} x{link.relationship.tx_count}"
-                         for link in links[:3]))
+        expect(
+            f"{conn.chain}: flows aggregated",
+            bool(links),
+            "; ".join(
+                f"{link.relationship.amount} {link.relationship.currency} x{link.relationship.tx_count}"
+                for link in links[:3]
+            ),
+        )
         if conn.chain != "ETH":
             hits = sanctions.screen(wallet)
-            expect(f"{conn.chain}: OFAC-listed address flagged", any(h.score == 100 for h in hits),
-                   "; ".join(h.matched_name for h in hits))
+            expect(
+                f"{conn.chain}: OFAC-listed address flagged",
+                any(h.score == 100 for h in hits),
+                "; ".join(h.matched_name for h in hits),
+            )
 
 
 def check_open_watchlists() -> None:
@@ -200,8 +265,14 @@ def check_open_watchlists() -> None:
     hits = conn.screen(person("Vladimir Putin", "1952-10-07"))
     for h in hits[:4]:
         print(f"      hit: {h.matched_name} | {h.dataset} | {h.score}")
-    expect("EU list: sanctioned reference person found", any("EU" in h.dataset and h.score >= 85 for h in hits))
-    expect("UK list: sanctioned reference person found", any("UK" in h.dataset and h.score >= 85 for h in hits))
+    expect(
+        "EU list: sanctioned reference person found",
+        any("EU" in h.dataset and h.score >= 85 for h in hits),
+    )
+    expect(
+        "UK list: sanctioned reference person found",
+        any("UK" in h.dataset and h.score >= 85 for h in hits),
+    )
 
 
 def check_wikidata() -> None:
@@ -209,36 +280,159 @@ def check_wikidata() -> None:
     people = wd.search_person("Emmanuel Macron")
     expect("person search", bool(people), ", ".join(f"{p.name} {p.birth_date}" for p in people[:3]))
     macron = next((p for p in people if p.birth_date == "1977-12-21"), None)
-    expect("positions held parsed", bool(macron and "President" in macron.extra.get("positions_held", "")),
-           macron.extra.get("positions_held", "")[:200] if macron else "")
+    expect(
+        "positions held parsed",
+        bool(macron and "President" in macron.extra.get("positions_held", "")),
+        macron.extra.get("positions_held", "")[:200] if macron else "",
+    )
     if macron:
         roles = wd.get_person_roles(macron.id)
-        expect("relatives / associates", any(r.relationship.type.value == "relative" for r in roles),
-               "; ".join(f"{r.relationship.role}: {r.entity.name}" for r in roles[:5]))
+        expect(
+            "relatives / associates",
+            any(r.relationship.type.value == "relative" for r in roles),
+            "; ".join(f"{r.relationship.role}: {r.entity.name}" for r in roles[:5]),
+        )
     hits = WikidataPepConnector(settings).screen_many([person("Emmanuel Macron", "1977-12-21")])
-    expect("PEP screening", any(h.score >= 85 for h in hits), "; ".join(f"{h.matched_name} {h.score}" for h in hits[:2]))
+    expect(
+        "PEP screening",
+        any(h.score >= 85 for h in hits),
+        "; ".join(f"{h.matched_name} {h.score}" for h in hits[:2]),
+    )
     companies = wd.search_company("TotalEnergies")
-    expect("company search", bool(companies), ", ".join(f"{c.name} [{c.jurisdiction}]" for c in companies[:3]))
+    expect(
+        "company search",
+        bool(companies),
+        ", ".join(f"{c.name} [{c.jurisdiction}]" for c in companies[:3]),
+    )
     if companies:
         docs = wd.get_documents(companies[0])
-        expect("official contacts / accounts", any(d.kind == "official_profile" for d in docs),
-               "; ".join(f"{d.title} → {d.url}" for d in docs[:5]))
-        expect("corporate links", bool(wd.get_officers(companies[0].id)),
-               "; ".join(f"{link.relationship.role}: {link.entity.name}" for link in wd.get_officers(companies[0].id)[:4]))
+        expect(
+            "official contacts / accounts",
+            any(d.kind == "official_profile" for d in docs),
+            "; ".join(f"{d.title} → {d.url}" for d in docs[:5]),
+        )
+        expect(
+            "corporate links",
+            bool(wd.get_officers(companies[0].id)),
+            "; ".join(
+                f"{link.relationship.role}: {link.entity.name}"
+                for link in wd.get_officers(companies[0].id)[:4]
+            ),
+        )
 
 
 def check_gdelt() -> None:
     import httpx as _httpx
 
-    raw = _httpx.get(GDELT_API, params={"query": '"TotalEnergies" (fraud OR corruption OR sanctions)', "mode": "ArtList",
-                                        "format": "json", "maxrecords": 5, "timespan": "12m"}, timeout=30)
+    raw = _httpx.get(
+        GDELT_API,
+        params={
+            "query": '"TotalEnergies" (fraud OR corruption OR sanctions)',
+            "mode": "ArtList",
+            "format": "json",
+            "maxrecords": 5,
+            "timespan": "12m",
+        },
+        timeout=30,
+    )
     print(f"      raw status {raw.status_code}: {raw.text[:300]!r}")
     docs = GdeltConnector(settings).get_documents(company("TotalEnergies"))
     for d in docs[:3]:
         print(f"      {d.date} | {d.title[:90]} | {d.url}")
     # GDELT rate-limits shared cloud IPs (HTTP 429): the connector falls back to Google News.
-    expect("adverse media returned (GDELT or Google News fallback)", bool(docs),
-           f"{len(docs)} articles via {docs[0].source.split(' — ')[0] if docs else '-'}")
+    expect(
+        "adverse media returned (GDELT or Google News fallback)",
+        bool(docs),
+        f"{len(docs)} articles via {docs[0].source.split(' — ')[0] if docs else '-'}",
+    )
+
+
+def check_zefix() -> None:
+    zefix = ZefixConnector(settings)
+    found = zefix.search_company("Nestlé")
+    expect(
+        "company search",
+        bool(found),
+        ", ".join(f"{c.name} [{c.registration_number}]" for c in found[:4]),
+    )
+    nestle = next((c for c in found if c.name == "Nestlé AG"), None)
+    expect("Nestlé AG found", nestle is not None)
+    if not nestle:
+        return
+    detail = zefix.get_company_details(nestle.id)
+    expect(
+        "details (address, legal form)",
+        bool(detail and detail.address and detail.legal_form),
+        f"{detail.legal_form} — {detail.address}" if detail else "",
+    )
+    officers = zefix.get_officers(nestle.id)
+    active = [o for o in officers if o.relationship.end_date is None]
+    for o in active[:6]:
+        print(f"      {o.entity.name} — {o.relationship.role} (since {o.relationship.start_date})")
+    expect(
+        "officers parsed from SOGC notices",
+        len(active) >= 5,
+        f"{len(active)} active, {len(officers)} total",
+    )
+    expect(
+        "board members recognised",
+        any((o.relationship.role or "").startswith("Board member") for o in active),
+    )
+    docs = zefix.get_documents(detail)
+    expect(
+        "SOGC publications as documents",
+        sum(d.kind == "legal_notice" for d in docs) >= 5,
+        f"{len(docs)} documents",
+    )
+
+
+def check_sec() -> None:
+    sec = SecEdgarConnector(settings)
+    found = sec.search_company("Tesla")
+    expect(
+        "company search",
+        bool(found),
+        ", ".join(f"{c.name} ({c.identifiers.get('CIK')})" for c in found[:3]),
+    )
+    tesla = next((c for c in found if c.identifiers.get("CIK") == "1318605"), None)
+    expect("Tesla, Inc. found (CIK 1318605)", tesla is not None)
+    if not tesla:
+        return
+    detail = sec.get_company_details(tesla.id)
+    expect(
+        "financials from XBRL",
+        bool(detail and detail.extra.get("revenue_usd")),
+        f"revenue {detail.extra.get('revenue_usd')} USD, net income {detail.extra.get('net_income_usd')}, "
+        f"assets {detail.extra.get('total_assets_usd')} ({detail.extra.get('financial_year_end')})"
+        if detail
+        else "",
+    )
+    owners = sec.get_shareholders(tesla.id)
+    for o in owners[:5]:
+        print(
+            f"      {o.entity.name} ({o.entity.type.value}) {o.relationship.share_pct}% — {o.relationship.role}"
+        )
+    expect("13D/13G beneficial owners with %", any(o.relationship.share_pct for o in owners))
+    docs = sec.get_documents(detail)
+    expect(
+        "recent filings linked",
+        any(d.title.startswith("SEC 10-K") for d in docs),
+        f"{len(docs)} filings",
+    )
+
+
+def check_country_risk() -> None:
+    from app.risk.config import get_country_risk
+
+    cr = get_country_risk()
+    expect(
+        "country indicators loaded",
+        len(cr.countries) > 150,
+        f"{len(cr.countries)} countries, retrieved {cr.retrieved}",
+    )
+    for code in ("CH", "LU", "PA", "MM"):
+        print(f"      {code}: {cr.describe(code)}")
+    expect("Switzerland scored", cr.get("CH").get("basel_aml_score") is not None)
 
 
 def check_opensanctions() -> None:
@@ -246,7 +440,9 @@ def check_opensanctions() -> None:
     hits = conn.screen_many([person("Vladimir Putin", "1952-10-07")])
     for h in hits[:3]:
         print(f"      hit: {h.list_type} {h.matched_name} | {h.dataset} | {h.score}")
-    expect("sanctioned reference person found", any(h.score >= 85 for h in hits), f"{len(hits)} hits")
+    expect(
+        "sanctioned reference person found", any(h.score >= 85 for h in hits), f"{len(hits)} hits"
+    )
 
 
 def check_companies_house() -> None:
@@ -254,7 +450,11 @@ def check_companies_house() -> None:
     found = conn.search_company("TESCO PLC")
     expect("company search", bool(found), ", ".join(c.name for c in found[:3]))
     detail = conn.get_company_details(found[0].id)
-    expect("company profile", bool(detail and detail.incorporation_date), f"{detail.name if detail else None}")
+    expect(
+        "company profile",
+        bool(detail and detail.incorporation_date),
+        f"{detail.name if detail else None}",
+    )
     expect("officers", bool(conn.get_officers(found[0].id)))
 
 
@@ -268,12 +468,18 @@ def check_pappers() -> None:
 def check_opencorporates() -> None:
     conn = OpenCorporatesConnector(settings)
     found = conn.search_company("Tesco PLC")
-    expect("company search", bool(found), ", ".join(f"{c.name} [{c.jurisdiction}]" for c in found[:3]))
+    expect(
+        "company search", bool(found), ", ".join(f"{c.name} [{c.jurisdiction}]" for c in found[:3])
+    )
 
 
 def check_aleph() -> None:
     hits = AlephConnector(settings).screen(company("Mossack Fonseca"))
-    expect("Aleph search answered", True, f"{len(hits)} hits: " + "; ".join(h.dataset for h in hits[:3]))
+    expect(
+        "Aleph search answered",
+        True,
+        f"{len(hits)} hits: " + "; ".join(h.dataset for h in hits[:3]),
+    )
 
 
 guarded("Annuaire des Entreprises (data.gouv.fr)", check_annuaire)
@@ -285,6 +491,9 @@ guarded("Crypto: OFAC addresses + BTC/ETH/TRON explorers", check_crypto)
 guarded("Open watchlists (EU / UK / CH / World Bank / Interpol)", check_open_watchlists)
 guarded("Wikidata (PEP, relatives, contacts)", check_wikidata)
 guarded("GDELT adverse media", check_gdelt)
+guarded("Zefix (Swiss commercial register)", check_zefix)
+guarded("SEC EDGAR (US filings, 13D/13G owners)", check_sec)
+guarded("Country risk indicators", check_country_risk)
 for key, title, fn in [
     ("OPENSANCTIONS_API_KEY", "OpenSanctions", check_opensanctions),
     ("COMPANIES_HOUSE_API_KEY", "Companies House", check_companies_house),
