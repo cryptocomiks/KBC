@@ -47,7 +47,7 @@ export interface Entity {
   extra: Record<string, unknown>;
 }
 
-export type RelationType = "officer" | "shareholder" | "beneficial_owner" | "registered_at" | "controls" | "transfer";
+export type RelationType = "officer" | "shareholder" | "beneficial_owner" | "registered_at" | "controls" | "transfer" | "relative";
 
 export interface Relationship {
   id: string;

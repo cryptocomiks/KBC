@@ -109,10 +109,10 @@ export default function TablesSection({ investigation: inv, onSelect }: Props) {
     },
     {
       key: "screening",
-      label: "Sanctions & PEP",
+      label: "Sanctions, PEP & watchlists",
       rows: t.screening,
       click: "entity_id",
-      empty: "No sanctions or PEP hit.",
+      empty: "No sanctions, PEP or watchlist hit.",
       columns: [
         { key: "entity", label: "Network entity" },
         { key: "matched_name", label: "Listed name" },

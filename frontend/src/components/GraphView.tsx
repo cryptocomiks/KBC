@@ -72,6 +72,7 @@ function buildElements(inv: Investigation, filters: GraphFilters): ElementDefini
     else if (r.type === "transfer")
       label = `${(r.amount ?? 0).toLocaleString("en", { maximumFractionDigits: r.currency === "BTC" || r.currency === "ETH" ? 4 : 0 })} ${r.currency ?? ""}`;
     else if (r.type === "controls") label = "controls";
+    else if (r.type === "relative") label = (r.role ?? "relative").replace(" (Wikidata)", "");
     edges.push({
       data: { id: r.id, source: r.source_id, target: r.target_id, rel: r.type, label: ended ? `${label} (ended)` : label, ended },
     });
@@ -143,6 +144,7 @@ function buildStyle(theme: Theme): StylesheetJson {
     { selector: 'edge[rel = "officer"]', style: { "line-style": "dotted", "line-color": dark ? "#64748b" : "#94a3b8", "target-arrow-color": dark ? "#64748b" : "#94a3b8", label: "" } },
     { selector: 'edge[rel = "officer"].show-label', style: { label: "data(label)" } },
     { selector: 'edge[rel = "transfer"]', style: { width: 2.2, "line-color": "#f59e0b", "target-arrow-color": "#f59e0b", color: dark ? "#fcd34d" : "#b45309" } },
+    { selector: 'edge[rel = "relative"]', style: { "line-style": "dotted", width: 2, "line-color": "#ec4899", "target-arrow-shape": "none", color: dark ? "#f9a8d4" : "#be185d" } },
     { selector: 'edge[rel = "controls"]', style: { "line-style": "dashed", "line-color": "#14b8a6", "target-arrow-color": "#14b8a6", color: "#0f766e" } },
     { selector: 'edge[rel = "registered_at"]', style: { width: 1, "line-style": "dotted", "line-color": dark ? "#334155" : "#cbd5e1", "target-arrow-shape": "none", label: "" } },
     { selector: "edge[ended = 1]", style: { opacity: 0.4 } },
@@ -278,6 +280,7 @@ export function GraphLegend() {
       {item(<span className="inline-block h-2.5 w-2.5 rounded-sm bg-slate-300 dark:bg-slate-600" />, "Address")}
       {item(<span className="inline-block h-3 w-3 bg-slate-400 [clip-path:polygon(25%_0,75%_0,100%_50%,75%_100%,25%_100%,0_50%)]" />, "Crypto wallet")}
       {item(<span className="inline-block h-0.5 w-5 bg-amber-500" />, "On-chain flow")}
+      {item(<span className="inline-block w-5 border-t-2 border-dotted border-pink-500" />, "Family / associate")}
       {item(<span className="inline-block h-0.5 w-5 bg-blue-800 dark:bg-blue-300" />, "Shareholding %")}
       {item(<span className="inline-block w-5 border-t-2 border-dashed border-violet-500" />, "Declared UBO")}
       {item(<span className="inline-block w-5 border-t-2 border-dotted border-slate-400" />, "Officer")}

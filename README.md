@@ -324,6 +324,10 @@ a *Demo · fictitious* or *Real public data* badge.
 | **GLEIF** (LEI index) | Legal entities worldwide, registration numbers, **direct parents and subsidiaries** (accounting consolidation) | none, public API | — |
 | **BODACC** (DILA) | French legal announcements: registrations, changes, **filed accounts**, **insolvency proceedings**, deregistrations. Each notice is a linked document | none, open data | — |
 | **Official sanctions lists** | **OFAC SDN** (US Treasury) and **UN Security Council** consolidated list, downloaded from the issuers and indexed in memory | none | — |
+| **Open watchlists** | **EU**, **UK (HMT/OFSI)** and **Swiss (SECO)** sanctions, **World Bank** debarments, **Interpol** public red notices, from the normalised OpenSanctions bulk exports (CC BY-NC) | none | `OPEN_DATASETS` |
+| **Wikidata** | PEP screening (positions held, with dates), **relatives and close associates**, company ↔ executive / owner / subsidiary links, **official website, published company contacts and official social accounts** | none | — |
+| **GDELT** | Adverse media: recent worldwide news mentioning the subject with financial-crime keywords (leads to review) | none | — |
+| **Blockchain explorers** | Wallet search (BTC, ETH, TRON), aggregated on-chain flows, OFAC-listed crypto addresses linked to their owner | none | — |
 | **ICIJ Offshore Leaks** | Panama, Paradise, Pandora Papers, Bahamas Leaks, Offshore Leaks. One batched query per investigation, so each hit is attributed to its leak | none, public API | — |
 | ICIJ Offshore Leaks, local copy | Full bulk dataset, offline (`python scripts/import_icij.py`) | none | `ICIJ_DB_PATH` |
 | **Pappers** | FR declared beneficial owners (%), officers, filed accounts | [pappers.fr/api](https://www.pappers.fr/api) (credits) | `PAPPERS_API_KEY` |
@@ -360,6 +364,9 @@ the unit tests never call external APIs. The live behaviour is checked after eac
 - **Public or lawfully accessible sources only.** No scraping behind logins, no paid data resold.
 - **Human in the loop.** A permanent disclaimer in the UI and in the PDF. Weak matches are shown but not
   scored. The analyst chooses among the homonyms.
+- **No profiling of private individuals.** Contacts and social accounts are shown only for companies
+  and public figures (people notable enough to have a Wikidata item), and only when officially
+  published. A person's e-mail address or phone number is never displayed, even when published.
 - **Data minimisation (GDPR / Swiss nFADP).** No database of persons: personal data lives only in the
   SQLite cache (72 h TTL by default), which **"Clear cache"** wipes along with every computed
   investigation. No person address nodes are created, only company registered offices.

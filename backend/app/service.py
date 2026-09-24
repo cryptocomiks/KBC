@@ -372,8 +372,12 @@ def build_tables(net: Network, risk: RiskAssessment) -> dict[str, list[dict[str,
             "retrieved_at": h.provenance.retrieved_at,
         }
 
-    screening = [hit_row(h) for h in net.hits if h.list_type in (ListType.SANCTION, ListType.PEP)]
-    leaks = [hit_row(h) for h in net.hits if h.list_type in (ListType.LEAK, ListType.ADVERSE)]
+    screening = [
+        hit_row(h)
+        for h in net.hits
+        if h.list_type in (ListType.SANCTION, ListType.PEP, ListType.ADVERSE)
+    ]
+    leaks = [hit_row(h) for h in net.hits if h.list_type == ListType.LEAK]
 
     by_source: dict[str, dict[str, Any]] = {}
     for q in net.queries:

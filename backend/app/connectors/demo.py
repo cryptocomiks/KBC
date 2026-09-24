@@ -157,8 +157,11 @@ class DemoRegistryConnector(_DemoBase):
         return self._links(to=self.native_id(company_id), types={"shareholder", "beneficial_owner"})
 
     def get_person_roles(self, person_id: str) -> list[LinkedEntity]:
+        native = self.native_id(person_id)
         return self._links(
-            frm=self.native_id(person_id), types={"officer", "shareholder", "beneficial_owner"}
+            frm=native, types={"officer", "shareholder", "beneficial_owner", "relative"}
+        ) + (
+            self._links(to=native, types={"relative"})  # family links are symmetric
         )
 
     def get_subsidiaries(self, company_id: str) -> list[LinkedEntity]:

@@ -13,12 +13,15 @@ def _connector_classes() -> list[type[BaseConnector]]:
     from app.connectors.chains import CHAIN_CONNECTORS
     from app.connectors.companies_house import CompaniesHouseConnector
     from app.connectors.demo import DEMO_CONNECTORS
+    from app.connectors.gdelt import GdeltConnector
     from app.connectors.gleif import GleifConnector
     from app.connectors.icij import IcijLocalConnector, IcijReconcileConnector
     from app.connectors.official_sanctions import OfficialSanctionsConnector
+    from app.connectors.open_datasets import OpenDatasetsConnector
     from app.connectors.opencorporates import OpenCorporatesConnector
     from app.connectors.opensanctions import OpenSanctionsConnector
     from app.connectors.pappers import PappersConnector
+    from app.connectors.wikidata import WikidataConnector, WikidataPepConnector
 
     # To add a source (e.g. Zefix for Switzerland, LBR for Luxembourg): implement
     # BaseConnector in a new module and append the class here.
@@ -32,6 +35,10 @@ def _connector_classes() -> list[type[BaseConnector]]:
         OpenCorporatesConnector,
         OpenSanctionsConnector,
         OfficialSanctionsConnector,
+        OpenDatasetsConnector,
+        WikidataConnector,
+        WikidataPepConnector,
+        GdeltConnector,
         IcijReconcileConnector,
         IcijLocalConnector,
         AlephConnector,

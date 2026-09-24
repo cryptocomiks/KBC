@@ -40,6 +40,10 @@ class Settings(BaseSettings):
     companies_house_api_key: str = ""
     aleph_api_key: str = ""
     opensanctions_api_key: str = ""
+    # Open watchlists downloaded as bulk files (OpenSanctions dataset names, comma-separated)
+    open_datasets: str = (
+        "eu_fsf,gb_hmt_sanctions,ch_seco_sanctions,worldbank_debarred,interpol_red_notices"
+    )
     icij_db_path: str = str(REPO_ROOT / "data" / "icij_offshore_leaks.db")
 
     risk_config_path: str = str(CONFIG_DIR / "risk.yaml")

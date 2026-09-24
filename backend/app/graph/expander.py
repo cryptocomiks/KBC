@@ -165,7 +165,10 @@ class NetworkExpander:
         if entity.type in (EntityType.ADDRESS, EntityType.WALLET):
             return
         have = {rid.split(":", 1)[0] for rid in entity.record_ids}
+        depth = self.depth.get(cid, 0)
         for conn in self.registry.enabled("registry", demo=self.demo_realm):
+            if conn.crossref_max_depth is not None and depth > conn.crossref_max_depth:
+                continue
             if conn.name in have:
                 continue
             if entity.type == EntityType.COMPANY:
@@ -377,13 +380,25 @@ class NetworkExpander:
     # ---------------------------------------------------------- screening
     def _collect_documents(self) -> None:
         """Linked documents (legal notices, filings, register pages) for every company."""
-        companies = [e for e in self.entities.values() if e.type == EntityType.COMPANY]
+        companies = [
+            e for e in self.entities.values() if e.type in (EntityType.COMPANY, EntityType.PERSON)
+        ]
         providers = [
             c
             for c in self.registry.enabled(demo=self.demo_realm)
             if type(c).get_documents is not BaseConnector.get_documents
         ]
-        tasks = [(conn, e) for e in companies for conn in providers if conn.covers(e.jurisdiction)]
+        tasks = [
+            (conn, e)
+            for e in companies
+            for conn in providers
+            if e.type.value in conn.document_types
+            and conn.covers(e.jurisdiction)
+            and (
+                conn.documents_max_depth is None
+                or self.depth.get(e.id, 99) <= conn.documents_max_depth
+            )
+        ]
 
         def run(task: tuple[BaseConnector, Entity]) -> tuple[Entity, list]:
             conn, entity = task

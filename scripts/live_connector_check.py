@@ -23,12 +23,16 @@ from app.connectors.annuaire_fr import AnnuaireEntreprisesConnector  # noqa: E40
 from app.connectors.bodacc import BodaccConnector  # noqa: E402
 from app.connectors.chains import BitcoinConnector, EthereumConnector, TronConnector  # noqa: E402
 from app.connectors.companies_house import CompaniesHouseConnector  # noqa: E402
+from app.connectors.gdelt import API as GDELT_API  # noqa: E402
+from app.connectors.gdelt import GdeltConnector  # noqa: E402
 from app.connectors.gleif import GleifConnector  # noqa: E402
 from app.connectors.icij import RECONCILE, IcijReconcileConnector  # noqa: E402
 from app.connectors.official_sanctions import OfficialSanctionsConnector  # noqa: E402
+from app.connectors.open_datasets import OpenDatasetsConnector  # noqa: E402
 from app.connectors.opencorporates import OpenCorporatesConnector  # noqa: E402
 from app.connectors.opensanctions import OpenSanctionsConnector  # noqa: E402
 from app.connectors.pappers import PappersConnector  # noqa: E402
+from app.connectors.wikidata import WikidataConnector, WikidataPepConnector  # noqa: E402
 from app.models import Entity, EntityType  # noqa: E402
 from app.settings import Settings  # noqa: E402
 
@@ -183,6 +187,58 @@ def check_crypto() -> None:
                    "; ".join(h.matched_name for h in hits))
 
 
+def check_open_watchlists() -> None:
+    from app.connectors import open_datasets
+
+    conn = OpenDatasetsConnector(settings)
+    index = conn._index()
+    by_dataset: dict[str, int] = {}
+    for entry in index.entries:
+        by_dataset[entry.dataset] = by_dataset.get(entry.dataset, 0) + 1
+    print(f"      entries per list: {by_dataset}; errors: {open_datasets._STATE.errors}")
+    expect("all configured lists loaded", not open_datasets._STATE.errors and len(by_dataset) >= 5)
+    hits = conn.screen(person("Vladimir Putin", "1952-10-07"))
+    for h in hits[:4]:
+        print(f"      hit: {h.matched_name} | {h.dataset} | {h.score}")
+    expect("EU list: sanctioned reference person found", any("EU" in h.dataset and h.score >= 85 for h in hits))
+    expect("UK list: sanctioned reference person found", any("UK" in h.dataset and h.score >= 85 for h in hits))
+
+
+def check_wikidata() -> None:
+    wd = WikidataConnector(settings)
+    people = wd.search_person("Emmanuel Macron")
+    expect("person search", bool(people), ", ".join(f"{p.name} {p.birth_date}" for p in people[:3]))
+    macron = next((p for p in people if p.birth_date == "1977-12-21"), None)
+    expect("positions held parsed", bool(macron and "President" in macron.extra.get("positions_held", "")),
+           macron.extra.get("positions_held", "")[:200] if macron else "")
+    if macron:
+        roles = wd.get_person_roles(macron.id)
+        expect("relatives / associates", any(r.relationship.type.value == "relative" for r in roles),
+               "; ".join(f"{r.relationship.role}: {r.entity.name}" for r in roles[:5]))
+    hits = WikidataPepConnector(settings).screen_many([person("Emmanuel Macron", "1977-12-21")])
+    expect("PEP screening", any(h.score >= 85 for h in hits), "; ".join(f"{h.matched_name} {h.score}" for h in hits[:2]))
+    companies = wd.search_company("TotalEnergies")
+    expect("company search", bool(companies), ", ".join(f"{c.name} [{c.jurisdiction}]" for c in companies[:3]))
+    if companies:
+        docs = wd.get_documents(companies[0])
+        expect("official contacts / accounts", any(d.kind == "official_profile" for d in docs),
+               "; ".join(f"{d.title} → {d.url}" for d in docs[:5]))
+        expect("corporate links", bool(wd.get_officers(companies[0].id)),
+               "; ".join(f"{link.relationship.role}: {link.entity.name}" for link in wd.get_officers(companies[0].id)[:4]))
+
+
+def check_gdelt() -> None:
+    import httpx as _httpx
+
+    raw = _httpx.get(GDELT_API, params={"query": '"TotalEnergies" (fraud OR corruption OR sanctions)', "mode": "ArtList",
+                                        "format": "json", "maxrecords": 5, "timespan": "12m"}, timeout=30)
+    print(f"      raw status {raw.status_code}: {raw.text[:300]!r}")
+    docs = GdeltConnector(settings).get_documents(company("TotalEnergies"))
+    for d in docs[:3]:
+        print(f"      {d.date} | {d.title[:90]} | {d.url}")
+    expect("GDELT answered with JSON", raw.status_code == 200 and raw.text.lstrip().startswith("{"))
+
+
 def check_opensanctions() -> None:
     conn = OpenSanctionsConnector(settings)
     hits = conn.screen_many([person("Vladimir Putin", "1952-10-07")])
@@ -224,6 +280,9 @@ guarded("GLEIF (LEI + parent companies)", check_gleif)
 guarded("BODACC legal announcements", check_bodacc)
 guarded("Official sanctions lists (OFAC SDN + UN)", check_official_sanctions)
 guarded("Crypto: OFAC addresses + BTC/ETH/TRON explorers", check_crypto)
+guarded("Open watchlists (EU / UK / CH / World Bank / Interpol)", check_open_watchlists)
+guarded("Wikidata (PEP, relatives, contacts)", check_wikidata)
+guarded("GDELT adverse media", check_gdelt)
 for key, title, fn in [
     ("OPENSANCTIONS_API_KEY", "OpenSanctions", check_opensanctions),
     ("COMPANIES_HOUSE_API_KEY", "Companies House", check_companies_house),

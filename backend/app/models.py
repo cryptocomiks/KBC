@@ -38,6 +38,7 @@ class RelationType(StrEnum):
     BENEFICIAL_OWNER = "beneficial_owner"  # declared UBO / PSC -> company
     REGISTERED_AT = "registered_at"  # company -> address
     CONTROLS = "controls"  # person/company -> wallet (e.g. address attributed by OFAC)
+    RELATIVE = "relative"  # person <-> person: family member or close associate (PEP RCA)
     TRANSFER = "transfer"  # wallet -> wallet, aggregated on-chain flows (amount, currency)
 
 

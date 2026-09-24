@@ -16,6 +16,7 @@ const REL_LABEL: Record<string, string> = {
   registered_at: "Registered at",
   controls: "Controls",
   transfer: "Flows",
+  relative: "Family / associate",
 };
 
 export default function EntityPanel({ investigation: inv, entityId, onSelect }: Props) {

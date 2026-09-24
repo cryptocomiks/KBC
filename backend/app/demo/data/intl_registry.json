@@ -214,6 +214,15 @@
    "last_accounts_date": "@-7m",
    "activity": "Freight transport by road (SIC 49410)",
    "address": "Unit 12, Tyseley Park, Birmingham B11 2XX"
+  },
+  {
+   "id": "OP-1007",
+   "type": "person",
+   "name": "Mirela Vukotić",
+   "birth_date": "1965-04-02",
+   "nationalities": [
+    "RS"
+   ]
   }
  ],
  "relationships": [
@@ -266,7 +275,7 @@
    "type": "shareholder",
    "from": "OP-1003",
    "to": "gb/15873344",
-   "share_pct": 25
+   "share_pct": 15
   },
   {
    "type": "officer",
@@ -374,6 +383,18 @@
    "from": "OP-1006",
    "to": "gb/11223344",
    "share_pct": 100
+  },
+  {
+   "type": "relative",
+   "from": "OP-1003",
+   "to": "OP-1007",
+   "role": "Spouse"
+  },
+  {
+   "type": "shareholder",
+   "from": "OP-1007",
+   "to": "gb/15873344",
+   "share_pct": 10
   }
  ],
  "documents": [

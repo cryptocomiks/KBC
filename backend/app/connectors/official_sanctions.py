@@ -64,6 +64,7 @@ class ListedEntry:
     url: str
     program: str | None = None
     details: dict = field(default_factory=dict)
+    list_type: ListType = ListType.SANCTION
 
 
 def _keys(entity_type: EntityType, name: str) -> set[str]:

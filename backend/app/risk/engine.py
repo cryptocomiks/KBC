@@ -43,6 +43,9 @@ FACTOR_LABELS = {
     "ubo_discrepancy": "Undeclared beneficial owner (computed vs declared)",
     "insolvency_proceedings": "Insolvency proceedings (legal notice)",
     "sanctioned_counterparty": "Crypto flows with a sanctioned wallet",
+    "pep_relative": "Relative or close associate of a PEP",
+    "watchlist_match": "Watchlist match (debarment, wanted notice, criminal / court records)",
+    "adverse_media": "Adverse media (press mentions with risk keywords)",
 }
 
 
@@ -105,6 +108,8 @@ class RiskEngine:
                 flag("pep_match" if strong else "pep_possible_match", h.entity_id, ev)
             elif h.list_type == ListType.LEAK:
                 flag("leak_appearance", h.entity_id, ev)
+            elif h.list_type == ListType.ADVERSE and strong:
+                flag("watchlist_match", h.entity_id, ev)
 
         # 2. Jurisdictions and company lifecycle
         for eid, e in ents.items():
@@ -218,6 +223,34 @@ class RiskEngine:
                         mine,
                         f"{ents[mine].name} {verb} sanctioned wallet {name(other)}: {amount} in {r.tx_count or '?'} tx",
                     )
+
+        # PEP relatives and close associates (RCA)
+        peps = {
+            h.entity_id: h
+            for h in net.hits
+            if h.list_type == ListType.PEP and h.score >= t["strong_match_score"]
+        }
+        for r in net.relationships.values():
+            if r.type != RelationType.RELATIVE:
+                continue
+            for mine, other in ((r.source_id, r.target_id), (r.target_id, r.source_id)):
+                if other in peps and mine not in peps and mine in ents:
+                    flag(
+                        "pep_relative",
+                        mine,
+                        f"{ents[mine].name} — {r.role or 'relative'} of {name(other)} (PEP: {peps[other].matched_name})",
+                    )
+
+        # Adverse media: keyword-filtered press mentions (leads to review)
+        for eid, e in ents.items():
+            articles = [d for d in e.documents if "adverse_media" in d.flags]
+            if articles:
+                titles = "; ".join(f"“{d.title[:80]}” ({d.date})" for d in articles[:3])
+                flag(
+                    "adverse_media",
+                    eid,
+                    f"{e.name}: {len(articles)} article(s) with risk keywords — {titles}",
+                )
 
         # 4. Addresses and nominee directors
         for eid, e in ents.items():

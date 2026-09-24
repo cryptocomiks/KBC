@@ -47,6 +47,11 @@ class BaseConnector(ABC):
     #: True for connectors serving the fictitious demo dataset
     is_demo: ClassVar[bool] = False
     homepage: ClassVar[str | None] = None
+    #: only cross-reference entities up to this distance from the subject (slow sources)
+    crossref_max_depth: ClassVar[int | None] = None
+    #: documents: entity types handled and maximum distance from the subject
+    document_types: ClassVar[set[str]] = {"company"}
+    documents_max_depth: ClassVar[int | None] = None
 
     def __init__(self, settings: Settings | None = None) -> None:
         self.settings = settings or get_settings()
