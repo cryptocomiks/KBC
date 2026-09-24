@@ -1,10 +1,27 @@
-import { AlertTriangle, ArrowLeft, FileDown, FolderPlus, Loader2, Maximize2, Network, RefreshCw, Workflow } from "lucide-react";
-import { useRef, useState } from "react";
+import {
+  AlertTriangle,
+  ArrowLeft,
+  ChevronRight,
+  FileDown,
+  FileSearch,
+  FolderPlus,
+  LayoutDashboard,
+  Loader2,
+  Map as MapIcon,
+  Maximize2,
+  Network,
+  RefreshCw,
+  Workflow,
+} from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { api, downloadSar } from "../api";
 import { countryName, fmtDate } from "../lib/format";
 import type { Theme } from "../lib/theme";
-import type { Decision, DecisionValue, Investigation } from "../types";
+import type { Decision, DecisionValue, Entity, Investigation } from "../types";
+import EntityDrawer from "./EntityDrawer";
 import EntityPanel from "./EntityPanel";
+import { CountryExposure, FinancialsChart, OwnershipChart } from "./Infographics";
+import LinkedParties from "./LinkedParties";
 import BriefCard from "./BriefCard";
 import ClientDocuments from "./ClientDocuments";
 import DocRequests from "./DocRequests";
@@ -29,7 +46,20 @@ interface Props {
   /** Offered when cases are enabled and this investigation is not saved yet. */
   onSaveCase?: () => void;
   saving?: boolean;
+  /** Opens a full investigation on a linked person / company. */
+  onInvestigate?: (entity: Entity) => void;
+  /** Subjects investigated before this one (pivots), for the breadcrumb. */
+  trail?: string[];
+  onTrail?: (index: number) => void;
 }
+
+type Tab = "overview" | "network" | "map" | "evidence";
+const TABS: [Tab, string, typeof Network][] = [
+  ["overview", "Overview", LayoutDashboard],
+  ["network", "Network", Network],
+  ["map", "Map & timeline", MapIcon],
+  ["evidence", "Evidence & tables", FileSearch],
+];
 
 export default function InvestigationView({
   investigation: inv,
@@ -42,7 +72,17 @@ export default function InvestigationView({
   onDecide,
   onSaveCase,
   saving,
+  onInvestigate,
+  trail = [],
+  onTrail,
 }: Props) {
+  const [tab, setTab] = useState<Tab>("overview");
+  const [drawer, setDrawer] = useState<string | null>(null);
+  useEffect(() => {
+    setDrawer(null);
+    setTab("overview");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [inv.subject_id]);
   const graph = useRef<GraphHandle>(null);
   const [layout, setLayout] = useState<GraphLayout>("hierarchy");
   const [filters, setFilters] = useState<GraphFilters>({ crypto: true, addresses: true, officers: true, ended: true });
@@ -64,9 +104,14 @@ export default function InvestigationView({
   const [tableTab, setTableTab] = useState<string | undefined>(undefined);
   const subject = inv.entities.find((e) => e.id === inv.subject_id)!;
 
+  // In the network tab the side panel shows the entity; elsewhere its file slides in.
   const select = (id: string | null) => {
     setSelected(id);
-    if (id) document.getElementById("graph-card")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    if (tab !== "network") setDrawer(id);
+  };
+  const openTab = (t: Tab) => {
+    setTab(t);
+    if (t === "network") requestAnimationFrame(() => graph.current?.refresh());
   };
 
   const exportPdf = async () => {
@@ -84,11 +129,24 @@ export default function InvestigationView({
 
   return (
     <div className="space-y-4">
+      {trail.length > 0 && (
+        <nav className="panel-enter flex flex-wrap items-center gap-1 text-xs text-slate-500" aria-label="Investigation path">
+          {trail.map((name, i) => (
+            <span key={`${name}-${i}`} className="inline-flex items-center gap-1">
+              <button className="rounded-full px-2 py-0.5 hover:bg-black/[0.05] hover:text-brand-600 dark:hover:bg-white/[0.08]" onClick={() => onTrail?.(i)}>
+                {name}
+              </button>
+              <ChevronRight className="h-3 w-3" />
+            </span>
+          ))}
+          <span className="rounded-full bg-black/[0.05] px-2 py-0.5 font-medium text-[#1d1d1f] dark:bg-white/[0.08] dark:text-white">{subject.name}</span>
+        </nav>
+      )}
       {/* Summary */}
       <div className="card flex flex-wrap items-center gap-x-8 gap-y-4 p-4">
         <div className="min-w-[260px] flex-1">
           <button onClick={onBack} className="mb-1 inline-flex items-center gap-1 text-xs text-slate-500 hover:text-brand-600">
-            <ArrowLeft className="h-3 w-3" /> {caseId ? "Back to cases" : "Back to candidates"}
+            <ArrowLeft className="h-3 w-3" /> {caseId ? "Back to cases" : trail.length ? `Back to ${trail[trail.length - 1]}` : "Back to candidates"}
           </button>
           <h1 className="flex items-center gap-2 text-xl font-bold tracking-tight">
             {subject.name}
@@ -193,27 +251,64 @@ export default function InvestigationView({
         </div>
       )}
 
-      <BriefCard
-        investigation={inv}
-        onSelect={select}
-        onOpenTab={(t) => {
-          setTableTab(t);
-          setTimeout(() => document.getElementById("tables")?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
-        }}
-      />
-      <DocRequests investigation={inv} />
-      <ClientDocuments investigation={inv} onSelect={select} />
-      <details className="group card">
-        <summary className="cursor-pointer select-none px-4 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-300">
-          Detailed findings ({inv.summary?.length ?? 0}) — full reading of the network, with sources
-        </summary>
-        <div className="border-t border-slate-200 dark:border-slate-800">
-          <KeyFindings investigation={inv} onSelect={select} />
+      {/* Tabs */}
+      <div className="sticky top-[60px] z-20 flex justify-center">
+        <div className="material segmented rounded-full p-1 shadow-[0_4px_20px_-8px_rgb(0_0_0/0.25)]" role="tablist">
+          {TABS.map(([k, label, Icon]) => (
+            <button
+              key={k}
+              role="tab"
+              aria-selected={tab === k}
+              onClick={() => openTab(k)}
+              className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[13px] font-medium transition-all duration-300 [transition-timing-function:var(--ease-fluid)] ${
+                tab === k ? "bg-white text-[#1d1d1f] shadow-[0_1px_4px_rgb(0_0_0/0.14)] dark:bg-slate-600 dark:text-white" : "text-slate-500 hover:text-[#1d1d1f] dark:hover:text-white"
+              }`}
+            >
+              <Icon className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">{label}</span>
+            </button>
+          ))}
         </div>
-      </details>
+      </div>
 
-      {/* Graph + details */}
-      <div id="graph-card" className="card grid overflow-hidden lg:grid-cols-[1fr_380px]">
+      {/* Overview: everything needed to decide, on one screen */}
+      {tab === "overview" && (
+        <div className="panel-enter space-y-4">
+          <BriefCard
+            investigation={inv}
+            onSelect={select}
+            hideOwners={subject.type === "company" || subject.type === "person"}
+            onOpenTab={(t) => {
+              setTableTab(t);
+              setTab("evidence");
+              setTimeout(() => document.getElementById("tables")?.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
+            }}
+          />
+          <div className="grid items-start gap-4 xl:grid-cols-2 [&>*]:min-w-0">
+            <div className="space-y-4">
+              <LinkedParties investigation={inv} onSelect={select} />
+              <OwnershipChart investigation={inv} onSelect={select} />
+              <CountryExposure investigation={inv} onSelect={select} />
+            </div>
+            <div className="space-y-4 xl:sticky xl:top-[116px] xl:max-h-[calc(100vh-132px)] xl:overflow-y-auto xl:rounded-[18px]">
+              <DocRequests investigation={inv} />
+            </div>
+          </div>
+          <FinancialsChart investigation={inv} onSelect={select} />
+          <CryptoSankey investigation={inv} onSelect={select} />
+          <details className="group card">
+            <summary className="cursor-pointer select-none px-4 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-300">
+              Detailed findings ({inv.summary?.length ?? 0}) — full reading of the network, with sources
+            </summary>
+            <div className="border-t border-slate-200 dark:border-slate-800">
+              <KeyFindings investigation={inv} onSelect={select} />
+            </div>
+          </details>
+        </div>
+      )}
+
+      {/* Graph + details: kept mounted so the PDF can include the chart from any tab */}
+      <div id="graph-card" className={`card grid overflow-hidden lg:grid-cols-[1fr_380px] ${tab === "network" ? "panel-enter" : "hidden"}`}>
         <div className="flex min-h-[640px] flex-col border-slate-200 dark:border-slate-800 lg:border-r">
           <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 px-3 py-2 dark:border-slate-800">
             <div className="segmented">
@@ -259,23 +354,53 @@ export default function InvestigationView({
             <GraphLegend />
           </div>
         </div>
-        <div className="max-h-[720px] min-h-[400px]">
-          <EntityPanel investigation={inv} entityId={selected ?? inv.subject_id} onSelect={select} />
+        <div className="flex max-h-[720px] min-h-[400px] flex-col">
+          {onInvestigate && selected && selected !== inv.subject_id && (
+            <InvestigateBar investigation={inv} entityId={selected} onInvestigate={onInvestigate} />
+          )}
+          <div className="min-h-0 flex-1">
+            <EntityPanel investigation={inv} entityId={selected ?? inv.subject_id} onSelect={setSelected} />
+          </div>
         </div>
       </div>
 
-      <WorldMap investigation={inv} onSelect={select} />
-      <CryptoSankey investigation={inv} onSelect={select} />
-      <RiskPanel investigation={inv} onSelect={select} />
-      <Timeline investigation={inv} onSelect={select} />
-      <TablesSection
-        investigation={inv}
-        onSelect={select}
-        activeTab={tableTab}
-        onTabChange={setTableTab}
-        decisions={decisions}
-        onDecide={onDecide}
-      />
+      {tab === "map" && (
+        <div className="panel-enter space-y-4">
+          <WorldMap investigation={inv} onSelect={select} />
+          <CryptoSankey investigation={inv} onSelect={select} />
+          <Timeline investigation={inv} onSelect={select} />
+        </div>
+      )}
+
+      {tab === "evidence" && (
+        <div className="panel-enter space-y-4">
+          <RiskPanel investigation={inv} onSelect={select} />
+          <ClientDocuments investigation={inv} onSelect={select} />
+          <TablesSection
+            investigation={inv}
+            onSelect={select}
+            activeTab={tableTab}
+            onTabChange={setTableTab}
+            decisions={decisions}
+            onDecide={onDecide}
+          />
+        </div>
+      )}
+
+      <EntityDrawer investigation={inv} entityId={drawer} onClose={() => setDrawer(null)} onInvestigate={onInvestigate} />
+    </div>
+  );
+}
+
+function InvestigateBar({ investigation: inv, entityId, onInvestigate }: { investigation: Investigation; entityId: string; onInvestigate: (e: Entity) => void }) {
+  const e = inv.entities.find((x) => x.id === entityId);
+  if (!e || e.type === "address" || !e.record_ids.length) return null;
+  return (
+    <div className="flex items-center gap-2 border-b border-slate-200 px-4 py-2 dark:border-slate-800">
+      <span className="truncate text-xs text-slate-500">Go further on {e.name}</span>
+      <button className="btn-primary ml-auto shrink-0 py-1 text-xs" onClick={() => onInvestigate(e)}>
+        Investigate
+      </button>
     </div>
   );
 }

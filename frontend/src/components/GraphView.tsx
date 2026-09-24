@@ -19,6 +19,8 @@ export interface GraphFilters {
 export interface GraphHandle {
   exportPng: () => string | null;
   fit: () => void;
+  /** Re-measures the container (after being hidden) and fits the graph. */
+  refresh: () => void;
 }
 
 interface Props {
@@ -248,6 +250,10 @@ const GraphView = forwardRef<GraphHandle, Props>(function GraphView(
 
   useImperativeHandle(ref, () => ({
     fit: () => cyRef.current?.fit(undefined, 30),
+    refresh: () => {
+      cyRef.current?.resize();
+      cyRef.current?.fit(undefined, 30);
+    },
     exportPng: () => {
       const cy = cyRef.current;
       if (!cy) return null;

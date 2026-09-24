@@ -3,7 +3,7 @@ import { Loader2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { api, AuthError } from "../api";
 import type { Theme } from "../lib/theme";
-import type { Decision, DecisionValue } from "../types";
+import type { Decision, DecisionValue, Entity, InvestigationParams } from "../types";
 import CaseBar from "./CaseBar";
 import InvestigationView from "./InvestigationView";
 import PasswordGate from "./PasswordGate";
@@ -12,10 +12,11 @@ interface Props {
   caseId: string;
   theme: Theme;
   onBack: () => void;
+  onInvestigate?: (entity: Entity, from: { name: string; params: InvestigationParams }) => void;
 }
 
 /** A saved case: case bar (monitoring, changes, notes) above the investigation, with analyst decisions. */
-export default function CaseScreen({ caseId, theme, onBack }: Props) {
+export default function CaseScreen({ caseId, theme, onBack, onInvestigate }: Props) {
   const [attempt, setAttempt] = useState(0);
   const qc = useQueryClient();
   const q = useQuery({ queryKey: ["case", caseId, attempt], queryFn: () => api.getCase(caseId), retry: false });
@@ -48,6 +49,11 @@ export default function CaseScreen({ caseId, theme, onBack }: Props) {
         refreshing={q.isFetching || decide.isPending}
         onBack={onBack}
         caseId={caseId}
+        onInvestigate={
+          onInvestigate &&
+          ((entity) =>
+            onInvestigate(entity, { name: q.data!.case.subject_name as string, params: q.data!.investigation.params }))
+        }
         decisions={decisions}
         onDecide={(key, label, decision) => {
           const comment =

@@ -19,6 +19,10 @@ async function run(theme) {
   await page.waitForSelector("text=candidates for");
   if (theme === "light") await page.screenshot({ path: `${OUT}02_disambiguation.png` });
   await page.locator("button:has-text('Investigate')").first().click();
+  await page.waitForSelector("text=Linked people & companies", { timeout: 30000 });
+  await page.waitForTimeout(1500);
+  if (theme === "light") await page.screenshot({ path: `${OUT}00_overview.png`, fullPage: true });
+  await page.locator("[role=tab]:has-text('Network')").click();
   await page.waitForSelector("[data-testid=graph] canvas", { timeout: 20000 });
   await page.waitForTimeout(1200);
   if (theme === "light") await page.screenshot({ path: `${OUT}03_ownership_chart.png` });
@@ -26,11 +30,12 @@ async function run(theme) {
   await page.waitForTimeout(1500);
   if (theme === "dark") await page.screenshot({ path: `${OUT}04_network_dark.png` });
   if (theme === "light") {
+    await page.locator("[role=tab]:has-text('Evidence')").click();
     await page.locator("text=Why this score?").scrollIntoViewIfNeeded();
-    await page.locator("td:has-text('Sanctions list match')").click();
+    await page.locator("td:has-text('Sanctions list match'), td:has-text('Circular ownership')").first().click();
     await page.screenshot({ path: `${OUT}05_risk_explained.png` });
-    await page.locator("button:has-text('Sanctions & PEP')").click();
-    await page.locator("button:has-text('Sanctions & PEP')").scrollIntoViewIfNeeded();
+    await page.locator("button:has-text('Sanctions, PEP')").click();
+    await page.locator("button:has-text('Sanctions, PEP')").scrollIntoViewIfNeeded();
     await page.screenshot({ path: `${OUT}06_tables.png` });
   }
   await page.close();

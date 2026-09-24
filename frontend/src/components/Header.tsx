@@ -36,30 +36,30 @@ export default function Header({ meta, theme, onToggleTheme, onHome, onCases, ca
       <div className="mx-auto flex h-14 max-w-[1600px] items-center gap-3 px-4">
         <button onClick={onHome} className="flex items-center gap-2.5" aria-label="Home">
           <img src="/favicon.svg" alt="" className="h-7 w-7" />
-          <div className="text-left leading-tight">
+          <div className="hidden text-left leading-tight sm:block">
             <div className="text-sm font-bold tracking-tight">KBC · Corporate Mapping</div>
             <div className="text-[11px] text-slate-500">Due diligence & AML/KYC network analysis</div>
           </div>
         </button>
         {meta?.demo_mode && (
-          <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
+          <span className="hidden rounded-full md:inline bg-amber-100 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
             {live ? "Demo + live public sources" : "Demo mode · fictitious data"}
           </span>
         )}
         <div className="ml-auto flex items-center gap-1">
           {notice && <span className="mr-2 text-xs text-green-700 dark:text-green-400">{notice}</span>}
           <button className={`btn-ghost ${casesActive ? "text-brand-600" : ""}`} onClick={onCases}>
-            <FolderOpen className="h-4 w-4" /> Cases
+            <FolderOpen className="h-4 w-4" /> <span className="hidden sm:inline">Cases</span>
           </button>
           <div className="relative">
             <button className="btn-ghost" onClick={() => setOpen((o) => !o)} aria-expanded={open}>
-              <Plug className="h-4 w-4" /> Sources
+              <Plug className="h-4 w-4" /> <span className="hidden sm:inline">Sources</span>
               <span className="rounded bg-slate-200 px-1.5 text-[11px] dark:bg-slate-700">
                 {enabled}/{connectors.data?.length ?? 0}
               </span>
             </button>
             {open && (
-              <div className="card absolute right-0 mt-2 w-[420px] p-3 shadow-lg" onMouseLeave={() => setOpen(false)}>
+              <div className="card absolute right-0 mt-2 max-h-[70vh] w-[min(420px,calc(100vw-2rem))] overflow-y-auto p-3 shadow-lg" onMouseLeave={() => setOpen(false)}>
                 <div className="label mb-2">Data sources (connectors)</div>
                 <ul className="space-y-2">
                   {[...(connectors.data ?? [])].sort((a, b) => Number(b.enabled) - Number(a.enabled)).map((c) => (
@@ -89,7 +89,7 @@ export default function Header({ meta, theme, onToggleTheme, onHome, onCases, ca
             }}
             disabled={clear.isPending}
           >
-            <Trash2 className="h-4 w-4" /> <Database className="-ml-1 h-3.5 w-3.5" /> Clear cache
+            <Trash2 className="h-4 w-4" /> <Database className="-ml-1 hidden h-3.5 w-3.5 sm:inline" /> <span className="hidden sm:inline">Clear cache</span>
           </button>
           <button className="btn-ghost" onClick={onToggleTheme} aria-label="Toggle theme">
             {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}

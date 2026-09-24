@@ -33,7 +33,7 @@ export default function CandidateList({ data, onPick }: Props) {
         </div>
       ))}
       {data.candidates.length === 0 && <div className="card p-6 text-center text-sm text-slate-500">No match found in the enabled sources.</div>}
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3 [&>*]:min-w-0">
         {data.candidates.map((c) => {
           const e = c.entity;
           return (

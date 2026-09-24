@@ -12,7 +12,7 @@ its source.**
 > ⚠️ **Analytical aid only.** Automated matches can be false positives or false negatives. A qualified
 > analyst must verify them against primary sources before taking any decision.
 
-![Ownership chart](docs/screenshots/03_ownership_chart.png)
+![Overview](docs/screenshots/00_overview.png)
 
 ---
 
@@ -76,6 +76,8 @@ explained, and every fact carries **its source, its URL and the time it was retr
 | **Analyst decisions** | On every screening or leak hit: *confirmed*, *false positive* or *to review*, with a comment. False positives leave the score, the brief and the findings; every decision is kept and printed in the PDF (**audit trail**). |
 | **World map** | Countries of the network coloured by Basel AML Index, cross-border ownership links as arrows, offshore centres circled (micro-jurisdictions shown as markers). |
 | **Crypto flow diagram** | Sankey of the aggregated on-chain flows around the subject: where the money comes from and where it goes, sanctioned wallets in red, owners named. |
+| **Overview first** | Each investigation opens on one screen with everything needed to decide: verdict and red flags with next steps, **linked people & companies** ranked riskiest first, the **documents to request**, and infographics — **who owns what** (effective % through every layer, donut + bars), **country exposure** (entities per country, coloured by Basel AML Index, FATF / EU lists), **financials** over the years (revenue, net income, total assets, losses) and **money flows** (crypto Sankey). Network, map & timeline and the evidence tables sit in their own tabs. |
+| **Pivot on any party** | Clicking a linked person or company slides in its file (flags, screening hits, relationships, documents, sources). *Investigate* opens that party's own full investigation, with a breadcrumb back to where you came from. |
 | **Alert triage** | Every screening / leak hit is labelled *likely match*, *to check* or *probable namesake*, with the reasons (same or different date of birth, nationality, country, identifier). Namesakes can be hidden in one click. A hit ruled out once is **remembered across cases and investigations** (with who, when and why). |
 | **Search by identifier** | SIREN / SIRET / French VAT, LEI, Swiss UID (CHE-…), UK company number, SEC CIK, register numbers (e.g. RCS Luxembourg B…): exact lookup, no homonyms. |
 | **Documents to request** | The evidence each red flag calls for (passport to rule out a sanctions hit, source of wealth for a PEP, register of directors of an offshore entity, signed group chart…), prioritised, with a one-click *copy as e-mail to the client*. |
@@ -95,9 +97,9 @@ explained, and every fact carries **its source, its URL and the time it was retr
 |---|---|
 | ![Network](docs/screenshots/04_network_dark.png) | ![Risk](docs/screenshots/05_risk_explained.png) |
 
-| Sortable, filterable tables with CSV export |
-|---|
-| ![Tables](docs/screenshots/06_tables.png) |
+| Ownership chart | Sortable, filterable tables with CSV export |
+|---|---|
+| ![Ownership chart](docs/screenshots/03_ownership_chart.png) | ![Tables](docs/screenshots/06_tables.png) |
 
 📄 A sample PDF report generated in demo mode: [`docs/sample_report_demo.pdf`](docs/sample_report_demo.pdf).
 

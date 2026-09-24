@@ -1,14 +1,16 @@
 import { ChevronDown, ChevronRight, Scale } from "lucide-react";
 import { Fragment, useState } from "react";
 import { RISK_BADGE, RISK_COLORS } from "../lib/format";
+import { useCountUp } from "../lib/motion";
 import type { Investigation } from "../types";
 
-export function RiskGauge({ score, level }: { score: number; level: keyof typeof RISK_COLORS }) {
+export function RiskGauge({ score: target, level }: { score: number; level: keyof typeof RISK_COLORS }) {
   const r = 34;
   const c = 2 * Math.PI * r;
+  const score = useCountUp(target, 1100);
   return (
     <div className="flex items-center gap-3">
-      <svg width="84" height="84" viewBox="0 0 84 84" role="img" aria-label={`Risk score ${score} of 100`}>
+      <svg width="84" height="84" viewBox="0 0 84 84" role="img" aria-label={`Risk score ${target} of 100`}>
         <circle cx="42" cy="42" r={r} fill="none" strokeWidth="8" className="stroke-slate-200 dark:stroke-slate-800" />
         <circle
           cx="42"
@@ -17,6 +19,7 @@ export function RiskGauge({ score, level }: { score: number; level: keyof typeof
           fill="none"
           strokeWidth="8"
           stroke={RISK_COLORS[level]}
+          style={{ transition: "stroke 400ms ease" }}
           strokeDasharray={`${(score / 100) * c} ${c}`}
           strokeLinecap="round"
           transform="rotate(-90 42 42)"

@@ -1,5 +1,6 @@
 import { AlertOctagon, AlertTriangle, ArrowRight, ChevronDown, ChevronRight, Info, ShieldCheck } from "lucide-react";
 import { useState } from "react";
+import { useCountUp } from "../lib/motion";
 import type { Brief, Investigation } from "../types";
 
 const LEVEL_BAR: Record<string, string> = {
@@ -28,6 +29,13 @@ const DOT: Record<string, string> = {
   good: "bg-[#34c759]",
   neutral: "bg-slate-300 dark:bg-slate-600",
 };
+/** Whole numbers count up when they appear; anything else is shown as is. */
+function Counted({ value }: { value: string }) {
+  const n = /^\d+$/.test(value) ? Number(value) : null;
+  const v = useCountUp(n ?? 0);
+  return <>{n === null ? value : Math.round(v)}</>;
+}
+
 const SEV_ICON = { critical: AlertOctagon, warning: AlertTriangle, info: Info } as const;
 const SEV_COLOR = { critical: "text-red-600", warning: "text-amber-600", info: "text-slate-400" } as const;
 
@@ -35,10 +43,12 @@ interface Props {
   investigation: Investigation;
   onSelect: (id: string) => void;
   onOpenTab: (tab: string) => void;
+  /** The ownership infographic shows the owners: the brief then only lists the red flags. */
+  hideOwners?: boolean;
 }
 
 /** The 30-second read: verdict, key figures, ultimate owners, red flags with the next step. */
-export default function BriefCard({ investigation: inv, onSelect, onOpenTab }: Props) {
+export default function BriefCard({ investigation: inv, onSelect, onOpenTab, hideOwners }: Props) {
   const b: Brief | null = inv.brief;
   const [showAll, setShowAll] = useState(false);
   if (!b) return null;
@@ -63,10 +73,11 @@ export default function BriefCard({ investigation: inv, onSelect, onOpenTab }: P
       </div>
 
       {/* Key figures */}
-      <div className="grid grid-cols-2 gap-2 px-5 pb-5 sm:grid-cols-4 xl:grid-cols-8">
-        {b.figures.map((f) => (
+      <div className="stagger grid grid-cols-2 gap-2 px-5 pb-5 sm:grid-cols-4 xl:grid-cols-8">
+        {b.figures.map((f, i) => (
           <button
             key={f.key}
+            style={{ ["--i" as string]: i }}
             onClick={() => f.tab && onOpenTab(f.tab)}
             className="rounded-xl bg-black/[0.03] px-3 py-2.5 text-left transition hover:bg-black/[0.06] active:scale-[0.98] dark:bg-white/[0.05] dark:hover:bg-white/[0.09]"
             title={f.hint ?? undefined}
@@ -75,17 +86,19 @@ export default function BriefCard({ investigation: inv, onSelect, onOpenTab }: P
               <span className={`h-1.5 w-1.5 rounded-full ${DOT[f.tone] ?? DOT.neutral}`} />
               {f.label}
             </div>
-            <div className={`mt-0.5 font-semibold leading-tight tracking-[-0.01em] ${f.value.length > 14 ? "text-[15px]" : f.value.length > 6 ? "text-[17px]" : "text-[22px]"} ${TONE[f.tone] ?? TONE.neutral}`}>
-              {f.value}
+            <div className={`mt-0.5 font-semibold leading-tight tracking-[-0.01em] tabular-nums ${f.value.length > 14 ? "text-[15px]" : f.value.length > 6 ? "text-[17px]" : "text-[22px]"} ${TONE[f.tone] ?? TONE.neutral}`}>
+              <Counted value={f.value} />
             </div>
             {f.hint && <div className="truncate text-[11px] text-slate-500">{f.hint}</div>}
           </button>
         ))}
       </div>
 
-      <div className="grid gap-4 border-t border-black/[0.06] p-5 dark:border-white/[0.08] lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+      <div
+        className={`grid gap-4 border-t [&>*]:min-w-0 border-black/[0.06] p-5 dark:border-white/[0.08] ${hideOwners ? "" : "lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]"}`}
+      >
         {/* Owners */}
-        <div>
+        <div className={hideOwners ? "hidden" : ""}>
           <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
             {b.subject_type === "person" ? "What they control (effective %)" : "Who is behind it (effective %)"}
           </h3>

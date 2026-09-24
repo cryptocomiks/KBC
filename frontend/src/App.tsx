@@ -8,9 +8,10 @@ import CandidateList from "./components/CandidateList";
 import Disclaimer from "./components/Disclaimer";
 import Header from "./components/Header";
 import InvestigationView from "./components/InvestigationView";
+import LoadingInvestigation from "./components/LoadingInvestigation";
 import SearchPanel, { type SearchParams } from "./components/SearchPanel";
 import { useTheme } from "./lib/theme";
-import type { InvestigationParams } from "./types";
+import type { Entity, InvestigationParams } from "./types";
 
 const DEFAULT_SEARCH: SearchParams = { q: "", type: "any", depth: 2, maxNodes: 60 };
 
@@ -21,6 +22,8 @@ export default function App() {
   const [page, setPage] = useState<"main" | "cases">("main");
   const [caseId, setCaseId] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
+  // Pivots: investigations opened from a linked person / company, newest last.
+  const [trail, setTrail] = useState<{ name: string; params: InvestigationParams }[]>([]);
   const qc = useQueryClient();
 
   const meta = useQuery({ queryKey: ["meta"], queryFn: api.meta, staleTime: Infinity });
@@ -45,7 +48,20 @@ export default function App() {
   });
 
   const casesStatus = meta.data?.cases;
+  const pivot = (entity: Entity, from: { name: string; params: InvestigationParams }) => {
+    setTrail((t) => [...t, from]);
+    setTarget({ record_ids: entity.record_ids, depth: Math.min(from.params.depth, 2), max_nodes: from.params.max_nodes });
+    setCaseId(null);
+    setPage("main");
+  };
+  const back = () => {
+    if (trail.length) {
+      setTarget(trail[trail.length - 1].params);
+      setTrail((t) => t.slice(0, -1));
+    } else setTarget(null);
+  };
   const home = () => {
+    setTrail([]);
     setSearch(null);
     setTarget(null);
     setCaseId(null);
@@ -96,6 +112,10 @@ export default function App() {
             caseId={caseId}
             theme={theme}
             onBack={() => setCaseId(null)}
+            onInvestigate={(entity, from) => {
+              setTrail([]);
+              pivot(entity, from);
+            }}
           />
         )}
         {page === "main" && !target && (
@@ -126,9 +146,10 @@ export default function App() {
             {results.data && !results.isFetching && (
               <CandidateList
                 data={results.data}
-                onPick={(c) =>
-                  setTarget({ record_ids: c.entity.record_ids, depth: search?.depth ?? 3, max_nodes: search?.maxNodes ?? 60 })
-                }
+                onPick={(c) => {
+                  setTrail([]);
+                  setTarget({ record_ids: c.entity.record_ids, depth: search?.depth ?? 3, max_nodes: search?.maxNodes ?? 60 });
+                }}
               />
             )}
           </>
@@ -137,14 +158,12 @@ export default function App() {
         {page === "main" && target && (
           <>
             {investigation.isLoading && (
-              <div className="flex items-center justify-center gap-2 py-24 text-slate-500">
-                <Loader2 className="h-5 w-5 animate-spin" /> Expanding the network, resolving entities and screening…
-              </div>
+              <LoadingInvestigation />
             )}
             {investigation.error && (
               <div className="card p-6 text-sm text-red-600">
                 Investigation failed: {(investigation.error as Error).message}{" "}
-                <button className="btn-outline ml-2" onClick={() => setTarget(null)}>
+                <button className="btn-outline ml-2" onClick={back}>
                   Back
                 </button>
               </div>
@@ -155,8 +174,18 @@ export default function App() {
                 investigation={investigation.data}
                 theme={theme}
                 refreshing={investigation.isFetching}
-                onBack={() => setTarget(null)}
+                onBack={back}
                 onDepthChange={(depth) => setTarget({ ...target, depth })}
+                trail={trail.map((t) => t.name)}
+                onTrail={(i) => {
+                  setTarget(trail[i].params);
+                  setTrail((t) => t.slice(0, i));
+                }}
+                onInvestigate={(entity) => {
+                  const inv = investigation.data!;
+                  const subject = inv.entities.find((e) => e.id === inv.subject_id);
+                  pivot(entity, { name: subject?.name ?? "Previous", params: inv.params });
+                }}
                 onSaveCase={casesStatus?.enabled ? () => saveCase.mutate(investigation.data!.params) : undefined}
                 saving={saveCase.isPending}
               />

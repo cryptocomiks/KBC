@@ -154,6 +154,68 @@ h3 {
     opacity: 1;
   }
 }
+@keyframes slide-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: none;
+  }
+}
+@keyframes grow-x {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: none;
+  }
+}
+@keyframes grow-y {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: none;
+  }
+}
+
+/* Children appear one after the other: set --i on each child */
+@utility stagger {
+  & > * {
+    animation: rise 520ms var(--ease-fluid) both;
+    animation-delay: calc(var(--i, 0) * 45ms);
+  }
+}
+/* A tab's content fades in when it becomes active */
+@utility panel-enter {
+  animation: rise 360ms var(--ease-fluid) both;
+}
+/* Bars grow from their origin (left for horizontal bars, bottom for columns) */
+@utility bar-x {
+  transform-origin: left center;
+  animation: grow-x 900ms var(--ease-fluid) both;
+  animation-delay: calc(var(--i, 0) * 60ms + 120ms);
+}
+@utility bar-y {
+  transform-origin: bottom center;
+  transform-box: fill-box;
+  animation: grow-y 900ms var(--ease-fluid) both;
+  animation-delay: calc(var(--i, 0) * 50ms + 120ms);
+}
+@utility lift {
+  transition:
+    transform 220ms var(--ease-fluid),
+    box-shadow 220ms var(--ease-fluid),
+    background-color 160ms ease;
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px -14px rgb(0 0 0 / 0.25);
+  }
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
 details > summary {
   list-style: none;
 }
