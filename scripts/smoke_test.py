@@ -26,7 +26,7 @@ def call(base: str, path: str, body: dict | None = None) -> tuple[int, bytes, st
         method="POST" if body is not None else "GET",
     )
     try:
-        with urllib.request.urlopen(req, timeout=90) as resp:
+        with urllib.request.urlopen(req, timeout=300) as resp:
             return resp.status, resp.read(), resp.headers.get("Content-Type", "")
     except urllib.error.HTTPError as exc:
         return exc.code, exc.read(), exc.headers.get("Content-Type", "")

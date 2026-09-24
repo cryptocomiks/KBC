@@ -15,10 +15,12 @@ provenances. Every connector call is logged (sources consulted table).
 
 from __future__ import annotations
 
+import contextlib
 import time
 from collections import deque
 from collections.abc import Callable
-from concurrent.futures import ThreadPoolExecutor, wait
+from concurrent.futures import Future, ThreadPoolExecutor, wait
+from functools import partial
 from typing import Any
 
 from pydantic import BaseModel, Field
@@ -38,7 +40,8 @@ from app.models import (
 )
 from app.risk.config import get_jurisdictions
 
-FINISHING_SECONDS = 12  # screening + documents after the expansion budget (serverless limit ~60 s)
+# Screening + documents after the expansion budget (Vercel maxDuration 300 s)
+FINISHING_SECONDS = 60
 
 
 class QueryLog(BaseModel):
@@ -194,6 +197,60 @@ class NetworkExpander:
                 if ok:
                     self.resolver.add(cand)  # merges into `cid` and logs the merge
 
+    # ------------------------------------------------------------ prefetch
+    # The expansion loop is sequential (it merges entities as it goes), but its registry
+    # calls are not interdependent: they are issued ahead, in parallel, as soon as a node
+    # is discovered. Answers land in the HTTP cache and the loop then reads them instantly.
+    def _prefetch(self, calls: list[Callable[[], Any]]) -> list[Future]:
+        def safe(fn: Callable[[], Any]) -> None:
+            # Errors are ignored here: the loop makes the call again and logs it.
+            with contextlib.suppress(Exception):
+                fn()
+
+        try:
+            return [self._pool.submit(safe, fn) for fn in calls]
+        except RuntimeError:  # pool already shut down
+            return []
+
+    def _crossref_calls(self, cid: str) -> list[Callable[[], Any]]:
+        entity = self.entities[cid]
+        if cid in self._crossrefd or entity.type in (EntityType.ADDRESS, EntityType.WALLET):
+            return []
+        have = {rid.split(":", 1)[0] for rid in entity.record_ids}
+        depth = self.depth.get(cid, 0)
+        calls: list[Callable[[], Any]] = []
+        for conn in self.registry.enabled("registry", demo=self.demo_realm):
+            if conn.crossref_max_depth is not None and depth > conn.crossref_max_depth:
+                continue
+            if conn.name in have:
+                continue
+            if entity.type == EntityType.COMPANY:
+                if conn.covers(entity.jurisdiction):
+                    calls.append(partial(conn.search_company, entity.name))
+            else:
+                calls.append(partial(conn.search_person, entity.name))
+        return calls
+
+    def _link_calls(self, cid: str) -> list[Callable[[], Any]]:
+        entity = self.entities[cid]
+        calls: list[Callable[[], Any]] = []
+        for conn, rid in self._records_by_connector(cid):
+            if entity.type == EntityType.COMPANY:
+                if entity.extra.get("accounts_unknown") or entity.incorporation_date is None:
+                    calls.append(partial(conn.get_company_details, rid))
+                calls += [
+                    partial(conn.get_officers, rid),
+                    partial(conn.get_shareholders, rid),
+                    partial(conn.get_subsidiaries, rid),
+                ]
+            elif entity.type == EntityType.PERSON:
+                calls.append(partial(conn.get_person_roles, rid))
+        return calls
+
+    def _wait(self, futures: list[Future], until: float) -> None:
+        if futures:
+            wait(futures, timeout=max(0.0, until - time.monotonic()))
+
     # -------------------------------------------------------------- links
     def _fetch_links(self, cid: str) -> list[LinkedEntity]:
         entity = self.entities[cid]
@@ -317,6 +374,11 @@ class NetworkExpander:
             self._screen, [self.entities[subject_id]], "screening of the subject"
         )
 
+        budget_end = started + self.time_budget
+        self._pool = ThreadPoolExecutor(max_workers=self.registry.settings.expansion_workers)
+        pending_links: dict[str, list[Future]] = {
+            subject_id: self._prefetch(self._link_calls(subject_id))
+        }
         queue: deque[str] = deque([subject_id])
         expanded: set[str] = set()
         while queue:
@@ -340,6 +402,7 @@ class NetworkExpander:
                     self._expand_address(cid, depth)
                 continue
 
+            self._wait(pending_links.pop(cid, []), budget_end)
             links = self._fetch_links(cid)
             if entity.type == EntityType.PERSON:
                 entity.extra["active_mandates"] = len(
@@ -350,6 +413,7 @@ class NetworkExpander:
                         and link.relationship.is_active
                     }
                 )
+            discovered: list[str] = []
             for link in links:
                 rel = link.relationship
                 other_cid = self._add_entity(link.entity, depth + 1, allow_new)
@@ -357,14 +421,23 @@ class NetworkExpander:
                     continue
                 if link.entity.id in self._flow_wallets:
                     self._flow_wallets.add(other_cid)
-                if other_cid not in expanded:
-                    self._cross_reference(other_cid)
-                    queue.append(other_cid)
+                if other_cid not in expanded and other_cid not in discovered:
+                    discovered.append(other_cid)
                 # Map raw record ids to canonical ids for both ends.
                 src = self.resolver.canonical_of(rel.source_id) or rel.source_id
                 tgt = self.resolver.canonical_of(rel.target_id) or rel.target_id
                 if src in self.entities and tgt in self.entities:
                     self._add_relationship(rel, src, tgt)
+            # Look every new neighbour up in the other registries at once, then merge.
+            self._wait(
+                self._prefetch([c for oc in discovered for c in self._crossref_calls(oc)]),
+                budget_end,
+            )
+            for other_cid in discovered:
+                self._cross_reference(other_cid)
+                queue.append(other_cid)
+                if other_cid not in pending_links:
+                    pending_links[other_cid] = self._prefetch(self._link_calls(other_cid))
             self._address_links(cid, depth)
             for aid in [
                 r.target_id
@@ -374,6 +447,7 @@ class NetworkExpander:
                 if aid not in expanded:
                     queue.append(aid)
 
+        self._pool.shutdown(wait=False, cancel_futures=True)
         if self.truncated and not any("Time budget" in w for w in self.warnings):
             self.warnings.append(
                 f"Node limit of {self.max_nodes} reached: the network was truncated. "

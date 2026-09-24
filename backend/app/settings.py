@@ -76,8 +76,10 @@ class Settings(BaseSettings):
     max_nodes_limit: int = 250
     http_timeout_seconds: float = 15.0
     # Wall-clock budget for one investigation over live APIs (serverless time limits)
-    expansion_time_budget_seconds: float = 30.0
+    expansion_time_budget_seconds: float = 150.0
     screening_workers: int = 6
+    # Registry calls issued ahead, in parallel, while the network expands
+    expansion_workers: int = 8
 
 
 @lru_cache

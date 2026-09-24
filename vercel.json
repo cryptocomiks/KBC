@@ -7,7 +7,7 @@
   "functions": {
     "api/index.py": {
       "includeFiles": "{backend/app/**,config/**}",
-      "maxDuration": 60
+      "maxDuration": 300
     }
   },
   "rewrites": [
