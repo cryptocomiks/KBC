@@ -1,6 +1,8 @@
-.venv
-data
-docs
-backend/tests
-frontend/node_modules
+# Leading "/" anchors each rule to the repository root. Without it, "data"
+# would also exclude backend/app/demo/data (the demo dataset).
+/.venv
+/data
+/docs
+/backend/tests
+/frontend/node_modules
 **/__pycache__
