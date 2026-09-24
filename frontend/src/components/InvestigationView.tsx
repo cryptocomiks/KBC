@@ -6,6 +6,7 @@ import type { Theme } from "../lib/theme";
 import type { Decision, DecisionValue, Investigation } from "../types";
 import EntityPanel from "./EntityPanel";
 import BriefCard from "./BriefCard";
+import ClientDocuments from "./ClientDocuments";
 import DocRequests from "./DocRequests";
 import CryptoSankey from "./CryptoSankey";
 import WorldMap from "./WorldMap";
@@ -171,6 +172,7 @@ export default function InvestigationView({
         }}
       />
       <DocRequests investigation={inv} />
+      <ClientDocuments investigation={inv} onSelect={select} />
       <details className="group card">
         <summary className="cursor-pointer select-none px-4 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-300">
           Detailed findings ({inv.summary?.length ?? 0}) — full reading of the network, with sources

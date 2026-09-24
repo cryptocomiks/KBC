@@ -290,3 +290,33 @@ export interface Dashboard {
   recent_changes: CaseChange[];
   to_review: number;
 }
+
+export interface DeclaredPerson {
+  name: string;
+  role?: string | null;
+  pct?: number | null;
+  birth?: string | null;
+}
+
+export interface DocExtraction {
+  kind: string;
+  pages: number;
+  characters: number;
+  company: { name: string | null; registration_number: string | null; address: string | null };
+  officers: DeclaredPerson[];
+  owners: DeclaredPerson[];
+  warnings: string[];
+}
+
+export interface DocComparison {
+  rows: {
+    kind: "officer" | "owner" | "company";
+    name: string;
+    declared: string | null;
+    registry: string | null;
+    status: "match" | "mismatch" | "missing_in_registry" | "missing_in_document";
+    note: string | null;
+    entity_id: string | null;
+  }[];
+  summary: Record<string, number>;
+}

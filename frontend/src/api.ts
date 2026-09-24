@@ -5,6 +5,8 @@ import type {
   ConnectorStatus,
   Dashboard,
   Decision,
+  DocComparison,
+  DocExtraction,
   DecisionValue,
   Investigation,
   InvestigationParams,
@@ -87,6 +89,19 @@ export const api = {
   markSeen: (id: string) => request<{ ok: boolean }>(`/cases/${id}/seen`, { method: "POST" }),
   decide: (id: string, d: { item_key: string; item_label: string; decision: DecisionValue | "none"; comment?: string; author?: string }) =>
     request<{ decisions: Decision[] }>(`/cases/${id}/decisions`, { method: "PUT", body: JSON.stringify(d) }),
+
+  async extractDocument(file: File) {
+    const fd = new FormData();
+    fd.append("file", file);
+    const res = await fetch(`${BASE}/documents/extract`, { method: "POST", body: fd });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body?.detail ?? `Extraction failed (${res.status})`);
+    }
+    return (await res.json()) as DocExtraction;
+  },
+  compareDocument: (body: InvestigationParams & Pick<DocExtraction, "company" | "officers" | "owners">) =>
+    request<DocComparison>("/documents/compare", { method: "POST", body: JSON.stringify(body) }),
 
   async downloadPdf(params: InvestigationParams & { graph_png?: string; reference?: string; analyst?: string; case_id?: string; template?: string }) {
     const res = await fetch(`${BASE}/reports/pdf`, {
