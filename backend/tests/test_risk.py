@@ -204,3 +204,16 @@ def test_undeclared_ubo_detected():
     result = RiskEngine(cfg, JUR, TODAY).assess(net(ents, {"S": 0, "H": 1, "A": 1, "B": 2}, rels))
     [factor] = [f for f in result.factors if f.key == "ubo_discrepancy"]
     assert factor.points == 12 and "Hidden holds an effective 30%" in factor.evidence[0]
+
+
+def test_listed_subject_is_always_top_level_unless_contradicted():
+    s = Entity(id="S", type=EntityType.PERSON, name="S")
+    listed = RiskEngine(CFG, JUR, TODAY).assess(
+        net([s], {"S": 0}, hits=[hit("S", ListType.SANCTION, 97)])
+    )
+    assert listed.score == 40 and listed.level == "critical"
+    namesake = hit("S", ListType.SANCTION, 97)
+    namesake.triage = "namesake"  # other date of birth: to rule out, not a confirmed match
+    other = RiskEngine(CFG, JUR, TODAY).assess(net([s], {"S": 0}, hits=[namesake]))
+    assert [f.key for f in other.factors] == ["sanctions_possible_match"]
+    assert other.level == "low"

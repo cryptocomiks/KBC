@@ -135,7 +135,9 @@ class RiskEngine:
         for h in net.hits:
             if h.score < t["possible_match_score"]:
                 continue  # weak hit: displayed for review but not scored
-            strong = h.score >= t["strong_match_score"]
+            # A hit contradicted by the evidence (other date of birth, nationality, country)
+            # stays a possible match to rule out, never a confirmed one.
+            strong = h.score >= t["strong_match_score"] and h.triage != "namesake"
             ev = f"{name(h.entity_id)} ≈ '{h.matched_name}' — {h.dataset} (confidence {h.score:.0f}%)"
             if h.list_type == ListType.SANCTION:
                 flag("sanctions_match" if strong else "sanctions_possible_match", h.entity_id, ev)
@@ -344,9 +346,20 @@ class RiskEngine:
 
         factors.sort(key=lambda f: -f.points)
         score = round(min(100.0, sum(f.points for f in factors)), 1)
+        level = self.cfg.level(score)
+        subject_sanctioned = any(
+            h.entity_id == net.subject_id
+            and h.list_type == ListType.SANCTION
+            and h.score >= t["strong_match_score"]
+            and h.triage != "namesake"
+            for h in net.hits
+        )
+        if subject_sanctioned:
+            # The subject itself is listed: prohibited relationship whatever the other factors.
+            level = max(self.cfg.levels, key=lambda k: self.cfg.levels[k])
         return RiskAssessment(
             score=score,
-            level=self.cfg.level(score),
+            level=level,
             factors=factors,
             entity_flags=entity_flags,
             entity_points=entity_points,
@@ -355,6 +368,7 @@ class RiskEngine:
             methodology=[
                 "Score = Σ (factor weight × proximity multiplier), capped at 100.",
                 "Each factor counts once, whatever the number of affected entities.",
+                "A sanctions match on the subject itself sets the highest level, whatever the score.",
                 "Proximity multiplier by distance to the subject: "
                 + ", ".join(f"{k} hop(s) ×{v}" for k, v in self.cfg.proximity_multiplier.items()),
                 f"Screening hits ≥ {t['strong_match_score']:.0f}% count as matches, "

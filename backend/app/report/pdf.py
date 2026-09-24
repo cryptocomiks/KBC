@@ -51,6 +51,7 @@ LEVEL_COLORS = {
     "high": colors.HexColor("#c2410c"),
     "critical": colors.HexColor("#b91c1c"),
     "none": MUTED,
+    "incomplete": colors.HexColor("#b45309"),
 }
 
 PAGE = landscape(A4)
@@ -325,9 +326,12 @@ def build_pdf(
     story.append(Paragraph("1. Executive summary", st["h2"]))
     b = inv.brief
     if b:
-        verdict_color = {"critical": "#991b1b", "high": "#9a3412", "medium": "#92400e"}.get(
-            b.level, "#065f46"
-        )
+        verdict_color = {
+            "critical": "#991b1b",
+            "high": "#9a3412",
+            "medium": "#92400e",
+            "incomplete": "#92400e",
+        }.get(b.level, "#065f46")
         story.append(
             Paragraph(f"<font color='{verdict_color}'><b>{_esc(b.headline)}</b></font>", st["body"])
         )

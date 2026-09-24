@@ -460,6 +460,38 @@ def check_identifiers() -> None:
         )
 
 
+def check_sanctioned_official() -> None:
+    """End to end, depth 2 as in the app: a sanctioned public official must come out
+    screened, with her sanctions listings and PEP status, never as an unchecked score."""
+    from app.schemas import InvestigationRequest
+    from app.service import KbcService
+
+    svc = KbcService()
+    res = svc.search("Elvira Nabiullina", "person")
+    person = next((c.entity for c in res.candidates if c.entity.type == EntityType.PERSON), None)
+    expect("Elvira Nabiullina found", person is not None)
+    if person is None:
+        return
+    inv = svc.investigate(InvestigationRequest(record_ids=person.record_ids, depth=2, max_nodes=60))
+    own = [h for h in inv.hits if h.entity_id == inv.subject_id]
+    for h in own:
+        print(f"      {h.list_type.value:9} {h.score:5.1f}  {h.dataset}  [{h.triage}]")
+    for w in inv.warnings:
+        print(f"      warning: {w}")
+    expect("subject screened", inv.subject_id not in inv.unscreened, f"level {inv.risk.level}")
+    expect(
+        "sanctions listings found",
+        any(h.list_type.value == "sanction" for h in own),
+        ", ".join(sorted({h.dataset for h in own if h.list_type.value == "sanction"})),
+    )
+    expect("PEP status found", any(h.list_type.value == "pep" for h in own))
+    expect(
+        "risk level reflects the sanctions",
+        inv.risk.level in ("high", "critical"),
+        f"{inv.risk.score:.0f} ({inv.risk.level}) — {inv.brief.headline if inv.brief else ''}",
+    )
+
+
 def check_country_risk() -> None:
     from app.risk.config import get_country_risk
 
@@ -535,6 +567,7 @@ guarded("SEC EDGAR (US filings, 13D/13G owners)", check_sec)
 guarded("Country risk indicators", check_country_risk)
 guarded("Casino Secrets (Curaçao gaming leak)", check_casino_secrets)
 guarded("Search by identifier (SIREN, Swiss UID, SEC CIK)", check_identifiers)
+guarded("Sanctioned public official, depth 2 (Elvira Nabiullina)", check_sanctioned_official)
 for key, title, fn in [
     ("OPENSANCTIONS_API_KEY", "OpenSanctions", check_opensanctions),
     ("COMPANIES_HOUSE_API_KEY", "Companies House", check_companies_house),

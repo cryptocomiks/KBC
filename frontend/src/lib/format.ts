@@ -7,6 +7,7 @@ export const RISK_COLORS: Record<RiskLevel, string> = {
   medium: "#d97706",
   high: "#ea580c",
   critical: "#dc2626",
+  incomplete: "#94a3b8",
 };
 
 /** Entity colours in the graph: any flag is at least yellow, "no flag" stays neutral. */
@@ -16,6 +17,7 @@ export const ENTITY_COLORS: Record<RiskLevel, string> = {
   medium: "#f59e0b",
   high: "#ea580c",
   critical: "#dc2626",
+  incomplete: "#94a3b8",
 };
 
 export const ENTITY_LEVEL_LABEL: Record<RiskLevel, string> = {
@@ -24,6 +26,7 @@ export const ENTITY_LEVEL_LABEL: Record<RiskLevel, string> = {
   medium: "medium",
   high: "high",
   critical: "critical",
+  incomplete: "not screened",
 };
 
 export const RISK_BADGE: Record<RiskLevel, string> = {
@@ -32,6 +35,7 @@ export const RISK_BADGE: Record<RiskLevel, string> = {
   medium: "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300",
   high: "bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-300",
   critical: "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300",
+  incomplete: "bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200",
 };
 
 const regionNames = new Intl.DisplayNames(["en"], { type: "region" });

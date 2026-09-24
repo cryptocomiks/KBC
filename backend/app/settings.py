@@ -59,7 +59,8 @@ class Settings(BaseSettings):
     opensanctions_api_key: str = ""
     # Open watchlists downloaded as bulk files (OpenSanctions dataset names, comma-separated)
     open_datasets: str = (
-        "eu_fsf,gb_fcdo_sanctions,ch_seco_sanctions,worldbank_debarred,interpol_red_notices,"
+        "eu_fsf,gb_fcdo_sanctions,ch_seco_sanctions,ca_dfatd_sema_sanctions,au_dfat_sanctions,"
+        "jp_mof_sanctions,worldbank_debarred,interpol_red_notices,"
         "ru_acf_bribetakers,ua_war_sanctions,wd_oligarchs,gb_coh_disqualified,ch_finma_warnings"
     )
     icij_db_path: str = str(REPO_ROOT / "data" / "icij_offshore_leaks.db")

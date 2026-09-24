@@ -7,12 +7,14 @@ const LEVEL_BAR: Record<string, string> = {
   high: "bg-[#ff9500]",
   medium: "bg-[#ffcc00]",
   low: "bg-[#34c759]",
+  incomplete: "bg-slate-400",
 };
 const LEVEL_PILL: Record<string, string> = {
   critical: "bg-[#ff3b30]/12 text-[#d70015] dark:bg-[#ff453a]/20 dark:text-[#ff6961]",
   high: "bg-[#ff9500]/15 text-[#c93400] dark:bg-[#ff9f0a]/20 dark:text-[#ffb340]",
   medium: "bg-[#ffcc00]/20 text-[#a05a00] dark:bg-[#ffd60a]/20 dark:text-[#ffd426]",
   low: "bg-[#34c759]/15 text-[#248a3d] dark:bg-[#30d158]/20 dark:text-[#30d158]",
+  incomplete: "bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200",
 };
 const TONE: Record<string, string> = {
   critical: "text-[#d70015] dark:text-[#ff6961]",

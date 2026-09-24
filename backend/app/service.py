@@ -233,6 +233,9 @@ class KbcService:
         net = NetworkExpander(self.registry, max_depth=depth, max_nodes=max_nodes).expand(seeds)
         net.hits = apply_triage(net.hits, net.entities)
         risk = RiskEngine().assess(net)
+        if net.subject_id in net.unscreened:
+            # Without sanctions / PEP screening of the subject, no level can be given.
+            risk.level = "incomplete"
         inv = Investigation(
             id=key,
             subject_id=net.subject_id,
@@ -253,6 +256,7 @@ class KbcService:
             merges=net.merges,
             warnings=net.warnings,
             truncated=net.truncated,
+            unscreened=net.unscreened,
             stats={
                 "persons": sum(e.type == EntityType.PERSON for e in net.entities.values()),
                 "companies": sum(e.type == EntityType.COMPANY for e in net.entities.values()),
@@ -263,7 +267,9 @@ class KbcService:
                 "sources": len({q.source for q in net.queries}),
             },
         )
-        cache.set("investigation", key, inv.model_dump(mode="json"))
+        if not net.unscreened:
+            # A partial result is never cached: a rerun completes it from the cached answers.
+            cache.set("investigation", key, inv.model_dump(mode="json"))
         return inv
 
     def _load_seeds(self, record_ids: list[str]) -> list[Entity]:

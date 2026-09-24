@@ -64,6 +64,8 @@ class Network(BaseModel):
     merges: list[dict] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)
     truncated: bool = False
+    # Entities whose sanctions / PEP / leak screening did not complete in time
+    unscreened: list[str] = Field(default_factory=list)
 
 
 class NetworkExpander:
@@ -308,6 +310,12 @@ class NetworkExpander:
         if self.entities[subject_id].type == EntityType.WALLET:
             self._flow_wallets.add(subject_id)
         self._cross_reference(subject_id)
+        # The subject is screened right away, while the network expands: whatever the size
+        # of the network, the person or company searched for is always checked.
+        subject_pool = ThreadPoolExecutor(max_workers=1)
+        subject_screening = subject_pool.submit(
+            self._screen, [self.entities[subject_id]], "screening of the subject"
+        )
 
         queue: deque[str] = deque([subject_id])
         expanded: set[str] = set()
@@ -373,11 +381,23 @@ class NetworkExpander:
             )
         # Screening (sanctions, PEP, leaks) and documents run side by side, so that slow
         # document sources can never starve the screening of the finishing time window.
+        others = sorted(
+            (
+                e
+                for e in self.entities.values()
+                if e.type != EntityType.ADDRESS and e.id != subject_id
+            ),
+            key=lambda e: self.depth.get(e.id, 99),
+        )
         with ThreadPoolExecutor(max_workers=2) as pool:
             docs = pool.submit(self._collect_documents)
-            screening = pool.submit(self._screen)
-            hits = screening.result()
+            screening = pool.submit(self._screen, others, "screening")
+            subject_hits, subject_missed = subject_screening.result()
+            hits, missed = screening.result()
             docs.result()
+        subject_pool.shutdown(wait=False)
+        hits = self._merge_hits([*subject_hits, *hits])
+        unscreened = [*subject_missed, *missed]
         return Network(
             subject_id=subject_id,
             max_depth=self.max_depth,
@@ -390,6 +410,7 @@ class NetworkExpander:
             merges=self.resolver.merges,
             warnings=self.warnings,
             truncated=self.truncated,
+            unscreened=unscreened,
         )
 
     # ---------------------------------------------------------- screening
@@ -479,29 +500,55 @@ class NetworkExpander:
         for entity, docs in self._run_until_deadline(run, tasks, 4, "website archive"):
             entity.documents = [*entity.documents, *docs]
 
-    def _screen(self) -> list[ScreeningHit]:
-        """Screen every person/company against sanctions, PEP and leak sources, in parallel."""
-        entities = [e for e in self.entities.values() if e.type != EntityType.ADDRESS]
+    def _screen(self, entities: list[Entity], stage: str) -> tuple[list[ScreeningHit], list[str]]:
+        """Screen entities against sanctions, PEP and leak sources, in parallel.
+
+        Entities come nearest first; bulk screeners get one batch for the direct links
+        (depth <= 1) and one for the rest, so the closest parties finish first. Returns
+        the hits and the ids of the entities whose screening did not complete in time."""
+        if not entities:
+            return [], []
+        near = [e for e in entities if self.depth.get(e.id, 99) <= 1]
+        far = [e for e in entities if self.depth.get(e.id, 99) > 1]
         screeners = [
             c
             for c in self.registry.enabled(demo=self.demo_realm)
             if c.kind in ("screening", "leaks")
         ]
         tasks: list[tuple[BaseConnector, list[Entity]]] = []
-        for conn in screeners:
-            batched = type(conn).screen_many is not BaseConnector.screen_many
-            tasks += [(conn, entities)] if batched else [(conn, [e]) for e in entities]
+        for batch in (near, far):
+            for conn in screeners:
+                if not batch:
+                    continue
+                batched = type(conn).screen_many is not BaseConnector.screen_many
+                tasks += [(conn, batch)] if batched else [(conn, [e]) for e in batch]
 
-        def run(task: tuple[BaseConnector, list[Entity]]) -> list[ScreeningHit]:
+        def run(task: tuple[BaseConnector, list[Entity]]) -> tuple[list[str], list[ScreeningHit]]:
             conn, batch = task
             target = batch[0].name if len(batch) == 1 else f"{len(batch)} entities"
-            return self._call(conn, "screen", target, conn.screen_many, batch) or []
+            hits = self._call(conn, "screen", target, conn.screen_many, batch) or []
+            return [e.id for e in batch], hits
 
+        workers = max(1, min(self.registry.settings.screening_workers, len(tasks)))
+        results = self._run_until_deadline(run, tasks, workers, stage)
+        done: dict[str, int] = {}
+        found: list[ScreeningHit] = []
+        for ids, hits in results:
+            found.extend(hits)
+            for i in ids:
+                done[i] = done.get(i, 0) + 1
+        expected = {e.id: 0 for e in entities}
+        for _conn, batch in tasks:
+            for e in batch:
+                expected[e.id] += 1
+        missed = [eid for eid, n in expected.items() if done.get(eid, 0) < n]
+        return self._merge_hits(found), missed
+
+    @staticmethod
+    def _merge_hits(found: list[ScreeningHit]) -> list[ScreeningHit]:
         hits: dict[tuple, ScreeningHit] = {}
-        workers = max(1, min(self.registry.settings.screening_workers, len(tasks) or 1))
-        for result in self._run_until_deadline(run, tasks, workers, "screening"):
-            for hit in result:
-                key = (hit.entity_id, hit.dataset, hit.provenance.record_id)
-                if key not in hits or hits[key].score < hit.score:
-                    hits[key] = hit
+        for hit in found:
+            key = (hit.entity_id, hit.dataset, hit.provenance.record_id)
+            if key not in hits or hits[key].score < hit.score:
+                hits[key] = hit
         return sorted(hits.values(), key=lambda h: (-h.score, h.entity_id))

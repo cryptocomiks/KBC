@@ -62,6 +62,7 @@ class Investigation(BaseModel):
     merges: list[dict[str, Any]]
     warnings: list[str]
     truncated: bool
+    unscreened: list[str] = Field(default_factory=list)
     stats: dict[str, int]
     summary: list[Finding] = Field(default_factory=list)
     timeline: list[TimelineEvent] = Field(default_factory=list)

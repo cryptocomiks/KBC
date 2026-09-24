@@ -36,6 +36,9 @@ DATASETS = {
     "gb_fcdo_sanctions": ("UK Sanctions List (FCDO)", ListType.SANCTION),
     "gb_hmt_sanctions": ("UK financial sanctions (HM Treasury / OFSI)", ListType.SANCTION),
     "ch_seco_sanctions": ("Swiss sanctions (SECO)", ListType.SANCTION),
+    "ca_dfatd_sema_sanctions": ("Canada autonomous sanctions (SEMA)", ListType.SANCTION),
+    "au_dfat_sanctions": ("Australia consolidated sanctions (DFAT)", ListType.SANCTION),
+    "jp_mof_sanctions": ("Japan economic sanctions (Ministry of Finance)", ListType.SANCTION),
     "worldbank_debarred": ("World Bank debarred firms and individuals", ListType.ADVERSE),
     "interpol_red_notices": ("Interpol red notices (public)", ListType.ADVERSE),
     # Investigative lists (journalists / NGOs / governments documenting networks)

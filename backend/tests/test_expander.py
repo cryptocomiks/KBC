@@ -67,3 +67,46 @@ def test_every_query_is_logged(registry):
         "demo_intl_registry",
         "demo_sanctions",
     }
+
+
+def _slow_screening(registry, monkeypatch, slow_for):
+    import time
+
+    import app.graph.expander as ex
+
+    monkeypatch.setattr(ex, "FINISHING_SECONDS", 1)
+    for conn in registry.enabled(demo=True):
+        if conn.kind in ("screening", "leaks"):
+            original = conn.screen_many
+
+            def screen_many(entities, original=original):
+                if any(slow_for(e) for e in entities):
+                    time.sleep(2.5)
+                return original(entities)
+
+            monkeypatch.setattr(conn, "screen_many", screen_many)
+
+
+def test_subject_is_screened_first_even_when_time_runs_out(registry, monkeypatch):
+    subject = seed(registry)
+    _slow_screening(registry, monkeypatch, lambda e: e.name != subject.name)
+    net = NetworkExpander(registry, max_depth=2, max_nodes=100, time_budget=0.5).expand([subject])
+    assert net.subject_id not in net.unscreened
+    assert net.unscreened  # the others did not finish in time
+    assert any("Time limit reached during screening" in w for w in net.warnings)
+
+
+def test_unscreened_subject_gives_incomplete_level_and_is_not_cached(registry, monkeypatch):
+    from app.cache import get_cache
+    from app.schemas import InvestigationRequest
+    from app.service import KbcService
+
+    _slow_screening(registry, monkeypatch, lambda e: True)
+    monkeypatch.setattr(registry.settings, "expansion_time_budget_seconds", 0.5)
+    svc = KbcService(registry)
+    req = InvestigationRequest(record_ids=[SUBJECT], depth=1, max_nodes=60)
+    inv = svc.investigate(req)
+    assert inv.subject_id in inv.unscreened
+    assert inv.risk.level == "incomplete"
+    assert inv.brief.headline.startswith("INCOMPLETE — Screening of")
+    assert get_cache().get("investigation", inv.id) is None

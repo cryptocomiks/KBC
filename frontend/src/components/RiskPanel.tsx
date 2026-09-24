@@ -22,12 +22,13 @@ export function RiskGauge({ score, level }: { score: number; level: keyof typeof
           transform="rotate(-90 42 42)"
         />
         <text x="42" y="47" textAnchor="middle" className="fill-current text-[20px] font-bold">
-          {Math.round(score)}
+          {level === "incomplete" ? `≥${Math.round(score)}` : Math.round(score)}
         </text>
       </svg>
       <div>
         <div className="label">Risk score</div>
         <span className={`mt-1 inline-block rounded px-2 py-0.5 text-xs font-bold uppercase ${RISK_BADGE[level]}`}>{level}</span>
+        {level === "incomplete" && <div className="mt-1 max-w-[12rem] text-[11px] text-slate-500">Subject not screened in time — rerun</div>}
       </div>
     </div>
   );

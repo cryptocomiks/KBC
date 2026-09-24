@@ -225,9 +225,14 @@ class CaseService:
     def _record(
         self, case_id: str, inv: Investigation, previous: dict[str, Any]
     ) -> list[dict[str, str]]:
+        run_at = now()
+        if inv.unscreened and previous:
+            # Partial screening: comparing it would report hits as "removed". Keep the last
+            # complete snapshot; the next run (daily monitoring) completes the comparison.
+            self.store.update_case(case_id, last_run_at=run_at)
+            return []
         snap = snapshot(inv)
         changes = diff(previous, snap)
-        run_at = now()
         countries = sorted(
             {
                 e.jurisdiction

@@ -200,6 +200,14 @@ def build_brief(net: Network, risk: RiskAssessment, jur_name=lambda c: c or "?")
                 headline += f" Largest ultimate owner: {o.name} ({_pct(o.pct)})."
         else:
             headline += " Ultimate owners not identified in the sources."
+    if subject.id in net.unscreened:
+        headline = (
+            f"Screening of {subject.name} against sanctions, PEP and leak lists could not finish "
+            f"in time: the score ({risk.score:.0f}) leaves out those checks and must not be relied on. "
+            "Rerun the investigation (answers are cached) or reduce the depth."
+        )
+    elif net.unscreened:
+        headline += f" {len(net.unscreened)} linked parties could not be screened in time (rerun to complete)."
     headline = f"{risk.level.upper()} — {headline}"
 
     # --- Key figures

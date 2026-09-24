@@ -1,7 +1,7 @@
 // Mirrors backend/app/models.py and backend/app/schemas.py
 
 export type EntityType = "person" | "company" | "address" | "wallet";
-export type RiskLevel = "none" | "low" | "medium" | "high" | "critical";
+export type RiskLevel = "none" | "low" | "medium" | "high" | "critical" | "incomplete";
 
 export interface Provenance {
   source: string;
@@ -163,6 +163,7 @@ export interface Investigation {
   merges: Row[];
   warnings: string[];
   truncated: boolean;
+  unscreened?: string[];
   stats: Record<string, number>;
   summary: Finding[];
   timeline: TimelineEvent[];
