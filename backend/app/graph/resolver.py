@@ -47,6 +47,21 @@ def address_entity(address: str, *, demo: bool = False) -> Entity:
     return Entity(id=f"addr:{digest}", type=EntityType.ADDRESS, name=address, demo=demo)
 
 
+_RICHNESS_FIELDS = (
+    "legal_form",
+    "status",
+    "incorporation_date",
+    "last_accounts_date",
+    "activity",
+    "address",
+)
+
+
+def _richness(e: Entity) -> int:
+    """How complete a record is (used to pick the primary name when merging)."""
+    return len(e.birth_date or "") + sum(getattr(e, f) not in (None, "") for f in _RICHNESS_FIELDS)
+
+
 class EntityResolver:
     def __init__(self) -> None:
         self.entities: dict[str, Entity] = {}
@@ -123,8 +138,11 @@ class EntityResolver:
         )
         target.record_ids.extend(new_records)
         target.sources.extend(other.sources)
-        # Registries often store names in capitals: prefer the properly cased spelling.
-        if target.name.isupper() and not other.name.isupper():
+        # Keep as primary name the properly cased spelling of the richest record
+        # (registries often store names in capitals, or truncate data).
+        if not other.name.isupper() and (
+            target.name.isupper() or _richness(other) > _richness(target)
+        ):
             target.aliases.append(target.name)
             target.name, other = other.name, other.model_copy(update={"name": target.name})
         names = {target.name.casefold(), *(a.casefold() for a in target.aliases)}

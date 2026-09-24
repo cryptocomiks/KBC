@@ -165,3 +165,42 @@ def test_demo_scenario_risk_grows_with_depth(registry, depth, expected_level):
     assert result.level == expected_level
     for f in result.factors:
         assert f.evidence and f.points == round(f.weight * f.multiplier, 1)
+
+
+def test_undeclared_ubo_detected():
+    ents = [
+        Entity(
+            id="S",
+            type=EntityType.COMPANY,
+            name="Target",
+            incorporation_date=date(2000, 1, 1),
+            last_accounts_date=date(2026, 1, 1),
+        ),
+        Entity(
+            id="H",
+            type=EntityType.COMPANY,
+            name="Holding",
+            incorporation_date=date(2000, 1, 1),
+            last_accounts_date=date(2026, 1, 1),
+        ),
+        Entity(id="A", type=EntityType.PERSON, name="Declared"),
+        Entity(id="B", type=EntityType.PERSON, name="Hidden"),
+    ]
+    rels = [
+        Relationship(
+            id="1", type=RelationType.SHAREHOLDER, source_id="A", target_id="S", share_pct=40
+        ),
+        Relationship(
+            id="2", type=RelationType.SHAREHOLDER, source_id="H", target_id="S", share_pct=60
+        ),
+        Relationship(
+            id="3", type=RelationType.SHAREHOLDER, source_id="B", target_id="H", share_pct=50
+        ),
+        Relationship(
+            id="4", type=RelationType.BENEFICIAL_OWNER, source_id="A", target_id="S", share_pct=40
+        ),
+    ]
+    cfg = CFG.model_copy(update={"weights": {**CFG.weights, "ubo_discrepancy": 12}})
+    result = RiskEngine(cfg, JUR, TODAY).assess(net(ents, {"S": 0, "H": 1, "A": 1, "B": 2}, rels))
+    [factor] = [f for f in result.factors if f.key == "ubo_discrepancy"]
+    assert factor.points == 12 and "Hidden holds an effective 30%" in factor.evidence[0]

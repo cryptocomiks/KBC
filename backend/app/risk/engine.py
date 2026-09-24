@@ -14,7 +14,12 @@ from datetime import date
 from pydantic import BaseModel, Field
 
 from app.graph.expander import Network
-from app.graph.ownership import corporate_layers_above, find_cycles, ownership_graph
+from app.graph.ownership import (
+    corporate_layers_above,
+    find_cycles,
+    indirect_stakes,
+    ownership_graph,
+)
 from app.models import CompanyStatus, EntityType, ListType, RelationType
 from app.risk.config import JurisdictionLists, RiskConfig, get_jurisdictions, get_risk_config
 
@@ -35,6 +40,7 @@ FACTOR_LABELS = {
     "dissolved_company": "Dissolved / struck-off company",
     "missing_accounts": "No recent accounts filed",
     "nominee_director": "Possible nominee / professional director",
+    "ubo_discrepancy": "Undeclared beneficial owner (computed vs declared)",
 }
 
 
@@ -150,6 +156,31 @@ class RiskEngine:
             if len(layers) >= t["long_chain_min_layers"]:
                 chain = " → ".join(name(x) for x in [*reversed(layers), eid])
                 flag("long_ownership_chain", eid, f"{len(layers)} corporate layers: {chain}")
+
+        # UBO discrepancy: a person whose computed effective interest reaches the
+        # UBO threshold but who is absent from the declared beneficial owners.
+        declared: dict[str, set[str]] = {}
+        for r in net.relationships.values():
+            if r.type == RelationType.BENEFICIAL_OWNER and r.is_active:
+                declared.setdefault(r.target_id, set()).add(r.source_id)
+        ubo_min = t.get("ubo_threshold_pct", 25)
+        for pid, p in ents.items():
+            if p.type != EntityType.PERSON:
+                continue
+            for cid, pct in indirect_stakes(og, pid).items():
+                if cid in declared and pid not in declared[cid] and pct >= ubo_min:
+                    listed = ", ".join(sorted(name(x) for x in declared[cid]))
+                    flag(
+                        "ubo_discrepancy",
+                        cid,
+                        f"{p.name} holds an effective {pct:g}% of {name(cid)} but is not among "
+                        f"its declared beneficial owners ({listed})",
+                    )
+                    flag(
+                        "ubo_discrepancy",
+                        pid,
+                        f"{p.name}: undeclared UBO of {name(cid)} ({pct:g}%)",
+                    )
 
         # 4. Addresses and nominee directors
         for eid, e in ents.items():

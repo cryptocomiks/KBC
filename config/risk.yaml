@@ -24,6 +24,7 @@ weights:
   dissolved_company: 3
   missing_accounts: 5
   nominee_director: 5          # one person sitting on many boards at one address
+  ubo_discrepancy: 12          # computed UBO (>= threshold) missing from declared beneficial owners
 
 # Distance (in hops) between the investigated subject and the affected entity.
 proximity_multiplier:
@@ -41,6 +42,7 @@ thresholds:
   recent_incorporation_months: 18
   accounts_overdue_months: 18
   nominee_min_mandates: 4
+  ubo_threshold_pct: 25        # EU AMLD reference threshold for beneficial ownership
 
 levels:                        # global score -> level (lower bound inclusive)
   low: 0
