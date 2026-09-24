@@ -15,8 +15,10 @@ provenances. Every connector call is logged (sources consulted table).
 
 from __future__ import annotations
 
+import time
 from collections import deque
 from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 
 from pydantic import BaseModel, Field
@@ -62,9 +64,15 @@ class Network(BaseModel):
 
 class NetworkExpander:
     def __init__(
-        self, registry: ConnectorRegistry, max_depth: int = 2, max_nodes: int = 60
+        self,
+        registry: ConnectorRegistry,
+        max_depth: int = 2,
+        max_nodes: int = 60,
+        time_budget: float | None = None,
     ) -> None:
         self.registry = registry
+        self.time_budget = time_budget or registry.settings.expansion_time_budget_seconds
+        self.demo_realm = False
         self.max_depth = max_depth
         self.max_nodes = max_nodes
         self.resolver = EntityResolver()
@@ -139,7 +147,7 @@ class NetworkExpander:
         out = []
         for rid in self.entities[cid].record_ids:
             conn = self.registry.for_record(rid)
-            if conn and conn.kind == "registry":
+            if conn and conn.kind == "registry" and conn.is_demo == self.demo_realm:
                 out.append((conn, rid))
         return out
 
@@ -153,7 +161,7 @@ class NetworkExpander:
         if entity.type == EntityType.ADDRESS:
             return
         have = {rid.split(":", 1)[0] for rid in entity.record_ids}
-        for conn in self.registry.enabled("registry"):
+        for conn in self.registry.enabled("registry", demo=self.demo_realm):
             if conn.name in have:
                 continue
             if entity.type == EntityType.COMPANY:
@@ -177,6 +185,13 @@ class NetworkExpander:
         links: list[LinkedEntity] = []
         for conn, rid in self._records_by_connector(cid):
             if entity.type == EntityType.COMPANY:
+                if entity.extra.get("accounts_unknown") or entity.incorporation_date is None:
+                    # Partial record (found via a search or an appointment): fetch the full profile.
+                    detail = self._call(
+                        conn, "get_details", entity.name, conn.get_company_details, rid
+                    )
+                    if detail is not None:
+                        self.resolver.add(detail)
                 links += self._call(conn, "get_officers", entity.name, conn.get_officers, rid)
                 links += self._call(
                     conn, "get_shareholders", entity.name, conn.get_shareholders, rid
@@ -211,7 +226,7 @@ class NetworkExpander:
         address = self.entities[aid]
         if "companies_registered" not in address.extra:
             names: set[str] = set()
-            for conn in self.registry.enabled("registry"):
+            for conn in self.registry.enabled("registry", demo=self.demo_realm):
                 found = self._call(
                     conn, "search_address", address.name, conn.search_address, address.name
                 )
@@ -220,7 +235,7 @@ class NetworkExpander:
 
     def _expand_address(self, aid: str, depth: int) -> None:
         address = self.entities[aid]
-        for conn in self.registry.enabled("registry"):
+        for conn in self.registry.enabled("registry", demo=self.demo_realm):
             for company in self._call(
                 conn, "search_address", address.name, conn.search_address, address.name
             ):
@@ -240,6 +255,9 @@ class NetworkExpander:
     def expand(self, seeds: list[Entity]) -> Network:
         if not seeds:
             raise ValueError("no seed entity")
+        # Investigations stay within one realm: fictitious demo data or real data.
+        self.demo_realm = seeds[0].demo
+        started = time.monotonic()
         subject_id = None
         for seed in seeds:  # several records of the same subject (already deduplicated by search)
             cid, _ = self.resolver.add(seed)
@@ -252,6 +270,13 @@ class NetworkExpander:
         queue: deque[str] = deque([subject_id])
         expanded: set[str] = set()
         while queue:
+            if time.monotonic() - started > self.time_budget:
+                self.truncated = True
+                self.warnings.append(
+                    f"Time budget of {self.time_budget:.0f}s reached: {len(queue)} node(s) were not expanded. "
+                    "Reduce the depth or rerun (results are cached)."
+                )
+                break
             cid = queue.popleft()
             if cid in expanded:
                 continue
@@ -297,7 +322,7 @@ class NetworkExpander:
                 if aid not in expanded:
                     queue.append(aid)
 
-        if self.truncated:
+        if self.truncated and not any("Time budget" in w for w in self.warnings):
             self.warnings.append(
                 f"Node limit of {self.max_nodes} reached: the network was truncated. "
                 "Increase the limit or reduce the depth to see more."
@@ -319,13 +344,28 @@ class NetworkExpander:
 
     # ---------------------------------------------------------- screening
     def _screen(self) -> list[ScreeningHit]:
+        """Screen every person/company against sanctions, PEP and leak sources, in parallel."""
+        entities = [e for e in self.entities.values() if e.type != EntityType.ADDRESS]
+        screeners = [
+            c
+            for c in self.registry.enabled(demo=self.demo_realm)
+            if c.kind in ("screening", "leaks")
+        ]
+        tasks: list[tuple[BaseConnector, list[Entity]]] = []
+        for conn in screeners:
+            batched = type(conn).screen_many is not BaseConnector.screen_many
+            tasks += [(conn, entities)] if batched else [(conn, [e]) for e in entities]
+
+        def run(task: tuple[BaseConnector, list[Entity]]) -> list[ScreeningHit]:
+            conn, batch = task
+            target = batch[0].name if len(batch) == 1 else f"{len(batch)} entities"
+            return self._call(conn, "screen", target, conn.screen_many, batch) or []
+
         hits: dict[tuple, ScreeningHit] = {}
-        screeners = [c for c in self.registry.enabled() if c.kind in ("screening", "leaks")]
-        for entity in self.entities.values():
-            if entity.type == EntityType.ADDRESS:
-                continue
-            for conn in screeners:
-                for hit in self._call(conn, "screen", entity.name, conn.screen, entity):
+        workers = max(1, min(self.registry.settings.screening_workers, len(tasks) or 1))
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            for result in pool.map(run, tasks):
+                for hit in result:
                     key = (hit.entity_id, hit.dataset, hit.provenance.record_id)
                     if key not in hits or hits[key].score < hit.score:
                         hits[key] = hit

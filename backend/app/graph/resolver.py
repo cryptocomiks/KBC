@@ -87,7 +87,7 @@ class EntityResolver:
 
     @staticmethod
     def same_entity(a: Entity, b: Entity) -> tuple[bool, float, list[str]]:
-        if a.type != b.type:
+        if a.type != b.type or a.demo != b.demo:  # never mix fictitious and real data
             return False, 0.0, []
         if a.type == EntityType.ADDRESS:
             score = fuzz.token_set_ratio(address_key(a.name), address_key(b.name))
@@ -124,6 +124,8 @@ class EntityResolver:
         for rid in new_records:
             self._record_index[rid] = cid
         if not new_records:
+            # Same record fetched again (e.g. full profile after a partial one): enrich only.
+            self._fill_missing(target, other)
             return
         self.merges.append(
             {
@@ -150,7 +152,11 @@ class EntityResolver:
             if n.casefold() not in names:
                 target.aliases.append(n)
                 names.add(n.casefold())
-        # Keep the most precise value for each attribute; never silently drop data.
+        self._fill_missing(target, other)
+
+    @staticmethod
+    def _fill_missing(target: Entity, other: Entity) -> None:
+        """Keep the most precise value for each attribute; never silently drop data."""
         if other.birth_date and len(other.birth_date) > len(target.birth_date or ""):
             target.birth_date = other.birth_date
         target.nationalities = sorted(set(target.nationalities) | set(other.nationalities))
@@ -168,5 +174,8 @@ class EntityResolver:
             if getattr(target, field) in (None, "") and getattr(other, field) not in (None, ""):
                 setattr(target, field, getattr(other, field))
         target.identifiers = {**other.identifiers, **target.identifiers}
-        target.extra = {**other.extra, **target.extra}
+        extra = {**other.extra, **target.extra}
+        if "accounts_unknown" not in other.extra:  # a full profile settles the question
+            extra.pop("accounts_unknown", None)
+        target.extra = extra
         target.demo = target.demo or other.demo

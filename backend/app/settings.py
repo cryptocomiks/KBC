@@ -28,7 +28,10 @@ class Settings(BaseSettings):
         env_ignore_empty=True,
     )
 
+    # Fictitious demo dataset (always separate from real data)
     demo_mode: bool = True
+    # Real sources: keyless public APIs are on by default, keyed ones need their key
+    live_sources: bool = True
     cache_path: str = _default_cache_path()
     cache_ttl_hours: int = 72
 
@@ -46,6 +49,9 @@ class Settings(BaseSettings):
     max_depth: int = 3
     max_nodes_limit: int = 250
     http_timeout_seconds: float = 15.0
+    # Wall-clock budget for one investigation over live APIs (serverless time limits)
+    expansion_time_budget_seconds: float = 40.0
+    screening_workers: int = 6
 
 
 @lru_cache

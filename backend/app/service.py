@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 
 from app.cache import get_cache
@@ -20,6 +21,7 @@ from app.schemas import Investigation, InvestigationRequest, SearchResponse
 from app.settings import get_settings
 
 SEARCH_LIMIT = 25
+LINKED_SUMMARY_TOP = 8  # linked companies are fetched for the best candidates only
 
 
 class KbcService:
@@ -30,38 +32,58 @@ class KbcService:
     def search(self, query: str, etype: str = "any") -> SearchResponse:
         registries = self.registry.enabled("registry")
         warnings: list[str] = []
-        resolver = EntityResolver()
-        for conn in registries:
+
+        def run(conn):
+            found: list[Entity] = []
             try:
                 if etype in ("any", "person"):
-                    for e in conn.search_person(query):
-                        resolver.add(e)
+                    found += conn.search_person(query)
                 if etype in ("any", "company"):
-                    for e in conn.search_company(query):
-                        resolver.add(e)
+                    found += conn.search_company(query)
             except ConnectorError as exc:
                 warnings.append(str(exc))
+            return found
 
-        candidates = []
-        for ent in resolver.entities.values():
-            m = match_name(query, ent)
-            linked, roles = self._linked_summary(ent, warnings)
-            candidates.append(
-                SearchCandidate(
-                    entity=ent,
-                    score=m.score,
-                    explanation=m.explanation,
-                    linked_companies=linked,
-                    roles_count=roles,
+        # Sources are queried in parallel; results are then deduplicated across
+        # sources (never across the demo / real boundary).
+        resolver = EntityResolver()
+        with ThreadPoolExecutor(max_workers=max(1, len(registries))) as pool:
+            for found in pool.map(run, registries):
+                for e in found:
+                    resolver.add(e)
+
+        scored = sorted(
+            ((match_name(query, ent), ent) for ent in resolver.entities.values()),
+            key=lambda x: -x[0].score,
+        )[:SEARCH_LIMIT]
+        with ThreadPoolExecutor(max_workers=8) as pool:
+            summaries = list(
+                pool.map(
+                    lambda item: (
+                        self._linked_summary(item[1], warnings)
+                        if item[0] < LINKED_SUMMARY_TOP
+                        else ([], 0)
+                    ),
+                    [(i, ent) for i, (_, ent) in enumerate(scored)],
                 )
             )
+        candidates = [
+            SearchCandidate(
+                entity=ent,
+                score=m.score,
+                explanation=m.explanation,
+                linked_companies=linked,
+                roles_count=roles,
+            )
+            for (m, ent), (linked, roles) in zip(scored, summaries, strict=True)
+        ]
         candidates.sort(key=lambda c: (-c.score, -c.roles_count))
         return SearchResponse(
             query=query,
             type=etype,
-            candidates=candidates[:SEARCH_LIMIT],
+            candidates=candidates,
             sources=[c.label for c in registries],
-            warnings=warnings,
+            warnings=list(dict.fromkeys(warnings)),
         )
 
     def _linked_summary(self, ent: Entity, warnings: list[str]) -> tuple[list[str], int]:
@@ -299,6 +321,7 @@ def build_tables(net: Network, risk: RiskAssessment) -> dict[str, list[dict[str,
             "details": "; ".join(
                 f"{k.replace('_', ' ')}: {', '.join(map(str, v)) if isinstance(v, list) else v}"
                 for k, v in h.details.items()
+                if v not in (None, "", [])
             ),
             "source": h.provenance.source_label,
             "url": h.provenance.url,

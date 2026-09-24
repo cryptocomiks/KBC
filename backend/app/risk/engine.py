@@ -131,8 +131,13 @@ class RiskEngine:
                         eid,
                         f"{e.name} incorporated {e.incorporation_date} ({age} months ago)",
                     )
-            if e.last_accounts_date is None:
-                flag("missing_accounts", eid, f"{e.name}: no accounts on file")
+            if e.extra.get("accounts_overdue"):
+                flag(
+                    "missing_accounts", eid, f"{e.name}: accounts overdue according to the registry"
+                )
+            elif e.last_accounts_date is None:
+                if not e.extra.get("accounts_unknown"):
+                    flag("missing_accounts", eid, f"{e.name}: no accounts on file")
             else:
                 overdue = _months_between(e.last_accounts_date, self.today)
                 if overdue > t["accounts_overdue_months"]:

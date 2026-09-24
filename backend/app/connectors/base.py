@@ -12,6 +12,7 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
+import time
 from abc import ABC
 from typing import Any, ClassVar
 
@@ -22,6 +23,10 @@ from app.models import Entity, LinkedEntity, Provenance, ScreeningHit, utcnow
 from app.settings import Settings, get_settings
 
 log = logging.getLogger(__name__)
+
+USER_AGENT = "KBC-CorporateMapping/0.2 (+https://github.com/cryptocomiks/KBC)"
+MAX_RETRIES = 2
+RETRY_BACKOFF_SECONDS = 0.8
 
 
 class ConnectorError(RuntimeError):
@@ -57,11 +62,11 @@ class BaseConnector(ABC):
             if self.settings.demo_mode:
                 return True, "Demo mode: fictitious dataset"
             return False, "Disabled (DEMO_MODE=false)"
-        if self.settings.demo_mode:
-            return False, "Disabled while DEMO_MODE=true"
+        if not self.settings.live_sources:
+            return False, "Disabled (LIVE_SOURCES=false)"
         if self.key_setting and not self.api_key:
-            return False, f"Disabled: {self.key_setting.upper()} is not set in .env"
-        return True, "Enabled"
+            return False, f"Disabled: {self.key_setting.upper()} is not set"
+        return True, "Enabled" + ("" if self.key_setting else " (public API, no key required)")
 
     @property
     def enabled(self) -> bool:
@@ -108,6 +113,13 @@ class BaseConnector(ABC):
         """Sanctions / PEP / leaks screening of an entity."""
         return []
 
+    def screen_many(self, entities: list[Entity]) -> list[ScreeningHit]:
+        """Batch screening; override when the source accepts batched queries."""
+        hits: list[ScreeningHit] = []
+        for entity in entities:
+            hits.extend(self.screen(entity))
+        return hits
+
     # ---------------------------------------------------------------- helpers
     def native_id(self, record_id: str) -> str:
         prefix = f"{self.name}:"
@@ -133,27 +145,84 @@ class BaseConnector(ABC):
         auth: tuple[str, str] | None = None,
     ) -> Any:
         """GET with SQLite caching, so the same query never hits the API twice."""
+        return self._request("GET", url, params=params, headers=headers, auth=auth)
+
+    def http_post_json(
+        self,
+        url: str,
+        json_body: Any = None,
+        form: dict[str, str] | None = None,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, str] | None = None,
+    ) -> Any:
+        """POST (JSON or form body) with the same caching and retry policy."""
+        return self._request(
+            "POST", url, params=params, headers=headers, json_body=json_body, form=form
+        )
+
+    def _request(
+        self,
+        method: str,
+        url: str,
+        *,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, str] | None = None,
+        auth: tuple[str, str] | None = None,
+        json_body: Any = None,
+        form: dict[str, str] | None = None,
+    ) -> Any:
         cache = get_cache()
-        key_material = json.dumps([url, sorted((params or {}).items())], default=str)
+        key_material = json.dumps(
+            [method, url, sorted((params or {}).items()), json_body, form], default=str
+        )
         key = hashlib.sha256(key_material.encode()).hexdigest()
         cached = cache.get(f"http:{self.name}", key)
         if cached is not None:
             return cached
-        try:
-            resp = httpx.get(
-                url,
-                params=params,
-                headers=headers,
-                auth=auth,
-                timeout=self.settings.http_timeout_seconds,
-            )
-        except httpx.HTTPError as exc:
-            raise ConnectorError(f"{self.label}: network error ({exc})") from exc
+        headers = {"User-Agent": USER_AGENT, "Accept": "application/json", **(headers or {})}
+        resp = None
+        for attempt in range(MAX_RETRIES + 1):
+            try:
+                resp = httpx.request(
+                    method,
+                    url,
+                    params=params,
+                    headers=headers,
+                    auth=auth,
+                    json=json_body,
+                    data=form,
+                    timeout=self.settings.http_timeout_seconds,
+                    follow_redirects=True,
+                )
+            except httpx.HTTPError as exc:
+                if attempt < MAX_RETRIES:
+                    time.sleep(RETRY_BACKOFF_SECONDS * (2**attempt))
+                    continue
+                raise ConnectorError(f"{self.label}: network error ({exc})") from exc
+            # Rate limited or transient server error: back off and retry.
+            if resp.status_code in (429, 502, 503, 504) and attempt < MAX_RETRIES:
+                retry_after = resp.headers.get("Retry-After", "")
+                delay = (
+                    float(retry_after)
+                    if retry_after.isdigit()
+                    else RETRY_BACKOFF_SECONDS * (2**attempt)
+                )
+                time.sleep(min(delay, 5.0))
+                continue
+            break
+        assert resp is not None
         if resp.status_code == 404:
             data: Any = None
+        elif resp.status_code in (401, 403):
+            raise ConnectorError(
+                f"{self.label}: access refused (HTTP {resp.status_code}) — check the API key"
+            )
         elif resp.status_code >= 400:
-            raise ConnectorError(f"{self.label}: HTTP {resp.status_code} on {url}")
+            raise ConnectorError(f"{self.label}: HTTP {resp.status_code}")
         else:
-            data = resp.json()
+            try:
+                data = resp.json()
+            except ValueError as exc:
+                raise ConnectorError(f"{self.label}: invalid JSON response") from exc
         cache.set(f"http:{self.name}", key, data)
         return data

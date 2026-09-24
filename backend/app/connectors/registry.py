@@ -7,10 +7,28 @@ from app.settings import Settings, get_settings
 
 
 def _connector_classes() -> list[type[BaseConnector]]:
+    from app.connectors.aleph import AlephConnector
+    from app.connectors.annuaire_fr import AnnuaireEntreprisesConnector
+    from app.connectors.companies_house import CompaniesHouseConnector
     from app.connectors.demo import DEMO_CONNECTORS
+    from app.connectors.icij import IcijLocalConnector, IcijReconcileConnector
+    from app.connectors.opencorporates import OpenCorporatesConnector
+    from app.connectors.opensanctions import OpenSanctionsConnector
+    from app.connectors.pappers import PappersConnector
 
-    classes: list[type[BaseConnector]] = [*DEMO_CONNECTORS]
-    return classes
+    # To add a source (e.g. Zefix for Switzerland, LBR for Luxembourg): implement
+    # BaseConnector in a new module and append the class here.
+    return [
+        *DEMO_CONNECTORS,
+        AnnuaireEntreprisesConnector,
+        PappersConnector,
+        CompaniesHouseConnector,
+        OpenCorporatesConnector,
+        OpenSanctionsConnector,
+        IcijReconcileConnector,
+        IcijLocalConnector,
+        AlephConnector,
+    ]
 
 
 class ConnectorRegistry:
@@ -23,9 +41,14 @@ class ConnectorRegistry:
     def all(self) -> list[BaseConnector]:
         return list(self.connectors.values())
 
-    def enabled(self, kind: str | None = None) -> list[BaseConnector]:
+    def enabled(self, kind: str | None = None, demo: bool | None = None) -> list[BaseConnector]:
+        """Enabled connectors, optionally restricted to one realm (demo or real data)."""
         return [
-            c for c in self.connectors.values() if c.enabled and (kind is None or c.kind == kind)
+            c
+            for c in self.connectors.values()
+            if c.enabled
+            and (kind is None or c.kind == kind)
+            and (demo is None or c.is_demo == demo)
         ]
 
     def for_record(self, record_id: str) -> BaseConnector | None:
