@@ -594,6 +594,17 @@ def check_documents_sources() -> None:
     print(f"      linked-website documents for glencore.com: {len(docs)}")
 
 
+def check_regulators() -> None:
+    from app.connectors.regulators import RegulatorsConnector
+
+    conn = RegulatorsConnector(settings)
+    for name in ("Revolut Securities Europe UAB", "Revolut Bank UAB"):
+        docs = conn.get_documents(company(name))
+        for d in docs[:3]:
+            print(f"      {d.title} | {(d.summary or '')[:110]}")
+        expect(f"authorisations found for {name}", bool(docs), f"{len(docs)} documents")
+
+
 def check_country_risk() -> None:
     from app.risk.config import get_country_risk
 
@@ -691,6 +702,7 @@ guarded("UK register without key (Companies House public site, overseas entities
 guarded("European registers (NO, CZ, BE, FI, EE)", check_european_registers)
 guarded("Slovak beneficial owners (RPVS)", check_rpvs)
 guarded("Courts, public contracts, LittleSis, linked websites", check_documents_sources)
+guarded("Financial regulators (ESMA, REGAFI/ACPR)", check_regulators)
 for key, title, fn in [
     ("OPENSANCTIONS_API_KEY", "OpenSanctions", check_opensanctions),
     ("COMPANIES_HOUSE_API_KEY", "Companies House", check_companies_house),

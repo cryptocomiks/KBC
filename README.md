@@ -318,6 +318,7 @@ critical.
 | **Company acting as director or secretary** | 4 |
 | **Positions in companies of 3+ countries** | 4 |
 | **High officer turnover** (4+ appointments / departures in 12 months) | 4 |
+| **Financial authorisation withdrawn** (regulators' registers) | 6 |
 | **Possibly the same person in two registers** (near-identical names, no date of birth to confirm) | 3 |
 
 A sanctions match on the subject itself sets the highest level whatever the score. A hit contradicted by
@@ -358,6 +359,7 @@ a *Demo · fictitious* or *Real public data* badge.
 | **European registers** | **Norway** (Brønnøysund: companies and roles with dates of birth), **Czech Republic** (ARES: statutory bodies, supervisory boards, shareholders, with history), **Belgium** (CBE/KBO: directors), **Finland** (PRH), **Estonia** (e-Business Register) | none | — |
 | **RPVS (Slovakia)** | Verified **beneficial owners** of companies contracting with the Slovak state, with history; owners declared as **public officials** count as PEPs | none | — |
 | **Court decisions** | **Switzerland** (entscheidsuche.ch: federal and cantonal courts) and **US** (CourtListener opinions), for companies and public figures only | none | — |
+| **Financial regulators** | **ESMA** register of investment firms (EU/EEA, with the national supervisor) and **REGAFI** (ACPR, France: banks, payment and e-money institutions, passported branches, insurers): authorisation, status, date; a withdrawn authorisation is a risk factor | none | — |
 | **TED** (EU public procurement) | Contracts awarded to the companies of the network: buyer, country, value | none | — |
 | **LittleSis** | Power networks (boards, donors, lobbying, business ties), for companies and public figures | none | — |
 | **Linked websites** | OCCRP method, for company websites: **domains sharing TLS certificates** (crt.sh) and **sites sharing the same analytics ID** | none | — |

@@ -39,6 +39,7 @@ weights:
   batch_incorporation: 5       # companies created within days, sharing an officer / address / owner
   pre_event_resignation: 8     # officer left shortly before the company's liquidation / insolvency
   officer_turnover: 4          # many appointments / departures within 12 months
+  authorisation_withdrawn: 6   # a regulator's register shows a withdrawn authorisation / winding up
 
 # Distance (in hops) between the investigated subject and the affected entity.
 proximity_multiplier:

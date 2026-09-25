@@ -62,6 +62,7 @@ FACTOR_LABELS = {
     "batch_incorporation": "Companies incorporated in a batch",
     "pre_event_resignation": "Officer left shortly before a liquidation / insolvency",
     "officer_turnover": "High officer turnover",
+    "authorisation_withdrawn": "Financial authorisation withdrawn",
 }
 
 

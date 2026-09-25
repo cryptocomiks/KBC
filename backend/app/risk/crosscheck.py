@@ -250,3 +250,10 @@ def cross_checks(net: Network, t: dict, flag: Callable[[str, str, str], None]) -
                 e.id,
                 f"{e.name} is declared a public official in a beneficial-ownership register",
             )
+
+    # 8. Financial authorisation withdrawn (regulators' registers)
+    for e in ents.values():
+        for d in e.documents:
+            if "authorisation_withdrawn" in d.flags:
+                flag("authorisation_withdrawn", e.id, f"{e.name}: {d.title}")
+                break

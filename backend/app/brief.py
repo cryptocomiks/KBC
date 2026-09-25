@@ -21,6 +21,7 @@ STRONG = 85.0
 
 # What an analyst does about each red flag (usual KYC / AML practice; adapt to your policy).
 NEXT_STEPS = {
+    "authorisation_withdrawn": "Ask why the authorisation was withdrawn or the entity wound up, and check the supervisor's decision.",
     "formation_agent": "Ask who instructed the service provider and obtain its KYC on the beneficial owners (certificate of incumbency, register of members).",
     "corporate_director": "Identify the natural persons behind the corporate director and the reason for this arrangement.",
     "multi_jurisdiction_officer": "Ask for the economic rationale of the cross-border positions; check each country's register.",
@@ -328,6 +329,8 @@ def build_brief(net: Network, risk: RiskAssessment, jur_name=lambda c: c or "?")
     for key, flag, label, tone_ in (
         ("courts", "court", "Court decisions", "warning"),
         ("contracts", "public_contract", "Public contracts won", "neutral"),
+        ("regulated", "regulated", "Regulatory authorisations", "neutral"),
+        ("withdrawn", "authorisation_withdrawn", "Authorisations withdrawn", "warning"),
         ("websites", "linked_websites", "Linked websites", "neutral"),
         ("uk_property", "uk_property", "UK property register", "warning"),
     ):

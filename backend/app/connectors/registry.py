@@ -32,6 +32,7 @@ def _connector_classes() -> list[type[BaseConnector]]:
     from app.connectors.opencorporates import OpenCorporatesConnector
     from app.connectors.opensanctions import OpenSanctionsConnector
     from app.connectors.pappers import PappersConnector
+    from app.connectors.regulators import RegulatorsConnector
     from app.connectors.rpvs import RpvsConnector
     from app.connectors.sec_edgar import SecEdgarConnector
     from app.connectors.ted import TedConnector
@@ -70,6 +71,7 @@ def _connector_classes() -> list[type[BaseConnector]]:
         SwissCourtsConnector,
         CourtListenerConnector,
         TedConnector,
+        RegulatorsConnector,
         LittleSisConnector,
         IcijReconcileConnector,
         IcijLocalConnector,
