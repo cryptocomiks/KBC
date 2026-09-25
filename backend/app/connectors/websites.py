@@ -94,8 +94,8 @@ class LinkedWebsitesConnector(BaseConnector):
     homepage = "https://crt.sh"
     document_types = {"company"}
     documents_max_depth = 1
-    max_retries = 0
-    timeout_seconds = 12.0  # crt.sh is slow: fail fast
+    max_retries = 1
+    timeout_seconds = 25.0  # crt.sh is slow and sometimes answers 404/502 when overloaded
 
     def get_documents(self, entity: Entity) -> list[Document]:
         if entity.type != EntityType.COMPANY:
@@ -117,6 +117,8 @@ class LinkedWebsitesConnector(BaseConnector):
     # ------------------------------------------------------ certificates
     def _certificates(self, domain: str) -> Document | None:
         rows: Any = self.http_get_json(CRTSH, params={"q": f"%.{domain}", "output": "json"})
+        if not rows:  # overloaded crt.sh answers 404: the identity search is lighter
+            rows = self.http_get_json(CRTSH, params={"q": domain, "output": "json"})
         own = registrable_domain(domain) or domain
         found: list[str] = []
         for row in rows if isinstance(rows, list) else []:

@@ -575,8 +575,12 @@ def check_documents_sources() -> None:
     # Glencore's certificates only cover its own domain and its analytics ID only its own site:
     # "no linked website" is the right answer. Check that both sources answer, then the result.
     web = LinkedWebsitesConnector(settings)
-    certs = web.http_get_json("https://crt.sh/", params={"q": "%.glencore.com", "output": "json"})
-    expect("certificate transparency (crt.sh) answers", isinstance(certs, list) and len(certs) > 0, f"{len(certs or [])} certificates")
+    import httpx as _httpx
+
+    raw = _httpx.get("https://crt.sh/", params={"q": "glencore.com", "output": "json"}, timeout=40)
+    print(f"      crt.sh raw status {raw.status_code}, {len(raw.content)} bytes")
+    certs = raw.json() if raw.status_code == 200 else []
+    expect("certificate transparency (crt.sh) answers", len(certs) > 0, f"{len(certs)} certificates")
     ids = web.http_get_text("https://api.hackertarget.com/analyticslookup/", params={"q": "glencore.com"}) or ""
     print(f"      analytics lookup: {ids.strip()[:120]!r}")
     expect("analytics ID lookup answers (or daily quota reached)", "GTM-" in ids or "UA-" in ids or "API count" in ids)
