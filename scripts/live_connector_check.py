@@ -616,6 +616,11 @@ def check_opensanctions() -> None:
     expect(
         "sanctioned reference person found", any(h.score >= 85 for h in hits), f"{len(hits)} hits"
     )
+    # A company and a PEP too: the API covers entities and politically exposed persons
+    firms = conn.screen_many([company("Rosneft", "RU")])
+    for h in firms[:2]:
+        print(f"      hit: {h.list_type} {h.matched_name} | {h.dataset} | {h.score}")
+    expect("sanctioned reference company found", any(h.score >= 85 for h in firms), f"{len(firms)} hits")
 
 
 def check_companies_house() -> None:
