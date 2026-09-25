@@ -108,5 +108,5 @@ def test_unscreened_subject_gives_incomplete_level_and_is_not_cached(registry, m
     inv = svc.investigate(req)
     assert inv.subject_id in inv.unscreened
     assert inv.risk.level == "incomplete"
-    assert inv.brief.headline.startswith("INCOMPLETE — Screening of")
+    assert inv.brief.headline.startswith("INCOMPLETE — Screening incomplete")
     assert get_cache().get("investigation", inv.id) is None

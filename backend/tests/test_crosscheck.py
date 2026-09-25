@@ -155,3 +155,26 @@ def test_officer_turnover():
         ],
     )
     assert "Revolving Door SA: 5 officer appointments" in found["officer_turnover"][0]
+
+
+def test_same_listed_entity_from_api_and_bulk_list_is_kept_once():
+    from app.connectors.opensanctions import _datasets_label
+    from app.graph.expander import NetworkExpander
+    from app.models import ListType, ScreeningHit
+
+    url = "https://www.opensanctions.org/entities/Q123/"
+
+    def hit(dataset, record):
+        return ScreeningHit(
+            entity_id="P",
+            list_type=ListType.SANCTION,
+            dataset=dataset,
+            matched_name="X",
+            score=100,
+            provenance=Provenance(source="s", source_label="s", record_id=record, url=url),
+        )
+
+    label = _datasets_label(["us_ofac_sdn", "gb_fcdo_sanctions", "ca_dfatd_sema_sanctions"])
+    assert label.startswith("OFAC SDN list (US Treasury), UK Sanctions List (FCDO)")
+    merged = NetworkExpander._merge_hits([hit("UK Sanctions List (FCDO)", "a"), hit(label, "b")])
+    assert [h.dataset for h in merged] == [label]

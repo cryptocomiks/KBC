@@ -625,4 +625,19 @@ class NetworkExpander:
             key = (hit.entity_id, hit.dataset, hit.provenance.record_id)
             if key not in hits or hits[key].score < hit.score:
                 hits[key] = hit
+        # The same listed entity found by the OpenSanctions API and a bulk list: keep one hit,
+        # the one naming the most lists (the API aggregates every source of the entity).
+        best: dict[tuple, ScreeningHit] = {}
+        for hit in hits.values():
+            url = hit.provenance.url or ""
+            if "opensanctions.org/entities/" in url:
+                same = (hit.entity_id, url)
+                if same not in best or len(hit.dataset) > len(best[same].dataset):
+                    best[same] = hit
+        hits = {
+            k: h
+            for k, h in hits.items()
+            if "opensanctions.org/entities/" not in (h.provenance.url or "")
+            or best[(h.entity_id, h.provenance.url)] is h
+        }
         return sorted(hits.values(), key=lambda h: (-h.score, h.entity_id))

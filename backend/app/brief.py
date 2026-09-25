@@ -85,11 +85,22 @@ class Owner(BaseModel):
     flags: list[str] = Field(default_factory=list)
 
 
+ACTIONS = {
+    "critical": "Do not proceed. Escalate to the compliance officer (MLRO); if a sanctions match is "
+    "confirmed, freeze the assets and report to the financial intelligence unit.",
+    "high": "Enhanced due diligence and senior management approval before any business relationship.",
+    "medium": "Standard due diligence, with the documents below and each red flag cleared.",
+    "low": "Standard due diligence.",
+    "incomplete": "No decision possible: rerun the investigation (answers are cached) or reduce the depth.",
+}
+
+
 class Brief(BaseModel):
     subject_type: str
     level: str
     score: float
     headline: str
+    action: str = ""
     figures: list[Figure]
     flags: list[Flag]
     owners: list[Owner]
@@ -170,35 +181,34 @@ def build_brief(net: Network, risk: RiskAssessment, jur_name=lambda c: c or "?")
     sanctioned_owner = next((o for o in owners if "sanctioned" in o.flags), None)
     if subject.id in sanctioned:
         h = next(h for h in hits if h.entity_id == subject.id and h.list_type == ListType.SANCTION)
-        headline = (
-            f"{subject.name} matches the sanctions list “{h.dataset}” ({h.score:.0f}% confidence)."
-        )
+        headline = f"Sanctions match: listed on {h.dataset} ({h.score:.0f}% match)."
     elif sanctioned_owner:
         via = (
             f" via {' → '.join(sanctioned_owner.path[1:-1])}"
             if len(sanctioned_owner.path) > 2
             else ""
         )
-        headline = f"{subject.name} is {_pct(sanctioned_owner.pct)} owned by a sanctioned {sanctioned_owner.kind}, {sanctioned_owner.name}{',' if via else ''}{via}."
+        headline = f"Owned {_pct(sanctioned_owner.pct)} by a sanctioned {sanctioned_owner.kind}: {sanctioned_owner.name}{via}."
     elif sanctioned:
         closest = min(sanctioned, key=distance)
-        headline = f"{subject.name} is {distance(closest)} link(s) away from a sanctioned party: {name(closest)}."
+        headline = f"Sanctioned party in the network: {name(closest)} ({distance(closest)} link(s) from the subject)."
     elif any(f.key == "sanctioned_counterparty" for f in risk.factors):
-        headline = f"{subject.name} is exposed to crypto flows with a sanctioned wallet."
+        headline = "Crypto flows with a sanctioned wallet."
     elif peps:
         closest = min(peps, key=distance)
-        role = "is" if closest == subject.id else f"is linked ({distance(closest)} link(s)) to"
-        headline = f"{subject.name} {role} a politically exposed person{'' if closest == subject.id else ': ' + name(closest)}."
+        headline = (
+            "Politically exposed person."
+            if closest == subject.id
+            else f"Linked to a politically exposed person: {name(closest)} ({distance(closest)} link(s))."
+        )
     elif leaked:
         datasets = sorted({h.dataset.split(" (")[0] for h in hits if h.list_type == ListType.LEAK})
-        headline = (
-            f"{subject.name}'s network appears in leaked offshore data ({', '.join(datasets[:3])})."
-        )
+        headline = f"Named in leaked offshore data: {', '.join(datasets[:3])}."
     elif risk.factors:
         top = max(risk.factors, key=lambda f: f.points)
-        headline = f"{subject.name}: main concern — {top.label.lower()}."
+        headline = f"Main risk factor: {top.label}."
     else:
-        headline = f"No red flag found for {subject.name} in the sources queried."
+        headline = "No adverse finding in the sources queried."
 
     if subject.type == EntityType.COMPANY:
         if owners:
@@ -209,9 +219,8 @@ def build_brief(net: Network, risk: RiskAssessment, jur_name=lambda c: c or "?")
             headline += " Ultimate owners not identified in the sources."
     if subject.id in net.unscreened:
         headline = (
-            f"Screening of {subject.name} against sanctions, PEP and leak lists could not finish "
-            f"in time: the score ({risk.score:.0f}) leaves out those checks and must not be relied on. "
-            "Rerun the investigation (answers are cached) or reduce the depth."
+            "Screening incomplete: sanctions, PEP and leak checks on the subject did not finish in time. "
+            f"The score ({risk.score:.0f}) leaves them out and must not be relied on."
         )
     elif net.unscreened:
         headline += f" {len(net.unscreened)} linked parties could not be screened in time (rerun to complete)."
@@ -383,6 +392,7 @@ def build_brief(net: Network, risk: RiskAssessment, jur_name=lambda c: c or "?")
         level=risk.level,
         score=risk.score,
         headline=headline,
+        action=ACTIONS.get(risk.level, ""),
         figures=figures,
         flags=flags,
         owners=owners[:8],

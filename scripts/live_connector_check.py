@@ -609,6 +609,18 @@ def check_country_risk() -> None:
 
 
 def check_opensanctions() -> None:
+    import httpx as _httpx
+
+    raw = _httpx.post(
+        "https://api.opensanctions.org/match/default",
+        json={"queries": {"q": {"schema": "Person", "properties": {"name": ["Vladimir Putin"]}}}},
+        headers={"Authorization": f"ApiKey {os.environ['OPENSANCTIONS_API_KEY']}"},
+        timeout=30,
+    )
+    print(f"      raw status {raw.status_code}: {raw.text[:300]!r}")
+    for h in ("x-ratelimit-limit", "x-ratelimit-remaining", "retry-after"):
+        if raw.headers.get(h):
+            print(f"      {h}: {raw.headers[h]}")
     conn = OpenSanctionsConnector(settings)
     hits = conn.screen_many([person("Vladimir Putin", "1952-10-07")])
     for h in hits[:3]:

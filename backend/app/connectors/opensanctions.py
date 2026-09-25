@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from app.connectors.base import BaseConnector
+from app.connectors.base import BaseConnector, ConnectorError
 from app.matching.matcher import match_entities
 from app.models import Entity, EntityType, ListType, ScreeningHit
 
@@ -28,6 +28,37 @@ PEP_TOPICS = {"role.pep", "role.rca", "role.judge", "role.diplo", "gov.head", "g
 def _first(props: dict[str, list[Any]], key: str) -> Any:
     values = props.get(key) or []
     return values[0] if values else None
+
+
+# Readable names for the most frequent sources (others: "gb_hmt_sanctions" -> "GB HMT sanctions")
+LABELS = {
+    "us_ofac_sdn": "OFAC SDN list (US Treasury)",
+    "us_ofac_cons": "OFAC consolidated non-SDN lists",
+    "un_sc_sanctions": "UN Security Council sanctions",
+    "gb_hmt_sanctions": "UK financial sanctions (HM Treasury)",
+    "wd_peps": "Wikidata politically exposed persons",
+    "everypolitician": "EveryPolitician (legislators)",
+    "ru_rupep": "RuPEP — Russian PEPs",
+    "icij_offshoreleaks": "ICIJ Offshore Leaks",
+    "interpol_red_notices": "Interpol red notices",
+}
+
+
+def _datasets_label(ids: list[str]) -> str:
+    from app.connectors.open_datasets import DATASETS
+
+    def label(ds: str) -> str:
+        if ds in LABELS:
+            return LABELS[ds]
+        if ds in DATASETS:
+            return DATASETS[ds][0]
+        words = ds.split("_")
+        country = words[0].upper() if len(words[0]) == 2 else words[0].capitalize()
+        return " ".join([country, *words[1:]])
+
+    names = [label(d) for d in ids[:4]]
+    more = f" (+{len(ids) - 4} more)" if len(ids) > 4 else ""
+    return (", ".join(names) + more) or "OpenSanctions"
 
 
 class OpenSanctionsConnector(BaseConnector):
@@ -46,12 +77,20 @@ class OpenSanctionsConnector(BaseConnector):
         for start in range(0, len(targets), BATCH_SIZE):
             batch = targets[start : start + BATCH_SIZE]
             queries = {f"q{i}": self._query(e) for i, e in enumerate(batch)}
-            data = self.http_post_json(
-                API,
-                json_body={"queries": queries},
-                params={"algorithm": "logic-v1", "limit": 5},
-                headers={"Authorization": f"ApiKey {self.api_key}"},
-            )
+            try:
+                data = self.http_post_json(
+                    API,
+                    json_body={"queries": queries},
+                    params={"algorithm": "logic-v1", "limit": 5},
+                    headers={"Authorization": f"ApiKey {self.api_key}"},
+                )
+            except ConnectorError as exc:
+                if "HTTP 429" in str(exc):
+                    raise ConnectorError(
+                        f"{self.label}: request quota exceeded (HTTP 429) — check the plan of the API key "
+                        "on opensanctions.org; the bulk lists keep screening meanwhile"
+                    ) from exc
+                raise
             responses = (data or {}).get("responses", {})
             for i, entity in enumerate(batch):
                 for result in (responses.get(f"q{i}") or {}).get("results", []):
@@ -114,7 +153,7 @@ class OpenSanctionsConnector(BaseConnector):
         return ScreeningHit(
             entity_id=entity.id,
             list_type=list_type,
-            dataset=", ".join((r.get("datasets") or [])[:4]) or "OpenSanctions",
+            dataset=_datasets_label(r.get("datasets") or []),
             matched_name=listed.name,
             score=result.score,
             explanation=result.explanation,
