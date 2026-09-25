@@ -1,45 +1,35 @@
-"""One-off probe of financial regulators' registers, round 2: find the APIs behind the web apps."""
+"""One-off probe of financial regulators' registers, round 3: field names."""
 
 import re
 
 import httpx
 
-UA = {"User-Agent": "KBC Corporate Mapping research-contact@kbc-mapping.org", "Accept": "application/json, text/html, */*"}
+UA = {"User-Agent": "KBC Corporate Mapping research-contact@kbc-mapping.org", "Accept": "application/json, */*"}
 c = httpx.Client(headers=UA, timeout=40, follow_redirects=True)
 
 
-def show(label, method, url, n=1500, **kw):
-    print(f"\n===== {label}\n{method} {url} {kw.get('params') or ''} {kw.get('json') or ''}")
+def show(label, url, n=2200, **params):
+    print(f"\n===== {label}\nGET {url} {params}")
     try:
-        r = c.request(method, url, **kw)
+        r = c.get(url, params=params)
         print(f"status {r.status_code} · {r.headers.get('content-type')} · {len(r.content)} bytes")
         print(re.sub(r"\s+", " ", r.text)[:n])
-        return r
     except Exception as e:  # noqa: BLE001
         print("ERROR", repr(e))
 
 
-def api_strings(label, page_url, base):
-    print(f"\n===== API strings in {label}")
-    try:
-        html = c.get(page_url).text
-        scripts = re.findall(r'src="([^"]+\.js)"', html)
-        found = set()
-        for s in scripts[:6]:
-            url = s if s.startswith("http") else base + ("" if s.startswith("/") else "/") + s
-            js = c.get(url).text
-            found |= set(re.findall(r'["\'`](/?(?:api|rest|services|solr|search)[A-Za-z0-9_/\-.?=&{}$]*)["\'`]', js))
-            found |= set(re.findall(r'["\'`](https?://[a-z0-9.\-]+/[A-Za-z0-9_/\-.]*(?:api|solr|rest)[A-Za-z0-9_/\-.]*)["\'`]', js))
-        for f in sorted(found)[:60]:
-            print("  ", f)
-    except Exception as e:  # noqa: BLE001
-        print("ERROR", repr(e))
+CSSF = "https://edesk.apps.cssf.lu/search-entities-api/api/v1/entite"
+for p in ({"page": 0, "size": 2, "nom": "Amazon"}, {"page": 0, "size": 2, "name": "Amazon"}, {"page": 0, "size": 2, "search": "Amazon"}, {"page": 0, "size": 2, "q": "Amazon"}, {"page": 0, "size": 2, "denomination": "Amazon"}):
+    show(f"CSSF {list(p)[-1]}", CSSF, n=1200, **p)
 
+page = c.get("https://registers.esma.europa.eu/publication/searchRegister", params={"core": "esma_registers_upreg"}).text
+print("\n===== ESMA cores on the page:", sorted(set(re.findall(r"esma_registers_[a-z0-9_]+", page)))[:40])
+show("ESMA upreg parent doc", "https://registers.esma.europa.eu/solr/esma_registers_upreg/select", n=3000, q="type_s:parent", rows=1, wt="json")
+show("ESMA upreg Revolut", "https://registers.esma.europa.eu/solr/esma_registers_upreg/select", n=2500, q="ae_entityName:*Revolut*", rows=2, wt="json")
+for core in ("esma_registers_casp", "esma_registers_mica_casp", "esma_registers_micacasp", "esma_registers_crypto"):
+    show(f"ESMA {core}", f"https://registers.esma.europa.eu/solr/{core}/select", n=1500, q="*:*", rows=1, wt="json")
 
-api_strings("CSSF search-entities", "https://edesk.apps.cssf.lu/search-entities/search?lng=en", "https://edesk.apps.cssf.lu")
-api_strings("EBA EUCLID", "https://euclid.eba.europa.eu/register/pir/search", "https://euclid.eba.europa.eu/register")
-api_strings("ESMA registers", "https://registers.esma.europa.eu/publication/", "https://registers.esma.europa.eu")
-show("FINMA search POST", "POST", "https://www.finma.ch/en/api/search/getresult", data={"query": "UBS", "Order": "4", "pageSize": "3"})
-show("REGAFI opendatasoft catalog", "GET", "https://www.regafi.fr/api/explore/v2.1/catalog/datasets", params={"limit": 20, "select": "dataset_id"}, n=2500)
-show("ESMA solr upreg", "GET", "https://registers.esma.europa.eu/solr/esma_registers_upreg/select", params={"q": "*:*", "rows": 1, "wt": "json"})
-show("ESMA publication search", "GET", "https://registers.esma.europa.eu/publication/searchRegister", params={"core": "esma_registers_mica_casp"}, n=800)
+R = "https://www.regafi.fr/api/explore/v2.1/catalog/datasets/{ds}/records"
+show("REGAFI banque entites", R.format(ds="prd-banque-entites"), n=2500, where='search("Revolut")', limit=2)
+show("REGAFI banque autorisations", R.format(ds="prd-banque-autorisations"), n=2000, limit=1)
+show("REGAFI assurance entites", R.format(ds="prd-assurance-entites"), n=1500, where='search("AXA")', limit=1)
