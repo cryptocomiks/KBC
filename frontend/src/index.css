@@ -3,40 +3,38 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ---------------------------------------------------------------------------
-   Apple-style foundations (see WWDC "Designing Fluid Interfaces", "The Details
-   of UI Typography"): system font with size-specific tracking, neutral Apple
-   greys, System Blue accent, soft materials, fast press feedback, critically
-   damped motion, and the three accessibility signals (motion, transparency,
-   contrast).
+   Professional compliance-tool foundations: sober slate greys, a navy accent,
+   muted risk colours (red / amber / green only where risk is shown), square-ish
+   corners, dense readable tables, restrained motion. Respects the reduced
+   motion / transparency / contrast preferences.
    --------------------------------------------------------------------------- */
 @theme {
-  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, "Segoe UI", Roboto,
-    "Helvetica Neue", sans-serif;
-  --font-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, monospace;
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
 
-  /* Apple neutral greys (light: #f5f5f7 canvas, #1d1d1f text · dark: #000 canvas, #1c1c1e surfaces) */
-  --color-slate-50: #f5f5f7;
-  --color-slate-100: #ececf0;
-  --color-slate-200: #dedee3;
-  --color-slate-300: #c7c7cc;
-  --color-slate-400: #aeaeb2;
-  --color-slate-500: #86868b;
-  --color-slate-600: #6e6e73;
-  --color-slate-700: #424245;
-  --color-slate-800: #2c2c2e;
-  --color-slate-900: #1c1c1e;
-  --color-slate-950: #000000;
+  /* Cool slate greys (light: #f5f7fa canvas, #101828 text · dark: #0b1220 canvas) */
+  --color-slate-50: #f5f7fa;
+  --color-slate-100: #eef1f5;
+  --color-slate-200: #e1e6ed;
+  --color-slate-300: #cbd3de;
+  --color-slate-400: #98a2b3;
+  --color-slate-500: #667085;
+  --color-slate-600: #475467;
+  --color-slate-700: #344054;
+  --color-slate-800: #1d2939;
+  --color-slate-900: #121a2a;
+  --color-slate-950: #0b1220;
 
-  /* System Blue */
-  --color-brand-50: #eaf3ff;
-  --color-brand-100: #d4e8ff;
-  --color-brand-300: #64aaff;
-  --color-brand-500: #0a84ff;
-  --color-brand-600: #0071e3;
-  --color-brand-700: #0058b0;
+  /* Navy accent */
+  --color-brand-50: #eef3f9;
+  --color-brand-100: #dbe6f2;
+  --color-brand-300: #8fb0d6;
+  --color-brand-500: #2f6aa8;
+  --color-brand-600: #1d4a7a;
+  --color-brand-700: #12355b;
 
-  --radius-card: 18px;
-  --ease-fluid: cubic-bezier(0.32, 0.72, 0, 1); /* critically damped feel, no overshoot */
+  --radius-card: 8px;
+  --ease-fluid: cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 
 html,
@@ -48,10 +46,11 @@ html {
   -webkit-text-size-adjust: 100%;
 }
 body {
-  @apply bg-slate-50 text-[#1d1d1f] antialiased dark:bg-slate-950 dark:text-[#f5f5f7];
-  font-size: 0.9375rem; /* 15px — Apple body */
-  line-height: 1.47;
-  letter-spacing: -0.01em;
+  @apply bg-slate-50 text-[#101828] antialiased dark:bg-slate-950 dark:text-[#e4e7ec];
+  font-size: 0.875rem; /* 14px — dense, readable body */
+  line-height: 1.5;
+  letter-spacing: 0;
+  font-feature-settings: "tnum" 1, "cv11" 1; /* tabular figures: amounts and scores line up */
   font-optical-sizing: auto;
   /* Ease light <-> dark instead of an abrupt brightness jump */
   transition:
@@ -61,8 +60,8 @@ body {
 
 /* Size-specific tracking: large type tighter, small type slightly open */
 h1 {
-  letter-spacing: -0.022em;
-  line-height: 1.1;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
 }
 h2,
 h3 {
@@ -76,26 +75,24 @@ h3 {
 
 /* ------------------------------------------------------------ materials */
 @utility material {
-  background: rgb(255 255 255 / 0.72);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  background: rgb(255 255 255 / 0.94);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   :where(.dark) & {
-    background: rgb(22 22 23 / 0.72);
+    background: rgb(11 18 32 / 0.94);
   }
 }
 
 @utility card {
-  @apply border border-black/[0.06] bg-white dark:border-white/[0.08] dark:bg-slate-900;
+  @apply border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900;
   border-radius: var(--radius-card);
-  box-shadow:
-    0 1px 2px rgb(0 0 0 / 0.04),
-    0 8px 24px -12px rgb(0 0 0 / 0.08);
-  animation: rise 420ms var(--ease-fluid) both;
+  box-shadow: 0 1px 2px rgb(16 24 40 / 0.05);
+  animation: fade 200ms ease-out both;
 }
 
 /* ------------------------------------------------------------ controls */
 @utility btn {
-  @apply inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-medium select-none disabled:cursor-not-allowed disabled:opacity-40;
+  @apply inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium select-none disabled:cursor-not-allowed disabled:opacity-40;
   transition:
     transform 100ms ease-out,
     background-color 160ms ease,
@@ -103,43 +100,43 @@ h3 {
     box-shadow 160ms ease;
   -webkit-tap-highlight-color: transparent;
   &:active:not(:disabled) {
-    transform: scale(0.97); /* feedback on press, instantly */
+    transform: translateY(1px); /* discreet press feedback */
   }
 }
 @utility btn-primary {
-  @apply btn bg-brand-600 text-white hover:bg-brand-500 dark:bg-brand-500 dark:hover:bg-brand-300;
+  @apply btn bg-brand-700 text-white shadow-sm hover:bg-brand-600 dark:bg-brand-500 dark:hover:bg-brand-600;
 }
 @utility btn-ghost {
   @apply btn text-slate-600 hover:bg-black/[0.05] dark:text-slate-300 dark:hover:bg-white/[0.08];
 }
 @utility btn-outline {
-  @apply btn bg-black/[0.05] text-[#1d1d1f] hover:bg-black/[0.08] dark:bg-white/[0.1] dark:text-white dark:hover:bg-white/[0.15];
+  @apply btn border border-slate-300 bg-white text-slate-700 shadow-sm hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800;
 }
 @utility input {
-  @apply rounded-xl border border-transparent bg-black/[0.05] px-3 py-2 text-sm outline-none placeholder:text-slate-500 dark:bg-white/[0.08];
+  @apply rounded-md border border-slate-300 bg-white px-3 py-2 text-sm outline-none shadow-sm placeholder:text-slate-400 dark:border-slate-700 dark:bg-slate-900;
   transition:
     box-shadow 160ms ease,
     background-color 160ms ease;
   &:focus {
     @apply bg-white dark:bg-slate-900;
-    box-shadow: 0 0 0 4px rgb(0 113 227 / 0.25);
-    border-color: rgb(0 113 227 / 0.6);
+    box-shadow: 0 0 0 3px rgb(29 74 122 / 0.18);
+    border-color: rgb(29 74 122 / 0.7);
   }
 }
 @utility label {
-  @apply text-[11px] font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400;
+  @apply text-[11px] font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400;
 }
 
 /* Segmented control (Ownership chart / Network view…) */
 @utility segmented {
-  @apply inline-flex rounded-[10px] bg-black/[0.06] p-0.5 dark:bg-white/[0.1];
+  @apply inline-flex rounded-md border border-slate-200 bg-slate-100 p-0.5 dark:border-slate-700 dark:bg-slate-800;
 }
 
 /* ------------------------------------------------------------ motion */
 @keyframes rise {
   from {
     opacity: 0;
-    transform: translateY(6px) scale(0.995);
+    transform: translateY(3px);
   }
   to {
     opacity: 1;
@@ -182,25 +179,25 @@ h3 {
 /* Children appear one after the other: set --i on each child */
 @utility stagger {
   & > * {
-    animation: rise 520ms var(--ease-fluid) both;
-    animation-delay: calc(var(--i, 0) * 45ms);
+    animation: rise 260ms var(--ease-fluid) both;
+    animation-delay: calc(var(--i, 0) * 18ms);
   }
 }
 /* A tab's content fades in when it becomes active */
 @utility panel-enter {
-  animation: rise 360ms var(--ease-fluid) both;
+  animation: fade 180ms ease-out both;
 }
 /* Bars grow from their origin (left for horizontal bars, bottom for columns) */
 @utility bar-x {
   transform-origin: left center;
-  animation: grow-x 900ms var(--ease-fluid) both;
-  animation-delay: calc(var(--i, 0) * 60ms + 120ms);
+  animation: grow-x 600ms var(--ease-fluid) both;
+  animation-delay: calc(var(--i, 0) * 30ms);
 }
 @utility bar-y {
   transform-origin: bottom center;
   transform-box: fill-box;
-  animation: grow-y 900ms var(--ease-fluid) both;
-  animation-delay: calc(var(--i, 0) * 50ms + 120ms);
+  animation: grow-y 600ms var(--ease-fluid) both;
+  animation-delay: calc(var(--i, 0) * 25ms);
 }
 @utility lift {
   transition:
@@ -208,11 +205,7 @@ h3 {
     box-shadow 220ms var(--ease-fluid),
     background-color 160ms ease;
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 28px -14px rgb(0 0 0 / 0.25);
-  }
-  &:active {
-    transform: scale(0.98);
+    box-shadow: 0 1px 3px rgb(16 24 40 / 0.1);
   }
 }
 

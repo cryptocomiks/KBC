@@ -32,34 +32,34 @@ export default function Header({ meta, theme, onToggleTheme, onHome, onCases, ca
   const live = connectors.data?.some((c) => c.enabled && !c.demo);
 
   return (
-    <header className="material sticky top-0 z-30 shadow-[0_1px_0_rgb(0_0_0/0.06)] dark:shadow-[0_1px_0_rgb(255_255_255/0.06)]">
+    <header className="sticky top-0 z-30 border-b border-black/30 bg-[#0f2742] text-white [&_.btn-ghost]:text-slate-200 [&_.btn-ghost:hover]:bg-white/10 dark:bg-[#0b1d33]">
       <div className="mx-auto flex h-14 max-w-[1600px] items-center gap-3 px-4">
         <button onClick={onHome} className="flex items-center gap-2.5" aria-label="Home">
           <img src="/favicon.svg" alt="" className="h-7 w-7" />
           <div className="hidden text-left leading-tight sm:block">
             <div className="text-sm font-bold tracking-tight">KBC · Corporate Mapping</div>
-            <div className="text-[11px] text-slate-500">Due diligence & AML/KYC network analysis</div>
+            <div className="text-[11px] text-slate-300">Due diligence & AML/KYC network analysis</div>
           </div>
         </button>
         {meta?.demo_mode && (
-          <span className="hidden rounded-full md:inline bg-amber-100 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
+          <span className="hidden rounded md:inline bg-amber-400/15 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-amber-200 ring-1 ring-amber-300/30">
             {live ? "Demo + live public sources" : "Demo mode · fictitious data"}
           </span>
         )}
         <div className="ml-auto flex items-center gap-1">
-          {notice && <span className="mr-2 text-xs text-green-700 dark:text-green-400">{notice}</span>}
-          <button className={`btn-ghost ${casesActive ? "text-brand-600" : ""}`} onClick={onCases}>
+          {notice && <span className="mr-2 text-xs text-emerald-300">{notice}</span>}
+          <button className={`btn-ghost ${casesActive ? "bg-white/10 !text-white" : ""}`} onClick={onCases}>
             <FolderOpen className="h-4 w-4" /> <span className="hidden sm:inline">Cases</span>
           </button>
           <div className="relative">
             <button className="btn-ghost" onClick={() => setOpen((o) => !o)} aria-expanded={open}>
               <Plug className="h-4 w-4" /> <span className="hidden sm:inline">Sources</span>
-              <span className="rounded bg-slate-200 px-1.5 text-[11px] dark:bg-slate-700">
+              <span className="rounded bg-white/15 px-1.5 text-[11px]">
                 {enabled}/{connectors.data?.length ?? 0}
               </span>
             </button>
             {open && (
-              <div className="card absolute right-0 mt-2 max-h-[70vh] w-[min(420px,calc(100vw-2rem))] overflow-y-auto p-3 shadow-lg" onMouseLeave={() => setOpen(false)}>
+              <div className="card absolute right-0 mt-2 text-slate-800 dark:text-slate-100 max-h-[70vh] w-[min(420px,calc(100vw-2rem))] overflow-y-auto p-3 shadow-lg" onMouseLeave={() => setOpen(false)}>
                 <div className="label mb-2">Data sources (connectors)</div>
                 <ul className="space-y-2">
                   {[...(connectors.data ?? [])].sort((a, b) => Number(b.enabled) - Number(a.enabled)).map((c) => (

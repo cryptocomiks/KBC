@@ -13,7 +13,7 @@ async function run(theme) {
   const page = await browser.newPage({ viewport: { width: 1500, height: 950 } });
   await page.addInitScript((t) => localStorage.setItem("kbc-theme", t), theme);
   await page.goto(BASE);
-  await page.waitForSelector("text=Map who owns");
+  await page.waitForSelector("text=Due diligence search");
   if (theme === "light") await page.screenshot({ path: `${OUT}01_search.png` });
   await page.click("text=Mohamed Qadrany");
   await page.waitForSelector("text=candidates for");

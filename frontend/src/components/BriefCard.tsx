@@ -3,30 +3,23 @@ import { useState } from "react";
 import { useCountUp } from "../lib/motion";
 import type { Brief, Investigation } from "../types";
 
-const LEVEL_BAR: Record<string, string> = {
-  critical: "bg-[#ff3b30]",
-  high: "bg-[#ff9500]",
-  medium: "bg-[#ffcc00]",
-  low: "bg-[#34c759]",
-  incomplete: "bg-slate-400",
-};
-const LEVEL_PILL: Record<string, string> = {
-  critical: "bg-[#ff3b30]/12 text-[#d70015] dark:bg-[#ff453a]/20 dark:text-[#ff6961]",
-  high: "bg-[#ff9500]/15 text-[#c93400] dark:bg-[#ff9f0a]/20 dark:text-[#ffb340]",
-  medium: "bg-[#ffcc00]/20 text-[#a05a00] dark:bg-[#ffd60a]/20 dark:text-[#ffd426]",
-  low: "bg-[#34c759]/15 text-[#248a3d] dark:bg-[#30d158]/20 dark:text-[#30d158]",
-  incomplete: "bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200",
+const LEVEL_PANEL: Record<string, string> = {
+  critical: "bg-[#fef3f2] text-[#b42318] dark:bg-[#55160c]/60 dark:text-[#fda29b]",
+  high: "bg-[#fffaeb] text-[#b54708] dark:bg-[#4e1d09]/60 dark:text-[#fec84b]",
+  medium: "bg-[#fefbe8] text-[#a15c07] dark:bg-[#542c0d]/60 dark:text-[#fde272]",
+  low: "bg-[#ecfdf3] text-[#067647] dark:bg-[#053321]/60 dark:text-[#47cd89]",
+  incomplete: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200",
 };
 const TONE: Record<string, string> = {
-  critical: "text-[#d70015] dark:text-[#ff6961]",
-  warning: "text-[#c93400] dark:text-[#ffb340]",
-  good: "text-[#248a3d] dark:text-[#30d158]",
-  neutral: "text-[#1d1d1f] dark:text-white",
+  critical: "text-[#b42318] dark:text-[#fda29b]",
+  warning: "text-[#b54708] dark:text-[#fec84b]",
+  good: "text-[#067647] dark:text-[#47cd89]",
+  neutral: "text-[#101828] dark:text-white",
 };
 const DOT: Record<string, string> = {
-  critical: "bg-[#ff3b30]",
-  warning: "bg-[#ff9500]",
-  good: "bg-[#34c759]",
+  critical: "bg-[#d92d20]",
+  warning: "bg-[#dc6803]",
+  good: "bg-[#079455]",
   neutral: "bg-slate-300 dark:bg-slate-600",
 };
 /** Whole numbers count up when they appear; anything else is shown as is. */
@@ -58,35 +51,42 @@ export default function BriefCard({ investigation: inv, onSelect, onOpenTab, hid
 
   return (
     <div className="card overflow-hidden">
-      {/* Verdict */}
-      <div className="flex items-start gap-4 px-5 pt-5 pb-4">
-        <div className={`mt-1 h-10 w-1 shrink-0 rounded-full ${LEVEL_BAR[b.level] ?? LEVEL_BAR.low}`} />
-        <div className="min-w-0">
-          <div className="mb-1.5 flex items-center gap-2">
-            <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide ${LEVEL_PILL[b.level] ?? LEVEL_PILL.low}`}>
-              <Verdict className="h-3 w-3" /> {level}
-            </span>
-            <span className="text-[11px] font-medium text-slate-500">Risk score {b.score.toFixed(0)} / 100</span>
+      {/* Risk rating, main finding, recommended action */}
+      <div className="grid border-b border-slate-200 md:grid-cols-[200px_1fr] dark:border-slate-800">
+        <div className={`flex flex-col justify-center gap-1 px-5 py-4 ${LEVEL_PANEL[b.level] ?? LEVEL_PANEL.low}`}>
+          <div className="text-[11px] font-semibold tracking-wider uppercase opacity-80">Risk rating</div>
+          <div className="flex items-center gap-2 text-[20px] font-bold tracking-wide uppercase">
+            <Verdict className="h-5 w-5" /> {level}
           </div>
-          <p className="text-[19px] leading-snug font-semibold tracking-[-0.015em] text-[#1d1d1f] dark:text-white">{rest.join(" — ")}</p>
+          <div className="text-[12px] font-medium opacity-80">Score {b.score.toFixed(0)} / 100</div>
+        </div>
+        <div className="px-5 py-4">
+          <div className="label">Main finding</div>
+          <p className="mt-0.5 text-[16px] leading-snug font-semibold text-slate-900 dark:text-white">{rest.join(" — ")}</p>
+          {b.action && (
+            <p className="mt-2 flex gap-2 text-[13px] text-slate-700 dark:text-slate-300">
+              <span className="shrink-0 font-semibold text-slate-900 dark:text-white">Recommended action:</span>
+              {b.action}
+            </p>
+          )}
         </div>
       </div>
 
       {/* Key figures */}
-      <div className="stagger grid grid-cols-2 gap-2 px-5 pb-5 sm:grid-cols-4 xl:grid-cols-8">
+      <div className="stagger grid grid-cols-2 border-b border-slate-200 sm:grid-cols-4 xl:grid-cols-8 dark:border-slate-800 [&>*]:border-slate-200 [&>*]:dark:border-slate-800">
         {b.figures.map((f, i) => (
           <button
             key={f.key}
             style={{ ["--i" as string]: i }}
             onClick={() => f.tab && onOpenTab(f.tab)}
-            className="rounded-xl bg-black/[0.03] px-3 py-2.5 text-left transition hover:bg-black/[0.06] active:scale-[0.98] dark:bg-white/[0.05] dark:hover:bg-white/[0.09]"
+            className="border-r border-b px-4 py-3 text-left transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/60"
             title={f.hint ?? undefined}
           >
             <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-500">
               <span className={`h-1.5 w-1.5 rounded-full ${DOT[f.tone] ?? DOT.neutral}`} />
               {f.label}
             </div>
-            <div className={`mt-0.5 font-semibold leading-tight tracking-[-0.01em] tabular-nums ${f.value.length > 14 ? "text-[15px]" : f.value.length > 6 ? "text-[17px]" : "text-[22px]"} ${TONE[f.tone] ?? TONE.neutral}`}>
+            <div className={`mt-0.5 font-semibold leading-tight tabular-nums ${f.value.length > 14 ? "text-[14px]" : f.value.length > 6 ? "text-[15px]" : "text-[20px]"} ${TONE[f.tone] ?? TONE.neutral}`}>
               <Counted value={f.value} />
             </div>
             {f.hint && <div className="truncate text-[11px] text-slate-500">{f.hint}</div>}
@@ -150,7 +150,7 @@ export default function BriefCard({ investigation: inv, onSelect, onOpenTab, hid
         {/* Red flags + next steps */}
         <div>
           <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
-            Red flags and what to do ({b.flags.length})
+            Findings and required action ({b.flags.length})
           </h3>
           {b.flags.length === 0 ? (
             <p className="text-sm text-emerald-700 dark:text-emerald-300">No red flag in the sources queried. Standard due diligence applies.</p>

@@ -121,18 +121,12 @@ export default function App() {
         {page === "main" && !target && (
           <>
             {!search && (
-              <div className="mx-auto max-w-3xl pt-14 pb-4 text-center">
-                <h1 className="text-[clamp(2.25rem,5vw,3.5rem)] leading-[1.05] font-semibold tracking-[-0.03em]">
-                  Map who owns
-                  <br />
-                  <span className="bg-gradient-to-r from-brand-600 to-[#5e5ce6] bg-clip-text text-transparent dark:from-brand-300 dark:to-[#bf5af2]">
-                    and controls what.
-                  </span>
-                </h1>
-                <p className="mx-auto mt-4 max-w-2xl text-[17px] leading-relaxed text-slate-600 dark:text-slate-400">
-                  Search a person or a company across public registries, sanctions/PEP lists and leak databases. KBC resolves
-                  homonyms, deduplicates entities across sources, expands the ownership network and explains every red flag,
-                  with full source traceability.
+              <div className="mx-auto max-w-3xl pt-10 pb-2">
+                <h1 className="text-[26px] font-semibold text-slate-900 dark:text-white">Due diligence search</h1>
+                <p className="mt-1.5 max-w-2xl text-[14px] leading-relaxed text-slate-600 dark:text-slate-400">
+                  Search a person, a company, a registration number or a crypto wallet. Results are cross-checked against
+                  company registers, sanctions and PEP lists, regulators, courts and leak databases, with the source of every
+                  fact.
                 </p>
               </div>
             )}

@@ -183,6 +183,7 @@ export interface Brief {
   level: RiskLevel;
   score: number;
   headline: string;
+  action?: string;
   figures: { key: string; label: string; value: string; tone: "neutral" | "good" | "warning" | "critical"; hint: string | null; tab: string | null }[];
   flags: { key: string; title: string; severity: "critical" | "warning" | "info"; points: number; evidence: string[]; next_step: string | null; entity_ids: string[] }[];
   owners: { entity_id: string; name: string; kind: string; pct: number; path: string[]; flags: string[] }[];

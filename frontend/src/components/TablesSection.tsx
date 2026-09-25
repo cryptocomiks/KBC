@@ -17,10 +17,10 @@ interface Props {
 export const hitKey = (r: Row) => `hit|${String(r.entity)}|${String(r.dataset)}|${String(r.matched_name)}`;
 
 const TRIAGE: Record<string, { label: string; cls: string }> = {
-  likely: { label: "Likely match", cls: "bg-[#ff3b30]/12 text-[#d70015] dark:bg-[#ff453a]/20 dark:text-[#ff6961]" },
-  verify: { label: "To check", cls: "bg-[#ff9500]/15 text-[#c93400] dark:bg-[#ff9f0a]/20 dark:text-[#ffb340]" },
+  likely: { label: "Likely match", cls: "bg-[#d92d20]/12 text-[#b42318] dark:bg-[#f04438]/20 dark:text-[#fda29b]" },
+  verify: { label: "To check", cls: "bg-[#dc6803]/15 text-[#b54708] dark:bg-[#f79009]/20 dark:text-[#fec84b]" },
   namesake: { label: "Probable namesake", cls: "bg-black/[0.05] text-slate-600 dark:bg-white/[0.08] dark:text-slate-300" },
-  dismissed: { label: "Ruled out", cls: "bg-[#34c759]/15 text-[#248a3d] dark:bg-[#30d158]/20 dark:text-[#30d158]" },
+  dismissed: { label: "Ruled out", cls: "bg-[#079455]/15 text-[#067647] dark:bg-[#47cd89]/20 dark:text-[#47cd89]" },
 };
 const triageColumn: Column = {
   key: "triage",
@@ -30,7 +30,7 @@ const triageColumn: Column = {
     const t = TRIAGE[String(r.triage)] ?? TRIAGE.verify;
     return (
       <span className="flex max-w-[190px] flex-col gap-0.5">
-        <span className={`w-fit rounded-full px-2 py-0.5 text-[11px] font-semibold ${t.cls}`}>{t.label}</span>
+        <span className={`w-fit rounded px-2 py-0.5 text-[11px] font-semibold ${t.cls}`}>{t.label}</span>
         {r.triage_reasons ? <span className="text-[10px] leading-tight text-slate-500">{String(r.triage_reasons)}</span> : null}
       </span>
     );

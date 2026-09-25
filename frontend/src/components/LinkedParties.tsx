@@ -1,6 +1,6 @@
-import { Building2, ChevronRight, User, Wallet } from "lucide-react";
+import { Building2, User, Wallet } from "lucide-react";
 import { useMemo, useState } from "react";
-import { ENTITY_COLORS, fmtPct } from "../lib/format";
+import { fmtPct } from "../lib/format";
 import type { Entity, Investigation, RiskLevel } from "../types";
 
 interface Props {
@@ -18,11 +18,11 @@ const REL: Record<string, string> = {
   relative: "Family / associate",
 };
 const TAG_STYLE: Record<string, string> = {
-  Sanctioned: "bg-[#ff3b30]/12 text-[#d70015] dark:bg-[#ff453a]/20 dark:text-[#ff6961]",
-  PEP: "bg-[#af52de]/12 text-[#8944ab] dark:bg-[#bf5af2]/20 dark:text-[#da8fff]",
-  "In leaks": "bg-[#ff9500]/15 text-[#c93400] dark:bg-[#ff9f0a]/20 dark:text-[#ffb340]",
-  "Adverse list": "bg-[#ff9500]/15 text-[#c93400] dark:bg-[#ff9f0a]/20 dark:text-[#ffb340]",
-  Offshore: "bg-[#0071e3]/10 text-[#0066cc] dark:bg-[#0a84ff]/20 dark:text-[#64b5ff]",
+  Sanctioned: "bg-[#d92d20]/10 text-[#b42318] dark:bg-[#f04438]/20 dark:text-[#fda29b]",
+  PEP: "bg-[#6941c6]/12 text-[#5925dc] dark:bg-[#9b8afb]/20 dark:text-[#bdb4fe]",
+  "In leaks": "bg-[#dc6803]/15 text-[#b54708] dark:bg-[#f79009]/20 dark:text-[#fec84b]",
+  "Adverse list": "bg-[#dc6803]/15 text-[#b54708] dark:bg-[#f79009]/20 dark:text-[#fec84b]",
+  Offshore: "bg-[#1d4a7a]/10 text-[#1d4a7a] dark:bg-[#5b8bc4]/20 dark:text-[#9bb9e0]",
   Dissolved: "bg-black/[0.05] text-slate-500 dark:bg-white/[0.08]",
 };
 const HIT_TAG = { sanction: "Sanctioned", pep: "PEP", leak: "In leaks", adverse: "Adverse list" } as const;
@@ -81,36 +81,42 @@ export function useParties(inv: Investigation): Party[] {
   }, [inv]);
 }
 
+const LEVEL_TEXT: Record<string, string> = {
+  critical: "text-[#b42318] dark:text-[#fda29b]",
+  high: "text-[#b54708] dark:text-[#fec84b]",
+  medium: "text-[#a15c07] dark:text-[#fde272]",
+  low: "text-slate-600 dark:text-slate-300",
+  none: "text-slate-400",
+};
+
 export function PartyRow({ p, onSelect, i = 0 }: { p: Party; onSelect: (id: string) => void; i?: number }) {
   const Icon = ICON[p.entity.type];
   return (
-    <li style={{ ["--i" as string]: i }}>
-      <button
-        onClick={() => onSelect(p.entity.id)}
-        className="lift group flex w-full items-center gap-3 rounded-xl bg-black/[0.025] px-3 py-2.5 text-left hover:bg-black/[0.05] dark:bg-white/[0.04] dark:hover:bg-white/[0.08]"
-      >
-        <span
-          className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-white shadow-sm"
-          style={{ background: p.level === "none" ? "#8e8e93" : ENTITY_COLORS[p.level] }}
-        >
-          <Icon className="h-4 w-4" />
+    <tr
+      style={{ ["--i" as string]: i }}
+      onClick={() => onSelect(p.entity.id)}
+      className="group cursor-pointer border-b border-slate-100 last:border-0 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800/50"
+    >
+      <td className="py-2 pr-3 pl-4">
+        <span className="flex items-center gap-2">
+          <Icon className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+          <span className="font-medium text-slate-900 group-hover:text-brand-700 group-hover:underline dark:text-slate-100">{p.entity.name}</span>
         </span>
-        <span className="min-w-0 flex-1">
-          <span className="block truncate text-sm font-semibold">{p.entity.name}</span>
-          <span className="block truncate text-[11px] text-slate-500">{p.relation}</span>
-          {p.tags.length > 0 && (
-            <span className="mt-1 flex flex-wrap gap-1">
-              {p.tags.map((t) => (
-                <span key={t} className={`rounded-full px-1.5 py-px text-[10px] font-semibold ${TAG_STYLE[t] ?? TAG_STYLE.Dissolved}`}>
-                  {t}
-                </span>
-              ))}
+      </td>
+      <td className="py-2 pr-3 text-slate-600 dark:text-slate-400">{p.relation}</td>
+      <td className="py-2 pr-3">
+        <span className="flex flex-wrap gap-1">
+          {p.tags.map((t) => (
+            <span key={t} className={`rounded px-1.5 py-px text-[10px] font-semibold ${TAG_STYLE[t] ?? TAG_STYLE.Dissolved}`}>
+              {t}
             </span>
-          )}
+          ))}
         </span>
-        <ChevronRight className="h-4 w-4 shrink-0 text-slate-300 transition-transform duration-200 group-hover:translate-x-0.5 dark:text-slate-600" />
-      </button>
-    </li>
+      </td>
+      <td className={`py-2 pr-4 text-right text-[11px] font-semibold uppercase ${LEVEL_TEXT[p.level] ?? LEVEL_TEXT.none}`}>
+        {p.level === "none" ? "—" : p.level}
+      </td>
+    </tr>
   );
 }
 
@@ -122,14 +128,14 @@ export default function LinkedParties({ investigation: inv, onSelect }: Props) {
   const [tab, setTab] = useState<"people" | "companies">(people.length ? "people" : "companies");
   const [all, setAll] = useState(false);
   const list = tab === "people" ? people : companies;
-  const shown = all ? list : list.slice(0, 8);
+  const shown = all ? list : list.slice(0, 10);
   if (!parties.length) return null;
 
   return (
     <section className="card p-5">
       <div className="mb-3 flex flex-wrap items-center gap-2">
         <h2 className="text-[15px] font-semibold">Linked people & companies</h2>
-        <span className="text-[11px] text-slate-500">riskiest first · click to open their file</span>
+        <span className="text-[11px] text-slate-500">highest risk first · click a row to open the file</span>
         <div className="segmented ml-auto">
           {(
             [
@@ -155,13 +161,25 @@ export default function LinkedParties({ investigation: inv, onSelect }: Props) {
       {list.length === 0 ? (
         <p className="text-sm text-slate-500">None found in the sources queried.</p>
       ) : (
-        <ul key={tab} className="stagger grid gap-2 sm:grid-cols-2">
-          {shown.map((p, i) => (
-            <PartyRow key={p.entity.id} p={p} onSelect={onSelect} i={i} />
-          ))}
-        </ul>
+        <div className="-mx-5 overflow-x-auto">
+          <table className="w-full text-[13px]">
+            <thead>
+              <tr className="border-y border-slate-200 bg-slate-50 text-left text-[11px] font-semibold tracking-wider text-slate-500 uppercase dark:border-slate-800 dark:bg-slate-800/40">
+                <th className="py-1.5 pr-3 pl-4">Name</th>
+                <th className="py-1.5 pr-3">Relationship to the subject</th>
+                <th className="py-1.5 pr-3">Flags</th>
+                <th className="py-1.5 pr-4 text-right">Risk</th>
+              </tr>
+            </thead>
+            <tbody key={tab} className="stagger">
+              {shown.map((p, i) => (
+                <PartyRow key={p.entity.id} p={p} onSelect={onSelect} i={i} />
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
-      {list.length > 8 && (
+      {list.length > 10 && (
         <button className="btn-ghost mt-3 text-xs" onClick={() => setAll((a) => !a)}>
           {all ? "Show fewer" : `Show all ${list.length}`}
         </button>

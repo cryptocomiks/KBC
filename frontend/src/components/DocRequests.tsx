@@ -83,9 +83,9 @@ export default function DocRequests({ investigation: inv }: Props) {
               <div className="text-[11px] text-slate-500">{r.reason}</div>
             </div>
             <span
-              className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+              className={`shrink-0 rounded px-2 py-0.5 text-[10px] font-semibold ${
                 r.priority === "required"
-                  ? "bg-[#ff9500]/15 text-[#c93400] dark:text-[#ffb340]"
+                  ? "bg-[#dc6803]/15 text-[#b54708] dark:text-[#fec84b]"
                   : "bg-black/[0.05] text-slate-600 dark:bg-white/[0.08] dark:text-slate-300"
               }`}
             >

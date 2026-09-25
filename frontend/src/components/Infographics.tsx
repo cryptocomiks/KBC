@@ -9,7 +9,7 @@ interface Props {
   onSelect: (id: string) => void;
 }
 
-const PALETTE = ["#0071e3", "#5e5ce6", "#30b0c7", "#34c759", "#ff9f0a", "#af52de", "#64d2ff", "#ffd60a"];
+const PALETTE = ["#1d4a7a", "#2f6aa8", "#5b8bc4", "#8fb0d6", "#0e7c86", "#667085", "#98a2b3", "#344054"];
 
 function Card({ icon: Icon, title, hint, children, className = "" }: { icon: typeof Globe2; title: string; hint?: string; children: React.ReactNode; className?: string }) {
   return (
@@ -69,7 +69,7 @@ export function OwnershipChart({ investigation: inv, onSelect }: Props) {
   const owners = b.owners;
   const company = b.subject_type === "company";
   const identified = Math.min(100, owners.reduce((s, o) => s + o.pct, 0));
-  const color = (i: number, flags: string[]) => (flags.includes("sanctioned") ? "#ff3b30" : PALETTE[i % PALETTE.length]);
+  const color = (i: number, flags: string[]) => (flags.includes("sanctioned") ? "#d92d20" : PALETTE[i % PALETTE.length]);
 
   return (
     <Card icon={PieChart} title={company ? "Who owns it" : "What they hold"} hint="effective %, through every layer">
@@ -96,7 +96,7 @@ export function OwnershipChart({ investigation: inv, onSelect }: Props) {
                     <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: color(i, o.flags) }} />
                     <span className="truncate font-medium group-hover:text-brand-600">{o.name}</span>
                     {o.flags.map((f) => (
-                      <span key={f} className="rounded-full bg-[#ff3b30]/12 px-1.5 text-[10px] font-semibold text-[#d70015] uppercase">
+                      <span key={f} className="rounded bg-[#d92d20]/10 px-1.5 text-[10px] font-semibold text-[#b42318] uppercase">
                         {f}
                       </span>
                     ))}
@@ -127,9 +127,9 @@ export function OwnershipChart({ investigation: inv, onSelect }: Props) {
 /* ------------------------------------------------------------ financials */
 
 const METRICS = [
-  { key: "revenue", label: "Revenue", color: "#0071e3" },
-  { key: "net_income", label: "Net income", color: "#34c759" },
-  { key: "total_assets", label: "Total assets", color: "#af52de" },
+  { key: "revenue", label: "Revenue", color: "#1d4a7a" },
+  { key: "net_income", label: "Net income", color: "#0e7c86" },
+  { key: "total_assets", label: "Total assets", color: "#98a2b3" },
 ] as const;
 
 export function FinancialsChart({ investigation: inv, onSelect }: Props) {
@@ -189,7 +189,7 @@ export function FinancialsChart({ investigation: inv, onSelect }: Props) {
             <button
               key={id}
               onClick={() => setPick(id)}
-              className={`rounded-full px-2.5 py-1 text-xs font-medium transition ${
+              className={`rounded px-2.5 py-1 text-xs font-medium transition ${
                 id === entityId ? "bg-brand-600 text-white" : "bg-black/[0.05] text-slate-600 hover:bg-black/[0.08] dark:bg-white/[0.08] dark:text-slate-300"
               }`}
             >
@@ -232,7 +232,7 @@ export function FinancialsChart({ investigation: inv, onSelect }: Props) {
                   width={barW - 2}
                   height={h}
                   rx={4}
-                  fill={neg ? "#ff3b30" : m.color}
+                  fill={neg ? "#d92d20" : m.color}
                   className="bar-y"
                   style={{ ["--i" as string]: yi * metrics.length + mi, transformOrigin: neg ? "top" : "bottom" }}
                 >
@@ -254,7 +254,7 @@ export function FinancialsChart({ investigation: inv, onSelect }: Props) {
           </span>
         ))}
         <span className="inline-flex items-center gap-1">
-          <span className="h-2 w-2 rounded-sm bg-[#ff3b30]" /> Loss
+          <span className="h-2 w-2 rounded-sm bg-[#d92d20]" /> Loss
         </span>
         <button className="ml-auto text-brand-600 hover:underline" onClick={() => onSelect(entityId)}>
           Open the company file
@@ -273,7 +273,7 @@ function KeyNumber({ label, value, color, growth }: { label: string; value: numb
       </div>
       <div className="text-[20px] font-semibold tracking-[-0.01em] tabular-nums">{value === null ? "—" : compact(v)}</div>
       {growth !== null && (
-        <div className={`text-[11px] font-medium ${growth >= 0 ? "text-[#248a3d] dark:text-[#30d158]" : "text-[#d70015] dark:text-[#ff6961]"}`}>
+        <div className={`text-[11px] font-medium ${growth >= 0 ? "text-[#067647] dark:text-[#47cd89]" : "text-[#b42318] dark:text-[#fda29b]"}`}>
           {growth >= 0 ? "▲" : "▼"} {Math.abs(growth).toFixed(1)}% vs previous year
         </div>
       )}
@@ -284,7 +284,7 @@ function KeyNumber({ label, value, color, growth }: { label: string; value: numb
 /* ------------------------------------------------------------ countries */
 
 const basel = (s: number | null) =>
-  s === null ? "#8e8e93" : s >= 6.5 ? "#ff3b30" : s >= 5.5 ? "#ff9500" : s >= 4.5 ? "#ffcc00" : "#34c759";
+  s === null ? "#98a2b3" : s >= 6.5 ? "#d92d20" : s >= 5.5 ? "#dc6803" : s >= 4.5 ? "#eaaa08" : "#079455";
 
 export function CountryExposure({ investigation: inv }: Props) {
   const rows = (inv.tables.jurisdictions ?? []).filter((r) => Number(r.entities) > 0);
@@ -319,7 +319,7 @@ export function CountryExposure({ investigation: inv }: Props) {
               {lists.length > 0 && (
                 <div className="mt-1 flex flex-wrap gap-1">
                   {lists.map((l) => (
-                    <span key={l} className="rounded-full bg-[#ff9500]/15 px-1.5 text-[10px] font-semibold text-[#c93400] dark:text-[#ffb340]">
+                    <span key={l} className="rounded bg-[#dc6803]/15 px-1.5 text-[10px] font-semibold text-[#b54708] dark:text-[#fec84b]">
                       {l}
                     </span>
                   ))}

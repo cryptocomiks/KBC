@@ -24,14 +24,9 @@ export default function LoadingInvestigation() {
   return (
     <div className="panel-enter space-y-4" aria-busy="true" aria-live="polite">
       <div className="card flex flex-col items-center gap-4 px-6 py-8 text-center">
-        <div className="relative h-14 w-14">
-          <span className="absolute inset-0 animate-ping rounded-full bg-brand-600/20" />
-          <span className="relative grid h-14 w-14 place-items-center rounded-full bg-brand-600 text-white shadow-lg">
-            <Loader2 className="h-6 w-6 animate-spin" />
-          </span>
-        </div>
+        <Loader2 className="h-6 w-6 animate-spin text-brand-600" />
         <div>
-          <div className="text-[17px] font-semibold">Investigating…</div>
+          <div className="text-[15px] font-semibold">Investigation in progress</div>
           <div className="text-xs text-slate-500 tabular-nums">
             {Math.floor(elapsed)} s · large networks can take a few minutes, every answer is cached for the next run
           </div>
@@ -44,7 +39,7 @@ export default function LoadingInvestigation() {
             >
               <span
                 className={`grid h-5 w-5 shrink-0 place-items-center rounded-full transition-colors duration-500 ${
-                  i < current ? "bg-[#34c759] text-white" : i === current ? "bg-brand-600 text-white" : "bg-black/[0.06] dark:bg-white/[0.1]"
+                  i < current ? "bg-[#079455] text-white" : i === current ? "bg-brand-600 text-white" : "bg-black/[0.06] dark:bg-white/[0.1]"
                 }`}
               >
                 {i < current ? <Check className="h-3 w-3" /> : i === current ? <Loader2 className="h-3 w-3 animate-spin" /> : null}

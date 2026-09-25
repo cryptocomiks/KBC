@@ -133,13 +133,13 @@ export default function InvestigationView({
         <nav className="panel-enter flex flex-wrap items-center gap-1 text-xs text-slate-500" aria-label="Investigation path">
           {trail.map((name, i) => (
             <span key={`${name}-${i}`} className="inline-flex items-center gap-1">
-              <button className="rounded-full px-2 py-0.5 hover:bg-black/[0.05] hover:text-brand-600 dark:hover:bg-white/[0.08]" onClick={() => onTrail?.(i)}>
+              <button className="rounded px-1.5 py-0.5 hover:bg-slate-200/70 hover:text-brand-700 dark:hover:bg-slate-800" onClick={() => onTrail?.(i)}>
                 {name}
               </button>
               <ChevronRight className="h-3 w-3" />
             </span>
           ))}
-          <span className="rounded-full bg-black/[0.05] px-2 py-0.5 font-medium text-[#1d1d1f] dark:bg-white/[0.08] dark:text-white">{subject.name}</span>
+          <span className="px-1.5 py-0.5 font-semibold text-slate-800 dark:text-white">{subject.name}</span>
         </nav>
       )}
       {/* Summary */}
@@ -252,20 +252,22 @@ export default function InvestigationView({
       )}
 
       {/* Tabs */}
-      <div className="sticky top-[60px] z-20 flex justify-center">
-        <div className="material segmented rounded-full p-1 shadow-[0_4px_20px_-8px_rgb(0_0_0/0.25)]" role="tablist">
+      <div className="sticky top-14 z-20 -mx-4 border-b border-slate-200 bg-slate-50/95 px-4 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-950/95">
+        <div className="flex gap-1 overflow-x-auto" role="tablist">
           {TABS.map(([k, label, Icon]) => (
             <button
               key={k}
               role="tab"
               aria-selected={tab === k}
               onClick={() => openTab(k)}
-              className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[13px] font-medium transition-all duration-300 [transition-timing-function:var(--ease-fluid)] ${
-                tab === k ? "bg-white text-[#1d1d1f] shadow-[0_1px_4px_rgb(0_0_0/0.14)] dark:bg-slate-600 dark:text-white" : "text-slate-500 hover:text-[#1d1d1f] dark:hover:text-white"
+              className={`-mb-px inline-flex shrink-0 items-center gap-1.5 border-b-2 px-3 py-2.5 text-[13px] font-medium transition-colors ${
+                tab === k
+                  ? "border-brand-600 text-brand-700 dark:border-brand-300 dark:text-white"
+                  : "border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-800 dark:hover:text-slate-200"
               }`}
             >
               <Icon className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">{label}</span>
+              {label}
             </button>
           ))}
         </div>

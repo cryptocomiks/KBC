@@ -4,10 +4,10 @@ import { api } from "../api";
 import type { DeclaredPerson, DocComparison, DocExtraction, Investigation } from "../types";
 
 const STATUS = {
-  match: { label: "Consistent", cls: "bg-[#34c759]/15 text-[#248a3d] dark:text-[#30d158]" },
-  mismatch: { label: "Different", cls: "bg-[#ff9500]/15 text-[#c93400] dark:text-[#ffb340]" },
-  missing_in_registry: { label: "Not in registries", cls: "bg-[#ff9500]/15 text-[#c93400] dark:text-[#ffb340]" },
-  missing_in_document: { label: "Not declared", cls: "bg-[#ff3b30]/12 text-[#d70015] dark:text-[#ff6961]" },
+  match: { label: "Consistent", cls: "bg-[#079455]/15 text-[#067647] dark:text-[#47cd89]" },
+  mismatch: { label: "Different", cls: "bg-[#dc6803]/15 text-[#b54708] dark:text-[#fec84b]" },
+  missing_in_registry: { label: "Not in registries", cls: "bg-[#dc6803]/15 text-[#b54708] dark:text-[#fec84b]" },
+  missing_in_document: { label: "Not declared", cls: "bg-[#d92d20]/12 text-[#b42318] dark:text-[#fda29b]" },
 } as const;
 
 const EMPTY: DocExtraction = {
@@ -135,7 +135,7 @@ export default function ClientDocuments({ investigation: inv, onSelect }: Props)
         </div>
         {error && <p className="text-sm text-red-600">{error}</p>}
         {doc?.warnings.map((w) => (
-          <p key={w} className="text-xs text-[#c93400] dark:text-[#ffb340]">
+          <p key={w} className="text-xs text-[#b54708] dark:text-[#fec84b]">
             {w}
           </p>
         ))}
@@ -169,7 +169,7 @@ export default function ClientDocuments({ investigation: inv, onSelect }: Props)
           <div>
             <div className="mb-2 flex flex-wrap gap-2 text-xs">
               {(Object.keys(STATUS) as (keyof typeof STATUS)[]).map((k) => (
-                <span key={k} className={`rounded-full px-2 py-0.5 font-semibold ${STATUS[k].cls}`}>
+                <span key={k} className={`rounded px-2 py-0.5 font-semibold ${STATUS[k].cls}`}>
                   {result.summary[k] ?? 0} {STATUS[k].label.toLowerCase()}
                 </span>
               ))}
@@ -193,7 +193,7 @@ export default function ClientDocuments({ investigation: inv, onSelect }: Props)
                     <td className="py-1.5 pr-2 text-xs">{r.declared ?? "—"}</td>
                     <td className="py-1.5 pr-2 text-xs">{r.registry ?? "—"}</td>
                     <td className="py-1.5 pr-2">
-                      <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${STATUS[r.status].cls}`}>{STATUS[r.status].label}</span>
+                      <span className={`rounded px-2 py-0.5 text-[11px] font-semibold ${STATUS[r.status].cls}`}>{STATUS[r.status].label}</span>
                       {r.note && <div className="mt-0.5 text-[11px] text-slate-500">{r.note}</div>}
                     </td>
                   </tr>
