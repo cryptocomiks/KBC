@@ -41,10 +41,11 @@ pdfmetrics.registerFont(TTFont("DejaVu", str(FONT_DIR / "DejaVuSans.ttf")))
 pdfmetrics.registerFont(TTFont("DejaVu-Bold", str(FONT_DIR / "DejaVuSans-Bold.ttf")))
 pdfmetrics.registerFontFamily("DejaVu", normal="DejaVu", bold="DejaVu-Bold")
 
-INK = colors.HexColor("#0f172a")
-MUTED = colors.HexColor("#64748b")
-LINE = colors.HexColor("#cbd5e1")
-HEAD_BG = colors.HexColor("#e2e8f0")
+INK = colors.HexColor("#101828")
+NAVY = colors.HexColor("#12355b")
+MUTED = colors.HexColor("#475467")
+LINE = colors.HexColor("#d0d5dd")
+HEAD_BG = colors.HexColor("#eef1f5")
 LEVEL_COLORS = {
     "low": colors.HexColor("#15803d"),
     "medium": colors.HexColor("#b45309"),
@@ -78,15 +79,18 @@ def _styles() -> dict[str, ParagraphStyle]:
         "head": ParagraphStyle(
             "head", parent=body, fontName="DejaVu-Bold", fontSize=7, leading=8.6
         ),
-        "h1": ParagraphStyle("h1", parent=body, fontName="DejaVu-Bold", fontSize=18, leading=22),
+        "h1": ParagraphStyle(
+            "h1", parent=body, fontName="DejaVu-Bold", fontSize=17, leading=21, textColor=NAVY
+        ),
         "h2": ParagraphStyle(
             "h2",
             parent=body,
             fontName="DejaVu-Bold",
-            fontSize=12,
+            fontSize=11.5,
             leading=15,
-            spaceBefore=10,
+            spaceBefore=12,
             spaceAfter=5,
+            textColor=NAVY,
         ),
         "h3": ParagraphStyle(
             "h3",
@@ -102,8 +106,8 @@ def _styles() -> dict[str, ParagraphStyle]:
             parent=body,
             fontSize=8,
             leading=10.5,
-            textColor=colors.HexColor("#7c2d12"),
-            backColor=colors.HexColor("#ffedd5"),
+            textColor=colors.HexColor("#344054"),
+            backColor=colors.HexColor("#f2f4f7"),
             borderPadding=6,
         ),
     }
@@ -335,6 +339,8 @@ def build_pdf(
         story.append(
             Paragraph(f"<font color='{verdict_color}'><b>{_esc(b.headline)}</b></font>", st["body"])
         )
+        if b.action:
+            story.append(Paragraph(f"<b>Recommended action:</b> {_esc(b.action)}", st["body"]))
         story.append(
             Paragraph(
                 " · ".join(f"<b>{_esc(f.label)}</b>: {_esc(f.value)}" for f in b.figures),
