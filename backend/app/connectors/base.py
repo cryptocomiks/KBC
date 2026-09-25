@@ -12,6 +12,7 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
+import threading
 import time
 from abc import ABC
 from typing import Any, ClassVar
@@ -27,6 +28,23 @@ log = logging.getLogger(__name__)
 USER_AGENT = "KBC-CorporateMapping/0.2 (+https://github.com/cryptocomiks/KBC)"
 MAX_RETRIES = 2
 RETRY_BACKOFF_SECONDS = 0.8
+
+# One pacing lock per source: requests made in parallel still respect its rate limit.
+_PACE_LOCKS: dict[str, threading.Lock] = {}
+_LAST_CALL: dict[str, float] = {}
+_PACE_GUARD = threading.Lock()
+
+
+def _pace(name: str, interval: float) -> None:
+    if interval <= 0:
+        return
+    with _PACE_GUARD:
+        lock = _PACE_LOCKS.setdefault(name, threading.Lock())
+    with lock:
+        wait = _LAST_CALL.get(name, 0.0) + interval - time.monotonic()
+        if wait > 0:
+            time.sleep(wait)
+        _LAST_CALL[name] = time.monotonic()
 
 
 class ConnectorError(RuntimeError):
@@ -51,6 +69,8 @@ class BaseConnector(ABC):
     crossref_max_depth: ClassVar[int | None] = None
     #: retries on rate limits / transient errors (0 for sources that ask clients not to retry)
     max_retries: ClassVar[int] = MAX_RETRIES
+    #: minimum delay between two requests to the source (its published rate limit)
+    min_interval_seconds: ClassVar[float] = 0.0
     #: per-connector HTTP timeout in seconds (None = settings.http_timeout_seconds)
     timeout_seconds: ClassVar[float | None] = None
     #: documents: entity types handled and maximum distance from the subject
@@ -226,6 +246,7 @@ class BaseConnector(ABC):
         resp = None
         retries = self.max_retries
         for attempt in range(retries + 1):
+            _pace(self.name, self.min_interval_seconds)
             try:
                 resp = httpx.request(
                     method,

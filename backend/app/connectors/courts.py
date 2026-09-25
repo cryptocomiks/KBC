@@ -109,6 +109,7 @@ class CourtListenerConnector(BaseConnector):
     documents_max_depth = 1
     max_retries = 0
     timeout_seconds = 15.0
+    min_interval_seconds = 1.0  # anonymous access is rate limited
 
     def get_documents(self, entity: Entity) -> list[Document]:
         if not _searchable(entity):

@@ -49,6 +49,7 @@ class AnnuaireEntreprisesConnector(BaseConnector):
     kind = "registry"
     jurisdictions = {"FR"}
     homepage = "https://annuaire-entreprises.data.gouv.fr"
+    min_interval_seconds = 0.16  # the API allows 7 requests per second
 
     # ----------------------------------------------------------- helpers
     def _search(self, **params: Any) -> list[dict[str, Any]]:

@@ -77,6 +77,7 @@ class SecEdgarConnector(BaseConnector):
     crossref_max_depth = 1
     homepage = "https://www.sec.gov/edgar"
     documents_max_depth = 1
+    min_interval_seconds = 0.12  # SEC fair access: 10 requests per second
 
     @property
     def _headers(self) -> dict[str, str]:
