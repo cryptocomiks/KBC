@@ -133,6 +133,7 @@ export default function LinkedParties({ investigation: inv, onSelect }: Props) {
 
   return (
     <section className="card p-5">
+      <div className="tag mb-2">Network</div>
       <div className="mb-3 flex flex-wrap items-center gap-2">
         <h2 className="text-[15px] font-semibold">Linked people & companies</h2>
         <span className="text-[11px] text-slate-500">highest risk first · click a row to open the file</span>

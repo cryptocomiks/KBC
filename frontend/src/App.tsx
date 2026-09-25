@@ -1,5 +1,5 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import { Building2, FileSearch, Loader2, ShieldAlert } from "lucide-react";
 import { useState } from "react";
 import { api, auth, AuthError } from "./api";
 import CaseScreen from "./components/CaseScreen";
@@ -121,13 +121,34 @@ export default function App() {
         {page === "main" && !target && (
           <>
             {!search && (
-              <div className="mx-auto max-w-3xl pt-10 pb-2">
-                <h1 className="text-[26px] font-semibold text-slate-900 dark:text-white">Due diligence search</h1>
-                <p className="mt-1.5 max-w-2xl text-[14px] leading-relaxed text-slate-600 dark:text-slate-400">
-                  Search a person, a company, a registration number or a crypto wallet. Results are cross-checked against
-                  company registers, sanctions and PEP lists, regulators, courts and leak databases, with the source of every
-                  fact.
+              <div className="mx-auto max-w-4xl pt-14 pb-6 text-center">
+                <div className="chip mx-auto mb-7">
+                  <span className="h-1.5 w-1.5 rounded-full bg-brand-500 shadow-[0_0_10px_2px_rgb(94_224_42/0.7)]" />
+                  {meta.data?.demo_mode ? "Demo + live public sources" : "Live public sources"} · 40 connectors
+                </div>
+                <h1 className="display text-[clamp(2.6rem,6.5vw,4.6rem)]">
+                  Know who is behind
+                  <br />
+                  any company, <span className="text-glow">now.</span>
+                </h1>
+                <p className="mx-auto mt-5 max-w-2xl text-[16px] leading-relaxed text-slate-600 dark:text-slate-400">
+                  Registers, sanctions, PEPs, leaks, regulators and courts in one search.
+                  <br className="hidden sm:block" /> Owners, red flags and the documents to request, with the source of every fact.
                 </p>
+                <div className="mt-7 flex flex-wrap justify-center gap-2.5">
+                  {[
+                    [Building2, "Registers in 10+ countries"],
+                    [ShieldAlert, "32 sanctions & watch lists"],
+                    [FileSearch, "Leaks, courts & regulators"],
+                  ].map(([Icon, label]) => {
+                    const I = Icon as typeof Building2;
+                    return (
+                      <span key={label as string} className="chip">
+                        <I className="h-4 w-4 text-brand-600 dark:text-brand-500" /> {label as string}
+                      </span>
+                    );
+                  })}
+                </div>
               </div>
             )}
             <SearchPanel initial={search ?? DEFAULT_SEARCH} demo={!!meta.data?.demo_mode} live={live} onSearch={setSearch} />

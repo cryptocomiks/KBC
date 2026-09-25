@@ -113,7 +113,7 @@ export default function SearchPanel({ initial, demo, live, onSearch, compact }: 
             <button
               key={ex.q}
               type="button"
-              className="rounded-md border border-slate-300 bg-white px-2.5 py-1 transition hover:border-brand-500 hover:text-brand-700 dark:border-slate-700 dark:bg-slate-900 dark:hover:text-brand-300"
+              className="rounded-full border border-slate-300 bg-white px-3 py-1 transition hover:border-brand-500 hover:text-brand-700 dark:border-white/15 dark:bg-white/[0.02] dark:hover:border-brand-500 dark:hover:text-brand-300"
               onClick={() => {
                 const next = { ...p, q: ex.q, type: ex.type };
                 setP(next);

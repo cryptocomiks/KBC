@@ -32,7 +32,7 @@ export default function Header({ meta, theme, onToggleTheme, onHome, onCases, ca
   const live = connectors.data?.some((c) => c.enabled && !c.demo);
 
   return (
-    <header className="sticky top-0 z-30 border-b border-black/30 bg-[#0f2742] text-white [&_.btn-ghost]:text-slate-200 [&_.btn-ghost:hover]:bg-white/10 dark:bg-[#0b1d33]">
+    <header className="sticky top-0 z-30 border-b border-white/[0.06] bg-[#0a0b0a]/80 text-white backdrop-blur-xl [&_.btn-ghost]:text-slate-300 [&_.btn-ghost:hover]:bg-white/[0.06] [&_.btn-ghost:hover]:text-white">
       <div className="mx-auto flex h-14 max-w-[1600px] items-center gap-3 px-4">
         <button onClick={onHome} className="flex items-center gap-2.5" aria-label="Home">
           <img src="/favicon.svg" alt="" className="h-7 w-7" />

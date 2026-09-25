@@ -9,11 +9,12 @@ interface Props {
   onSelect: (id: string) => void;
 }
 
-const PALETTE = ["#1d4a7a", "#2f6aa8", "#5b8bc4", "#8fb0d6", "#0e7c86", "#667085", "#98a2b3", "#344054"];
+const PALETTE = ["#5ee02a", "#3b82f6", "#8b5cf6", "#f97316", "#22d3ee", "#eab308", "#ec4899", "#94a3b8"];
 
-function Card({ icon: Icon, title, hint, children, className = "" }: { icon: typeof Globe2; title: string; hint?: string; children: React.ReactNode; className?: string }) {
+function Card({ icon: Icon, title, hint, tag, children, className = "" }: { icon: typeof Globe2; title: string; hint?: string; tag?: string; children: React.ReactNode; className?: string }) {
   return (
     <section className={`card p-5 ${className}`}>
+      {tag && <div className="tag mb-2">{tag}</div>}
       <div className="mb-4 flex items-baseline gap-2">
         <Icon className="h-4 w-4 translate-y-0.5 text-brand-600" />
         <h2 className="text-[15px] font-semibold">{title}</h2>
@@ -47,7 +48,11 @@ function Donut({ slices, center, sub }: { slices: { pct: number; color: string; 
             strokeDasharray={`${len} ${c}`}
             strokeDashoffset={-offset}
             transform="rotate(-90 70 70)"
-            style={{ transition: "stroke-dasharray 900ms var(--ease-fluid)", animation: `fade 500ms ${i * 90}ms both` }}
+            style={{
+              transition: "stroke-dasharray 900ms var(--ease-fluid)",
+              animation: `fade 500ms ${i * 90}ms both`,
+              filter: `drop-shadow(0 0 6px ${s.color}88)`,
+            }}
           />
         );
         offset += len;
@@ -72,7 +77,7 @@ export function OwnershipChart({ investigation: inv, onSelect }: Props) {
   const color = (i: number, flags: string[]) => (flags.includes("sanctioned") ? "#d92d20" : PALETTE[i % PALETTE.length]);
 
   return (
-    <Card icon={PieChart} title={company ? "Who owns it" : "What they hold"} hint="effective %, through every layer">
+    <Card icon={PieChart} tag="Ownership" title={company ? "Who owns it" : "What they hold"} hint="effective %, through every layer">
       {owners.length === 0 ? (
         <p className="text-sm text-slate-500">
           {company
@@ -103,7 +108,7 @@ export function OwnershipChart({ investigation: inv, onSelect }: Props) {
                     <span className="ml-auto font-mono text-xs font-semibold tabular-nums">{o.pct.toFixed(o.pct < 1 ? 2 : 1)}%</span>
                   </div>
                   <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-black/[0.05] dark:bg-white/[0.08]">
-                    <div className="bar-x h-full rounded-full" style={{ width: `${Math.min(100, o.pct)}%`, background: color(i, o.flags), ["--i" as string]: i }} />
+                    <div className="bar-x h-full rounded-full" style={{ width: `${Math.min(100, o.pct)}%`, background: color(i, o.flags), boxShadow: `0 0 10px ${color(i, o.flags)}88`, ["--i" as string]: i }} />
                   </div>
                   {o.path.length > 2 && (
                     <div className="mt-0.5 truncate text-[11px] text-slate-500">
@@ -127,9 +132,9 @@ export function OwnershipChart({ investigation: inv, onSelect }: Props) {
 /* ------------------------------------------------------------ financials */
 
 const METRICS = [
-  { key: "revenue", label: "Revenue", color: "#1d4a7a" },
-  { key: "net_income", label: "Net income", color: "#0e7c86" },
-  { key: "total_assets", label: "Total assets", color: "#98a2b3" },
+  { key: "revenue", label: "Revenue", color: "#5ee02a" },
+  { key: "net_income", label: "Net income", color: "#3b82f6" },
+  { key: "total_assets", label: "Total assets", color: "#8b5cf6" },
 ] as const;
 
 export function FinancialsChart({ investigation: inv, onSelect }: Props) {
@@ -149,7 +154,7 @@ export function FinancialsChart({ investigation: inv, onSelect }: Props) {
 
   if (!current) {
     return (
-      <Card icon={Landmark} title="Financials">
+      <Card icon={Landmark} tag="Financials" title="Financials">
         <p className="text-sm text-slate-500">
           No published accounts in the sources queried — request the latest audited financial statements (small companies may legally opt out of
           publication).
@@ -182,15 +187,15 @@ export function FinancialsChart({ investigation: inv, onSelect }: Props) {
   };
 
   return (
-    <Card icon={Landmark} title="Financials" hint={`${currency} · ${String(years[0]?.source ?? "")}`} >
+    <Card icon={Landmark} tag="Financials" title="Financials" hint={`${currency} · ${String(years[0]?.source ?? "")}`} >
       {byEntity.length > 1 && (
         <div className="mb-3 flex flex-wrap gap-1.5">
           {byEntity.map(([id, r]) => (
             <button
               key={id}
               onClick={() => setPick(id)}
-              className={`rounded px-2.5 py-1 text-xs font-medium transition ${
-                id === entityId ? "bg-brand-600 text-white" : "bg-black/[0.05] text-slate-600 hover:bg-black/[0.08] dark:bg-white/[0.08] dark:text-slate-300"
+              className={`rounded-full px-3 py-1 text-xs font-medium transition ${
+                id === entityId ? "bg-brand-500 text-[#052e0a] shadow-[0_0_16px_-2px_rgb(94_224_42/0.6)]" : "border border-slate-300 text-slate-600 hover:border-slate-400 dark:border-white/15 dark:text-slate-300 dark:hover:border-white/30"
               }`}
             >
               {String(r[0].name)}
@@ -234,7 +239,11 @@ export function FinancialsChart({ investigation: inv, onSelect }: Props) {
                   rx={4}
                   fill={neg ? "#d92d20" : m.color}
                   className="bar-y"
-                  style={{ ["--i" as string]: yi * metrics.length + mi, transformOrigin: neg ? "top" : "bottom" }}
+                  style={{
+                    ["--i" as string]: yi * metrics.length + mi,
+                    transformOrigin: neg ? "top" : "bottom",
+                    filter: `drop-shadow(0 0 8px ${neg ? "#ef444466" : m.color + "66"})`,
+                  }}
                 >
                   <title>{`${m.label} ${String(y.year)}: ${v.toLocaleString("en")} ${currency}`}</title>
                 </rect>
@@ -292,7 +301,7 @@ export function CountryExposure({ investigation: inv }: Props) {
   const max = Math.max(...rows.map((r) => Number(r.entities)));
   const sorted = [...rows].sort((a, b) => (toNumber(b.basel_aml_score) ?? 0) - (toNumber(a.basel_aml_score) ?? 0) || Number(b.entities) - Number(a.entities));
   return (
-    <Card icon={Globe2} title="Country exposure" hint="bar = entities · colour = Basel AML Index">
+    <Card icon={Globe2} tag="Countries" title="Country exposure" hint="bar = entities · colour = Basel AML Index">
       <ul className="stagger space-y-2.5">
         {sorted.slice(0, 10).map((r, i) => {
           const score = toNumber(r.basel_aml_score);

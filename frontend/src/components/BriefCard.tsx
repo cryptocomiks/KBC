@@ -61,7 +61,7 @@ export default function BriefCard({ investigation: inv, onSelect, onOpenTab, hid
           <div className="text-[12px] font-medium opacity-80">Score {b.score.toFixed(0)} / 100</div>
         </div>
         <div className="px-5 py-4">
-          <div className="label">Main finding</div>
+          <div className="tag">Summary</div>
           <p className="mt-0.5 text-[16px] leading-snug font-semibold text-slate-900 dark:text-white">{rest.join(" — ")}</p>
           {b.action && (
             <p className="mt-2 flex gap-2 text-[13px] text-slate-700 dark:text-slate-300">

@@ -3,37 +3,38 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ---------------------------------------------------------------------------
-   Professional compliance-tool foundations: sober slate greys, a navy accent,
-   muted risk colours (red / amber / green only where risk is shown), square-ish
-   corners, dense readable tables, restrained motion. Respects the reduced
-   motion / transparency / contrast preferences.
+   Dark product style: near-black canvas with a faint green glow, neon-green
+   accent with soft light, pill buttons, bold tight headlines, bracketed section
+   tags, glowing charts. Risk colours stay red / amber / green for meaning.
+   Light mode remains available (theme toggle). Respects reduced motion /
+   transparency / contrast preferences.
    --------------------------------------------------------------------------- */
 @theme {
   --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, Roboto, "Helvetica Neue", sans-serif;
-  --font-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
 
-  /* Cool slate greys (light: #f5f7fa canvas, #101828 text · dark: #0b1220 canvas) */
-  --color-slate-50: #f5f7fa;
-  --color-slate-100: #eef1f5;
-  --color-slate-200: #e1e6ed;
-  --color-slate-300: #cbd3de;
-  --color-slate-400: #98a2b3;
-  --color-slate-500: #667085;
-  --color-slate-600: #475467;
-  --color-slate-700: #344054;
-  --color-slate-800: #1d2939;
-  --color-slate-900: #121a2a;
-  --color-slate-950: #0b1220;
+  /* Neutrals: light greys for light mode, graphite for dark mode */
+  --color-slate-50: #f6f7f6;
+  --color-slate-100: #eef0ee;
+  --color-slate-200: #e1e4e1;
+  --color-slate-300: #c9cec9;
+  --color-slate-400: #979e97;
+  --color-slate-500: #6f776f;
+  --color-slate-600: #4f564f;
+  --color-slate-700: #2f332f;
+  --color-slate-800: #1c1f1c;
+  --color-slate-900: #131513;
+  --color-slate-950: #0a0b0a;
 
-  /* Navy accent */
-  --color-brand-50: #eef3f9;
-  --color-brand-100: #dbe6f2;
-  --color-brand-300: #8fb0d6;
-  --color-brand-500: #2f6aa8;
-  --color-brand-600: #1d4a7a;
-  --color-brand-700: #12355b;
+  /* Neon green accent */
+  --color-brand-50: #effee6;
+  --color-brand-100: #dcfccb;
+  --color-brand-300: #8ff05a;
+  --color-brand-500: #5ee02a;
+  --color-brand-600: #3cbf19;
+  --color-brand-700: #2a8f12;
 
-  --radius-card: 8px;
+  --radius-card: 16px;
   --ease-fluid: cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 
@@ -45,8 +46,14 @@ body,
 html {
   -webkit-text-size-adjust: 100%;
 }
+.dark body {
+  background-image:
+    radial-gradient(1200px 520px at 50% -180px, rgb(94 224 42 / 0.10), transparent 70%),
+    repeating-linear-gradient(135deg, rgb(255 255 255 / 0.018) 0 1px, transparent 1px 9px);
+  background-attachment: fixed;
+}
 body {
-  @apply bg-slate-50 text-[#101828] antialiased dark:bg-slate-950 dark:text-[#e4e7ec];
+  @apply bg-slate-50 text-[#101828] antialiased dark:bg-slate-950 dark:text-[#e8ebe8];
   font-size: 0.875rem; /* 14px — dense, readable body */
   line-height: 1.5;
   letter-spacing: 0;
@@ -75,24 +82,29 @@ h3 {
 
 /* ------------------------------------------------------------ materials */
 @utility material {
-  background: rgb(255 255 255 / 0.94);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: rgb(255 255 255 / 0.85);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
   :where(.dark) & {
-    background: rgb(11 18 32 / 0.94);
+    background: rgb(10 11 10 / 0.72);
   }
 }
 
 @utility card {
-  @apply border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900;
+  @apply border border-slate-200 bg-white dark:border-white/[0.08] dark:bg-[#111311]/90;
   border-radius: var(--radius-card);
   box-shadow: 0 1px 2px rgb(16 24 40 / 0.05);
+  :where(.dark) & {
+    box-shadow:
+      0 1px 0 rgb(255 255 255 / 0.04) inset,
+      0 20px 40px -24px rgb(0 0 0 / 0.8);
+  }
   animation: fade 200ms ease-out both;
 }
 
 /* ------------------------------------------------------------ controls */
 @utility btn {
-  @apply inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium select-none disabled:cursor-not-allowed disabled:opacity-40;
+  @apply inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-medium select-none disabled:cursor-not-allowed disabled:opacity-40;
   transition:
     transform 100ms ease-out,
     background-color 160ms ease,
@@ -104,23 +116,32 @@ h3 {
   }
 }
 @utility btn-primary {
-  @apply btn bg-brand-700 text-white shadow-sm hover:bg-brand-600 dark:bg-brand-500 dark:hover:bg-brand-600;
+  @apply btn font-semibold text-[#052e0a];
+  background: linear-gradient(180deg, #8ff05a 0%, #4fd11f 55%, #37b515 100%);
+  box-shadow:
+    0 0 0 1px rgb(143 240 90 / 0.55) inset,
+    0 6px 24px -6px rgb(94 224 42 / 0.55);
+  &:hover:not(:disabled) {
+    box-shadow:
+      0 0 0 1px rgb(143 240 90 / 0.7) inset,
+      0 8px 32px -6px rgb(94 224 42 / 0.75);
+  }
 }
 @utility btn-ghost {
   @apply btn text-slate-600 hover:bg-black/[0.05] dark:text-slate-300 dark:hover:bg-white/[0.08];
 }
 @utility btn-outline {
-  @apply btn border border-slate-300 bg-white text-slate-700 shadow-sm hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800;
+  @apply btn border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-white/20 dark:bg-transparent dark:text-slate-100 dark:hover:border-white/35 dark:hover:bg-white/[0.04];
 }
 @utility input {
-  @apply rounded-md border border-slate-300 bg-white px-3 py-2 text-sm outline-none shadow-sm placeholder:text-slate-400 dark:border-slate-700 dark:bg-slate-900;
+  @apply rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none placeholder:text-slate-400 dark:border-white/10 dark:bg-white/[0.04];
   transition:
     box-shadow 160ms ease,
     background-color 160ms ease;
   &:focus {
     @apply bg-white dark:bg-slate-900;
-    box-shadow: 0 0 0 3px rgb(29 74 122 / 0.18);
-    border-color: rgb(29 74 122 / 0.7);
+    box-shadow: 0 0 0 3px rgb(94 224 42 / 0.2);
+    border-color: rgb(94 224 42 / 0.7);
   }
 }
 @utility label {
@@ -129,7 +150,33 @@ h3 {
 
 /* Segmented control (Ownership chart / Network view…) */
 @utility segmented {
-  @apply inline-flex rounded-md border border-slate-200 bg-slate-100 p-0.5 dark:border-slate-700 dark:bg-slate-800;
+  @apply inline-flex rounded-full border border-slate-200 bg-slate-100 p-0.5 dark:border-white/10 dark:bg-white/[0.04];
+}
+
+/* Bracketed section tag, e.g. [ OVERVIEW ] */
+@utility tag {
+  @apply font-mono text-[11px] tracking-[0.12em] text-slate-500 uppercase dark:text-slate-400;
+  &::before {
+    content: "[ ";
+    @apply text-brand-600 dark:text-brand-500;
+  }
+  &::after {
+    content: " ]";
+    @apply text-brand-600 dark:text-brand-500;
+  }
+}
+/* Feature chip: outlined pill with an icon */
+@utility chip {
+  @apply inline-flex items-center gap-2 rounded-full border border-slate-300 px-3.5 py-1.5 text-[13px] font-medium text-slate-700 dark:border-white/15 dark:bg-white/[0.02] dark:text-slate-100;
+}
+/* Big product headline */
+@utility display {
+  @apply font-bold tracking-[-0.045em] text-slate-900 dark:text-[#f2f4f2];
+  line-height: 0.98;
+}
+.text-glow {
+  color: #4fd11f;
+  text-shadow: 0 0 28px rgb(94 224 42 / 0.35);
 }
 
 /* ------------------------------------------------------------ motion */
