@@ -632,6 +632,9 @@ def check_opensanctions() -> None:
     for h in ("x-ratelimit-limit", "x-ratelimit-remaining", "retry-after"):
         if raw.headers.get(h):
             print(f"      {h}: {raw.headers[h]}")
+    if raw.status_code == 429:
+        print("WARN  OpenSanctions API key: monthly quota exceeded (account limit, not a code error)")
+        return
     conn = OpenSanctionsConnector(settings)
     hits = conn.screen_many([person("Vladimir Putin", "1952-10-07")])
     for h in hits[:3]:

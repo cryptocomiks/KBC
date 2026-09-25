@@ -10,6 +10,7 @@ Data licence: CC BY-NC 4.0 (commercial use requires a licence).
 
 from __future__ import annotations
 
+import time
 from typing import Any
 
 from app.connectors.base import BaseConnector, ConnectorError
@@ -20,6 +21,8 @@ API = "https://api.opensanctions.org/match/default"
 ENTITY_URL = "https://www.opensanctions.org/entities/{id}/"
 MIN_SCORE = 45
 BATCH_SIZE = 20
+MAX_ENTITIES = 20  # per call: the API quota is precious, bulk lists cover the rest
+_QUOTA_BLOCKED_UNTIL = 0.0
 
 SANCTION_TOPICS = {"sanction", "sanction.linked", "sanction.counter", "debarment"}
 PEP_TOPICS = {"role.pep", "role.rca", "role.judge", "role.diplo", "gov.head", "gov.national"}
@@ -72,7 +75,16 @@ class OpenSanctionsConnector(BaseConnector):
         return self.screen_many([entity])
 
     def screen_many(self, entities: list[Entity]) -> list[ScreeningHit]:
-        targets = [e for e in entities if e.type in (EntityType.PERSON, EntityType.COMPANY)]
+        global _QUOTA_BLOCKED_UNTIL
+        if time.time() < _QUOTA_BLOCKED_UNTIL:
+            raise ConnectorError(
+                f"{self.label}: monthly quota of the API key exceeded — skipped (bulk lists still screen)"
+            )
+        # Entities come nearest to the subject first: the paid API screens the closest parties
+        # (one request), the free bulk lists screen the whole network.
+        targets = [e for e in entities if e.type in (EntityType.PERSON, EntityType.COMPANY)][
+            :MAX_ENTITIES
+        ]
         hits: list[ScreeningHit] = []
         for start in range(0, len(targets), BATCH_SIZE):
             batch = targets[start : start + BATCH_SIZE]
@@ -86,6 +98,7 @@ class OpenSanctionsConnector(BaseConnector):
                 )
             except ConnectorError as exc:
                 if "HTTP 429" in str(exc):
+                    _QUOTA_BLOCKED_UNTIL = time.time() + 3600  # do not hammer an exhausted quota
                     raise ConnectorError(
                         f"{self.label}: request quota exceeded (HTTP 429) — check the plan of the API key "
                         "on opensanctions.org; the bulk lists keep screening meanwhile"
