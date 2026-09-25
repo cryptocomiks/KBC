@@ -16,6 +16,13 @@ def _connector_classes() -> list[type[BaseConnector]]:
     from app.connectors.companies_house_web import CompaniesHouseWebConnector
     from app.connectors.courts import CourtListenerConnector, SwissCourtsConnector
     from app.connectors.demo import DEMO_CONNECTORS
+    from app.connectors.europe_registries import (
+        AresConnector,
+        AriregisterConnector,
+        BrregConnector,
+        KboConnector,
+        PrhConnector,
+    )
     from app.connectors.gdelt import GdeltConnector
     from app.connectors.gleif import GleifConnector
     from app.connectors.icij import IcijLocalConnector, IcijReconcileConnector
@@ -44,6 +51,11 @@ def _connector_classes() -> list[type[BaseConnector]]:
         CompaniesHouseConnector,
         CompaniesHouseWebConnector,
         ZefixConnector,
+        BrregConnector,
+        AresConnector,
+        KboConnector,
+        PrhConnector,
+        AriregisterConnector,
         RpvsConnector,
         SecEdgarConnector,
         OpenCorporatesConnector,

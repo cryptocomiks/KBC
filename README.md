@@ -312,7 +312,16 @@ critical.
 | Missing / overdue accounts, possible nominee director | 5 |
 | Recent incorporation (< 18 months) | 4 |
 | Dissolved company | 3 |
+| **Officer left shortly before a liquidation / insolvency** (≤ 180 days) | 8 |
+| **Offshore formation agent / corporate service provider** among the officers (Mossack Fonseca, Trident Trust, Portcullis…) | 6 |
+| **Companies incorporated in a batch** (within 7 days, sharing an officer, owner or address) | 5 |
+| **Company acting as director or secretary** | 4 |
+| **Positions in companies of 3+ countries** | 4 |
+| **High officer turnover** (4+ appointments / departures in 12 months) | 4 |
+| **Possibly the same person in two registers** (near-identical names, no date of birth to confirm) | 3 |
 
+A sanctions match on the subject itself sets the highest level whatever the score. A hit contradicted by
+the evidence (other date of birth, nationality or country) stays a possible match, never a confirmed one.
 Screening hits below 70% are displayed as *"weak — likely false positive"* and never scored.
 
 ## Configuration
@@ -338,13 +347,20 @@ a *Demo · fictitious* or *Real public data* badge.
 | Source | Coverage | Key | Env variable |
 |---|---|---|---|
 | **Annuaire des Entreprises** (data.gouv.fr) | FR companies, officers with partial date of birth, status, published financial years | none, public API | — |
-| **GLEIF** (LEI index) | Legal entities worldwide, registration numbers, **direct parents and subsidiaries** (accounting consolidation) | none, public API | — |
+| **GLEIF** (LEI index) | Legal entities worldwide, registration numbers, **direct and ultimate parents, subsidiaries** (accounting consolidation) | none, public API | — |
 | **Zefix** (Swiss commercial register) | CH companies: UID, seat, legal form, purpose, address, auditor, mergers, former names. **Officers with appointment and departure dates**, read from the Swiss Official Gazette of Commerce (SOGC) notices; partners of GmbH / Sàrl as owners. SOGC notices as linked documents (bankruptcy raises the insolvency flag) | none, public service | — |
 | **SEC EDGAR** | US filers: profile, former names, state of incorporation, **financials from XBRL** (revenue, net income, assets), **shareholders above 5 % from Schedule 13D/13G with the exact percentage**, recent 10-K / 10-Q / 8-K filings | none (a contact in the User-Agent) | `SEC_USER_AGENT` |
 | **Country risk** | Basel AML Index (Basel Institute on Governance), Corruption Perceptions Index (Transparency International, via Our World in Data), World Bank WGI control of corruption | none, refreshed monthly by the *Country risk data* workflow | — |
 | **BODACC** (DILA) | French legal announcements: registrations, changes, **filed accounts**, **insolvency proceedings**, deregistrations. Each notice is a linked document | none, open data | — |
 | **Official sanctions lists** | **OFAC SDN** (US Treasury) and **UN Security Council** consolidated list, downloaded from the issuers and indexed in memory | none | — |
-| **Open watchlists** | **EU**, **UK** and **Swiss (SECO)** sanctions, **World Bank** debarments, **Interpol** public red notices, **UK disqualified directors**, **Swiss FINMA warning list**, and investigative lists: **ACF (Navalny Anti-Corruption Foundation) War Enablers**, **Ukraine War & Sanctions (NAZK)**, Russian oligarchs. From the normalised OpenSanctions bulk exports (CC BY-NC), downloaded in parallel | none | `OPEN_DATASETS` |
+| **Open watchlists** (32 lists) | Sanctions: **EU**, **UK**, **Swiss (SECO)**, **Canada**, **Australia**, **Japan**, **Belgium**, **New Zealand**, Latvia Magnitsky. Debarments: **World Bank**, **African / Asian / Inter-American development banks**, **EBRD**, **EU EDES**. Financial regulators: **Luxembourg CSSF** sanctions, **FINMA** rulings and warning list, **AMF** sanctions and blacklist, **ESMA**, US SEC PAUSE, Norway NBIM exclusions. Public officials: **French HATVP declarations**. Law enforcement: **Interpol** red notices, Europol, UK NCA, FBI, BKA. Investigative lists: **ACF War Enablers**, **Ukraine War & Sanctions (NAZK)**, Navalny 35, Russian oligarchs, UK disqualified directors. From the normalised OpenSanctions bulk exports (CC BY-NC), downloaded in parallel | none | `OPEN_DATASETS` |
+| **Companies House, public website** | UK register **without a key**: companies, officers, every appointment of a person, persons with significant control, and the **Register of Overseas Entities** (foreign companies owning UK land) with their registrable beneficial owners. Switches off when `COMPANIES_HOUSE_API_KEY` is set | none | — |
+| **European registers** | **Norway** (Brønnøysund: companies and roles with dates of birth), **Czech Republic** (ARES: statutory bodies, supervisory boards, shareholders, with history), **Belgium** (CBE/KBO: directors), **Finland** (PRH), **Estonia** (e-Business Register) | none | — |
+| **RPVS (Slovakia)** | Verified **beneficial owners** of companies contracting with the Slovak state, with history; owners declared as **public officials** count as PEPs | none | — |
+| **Court decisions** | **Switzerland** (entscheidsuche.ch: federal and cantonal courts) and **US** (CourtListener opinions), for companies and public figures only | none | — |
+| **TED** (EU public procurement) | Contracts awarded to the companies of the network: buyer, country, value | none | — |
+| **LittleSis** | Power networks (boards, donors, lobbying, business ties), for companies and public figures | none | — |
+| **Linked websites** | OCCRP method, for company websites: **domains sharing TLS certificates** (crt.sh) and **sites sharing the same analytics ID** | none | — |
 | **Casino Secrets** | Leak of the **Curaçao Gaming Authority** (2026, Lilith Wittmann with FTM, NDR, NRK, SVT): licence holders and casino domains. Licence holders are searchable by name; every company of the network is screened by name and by official website domain. Only the public search is used; the leaked documents are never downloaded | none | — |
 | **Wayback Machine** | First and last archived captures of each company's official website, with a link to the full history | none | — |
 | **Wikidata** | PEP screening (positions held, with dates), **relatives and close associates**, company ↔ executive / owner / subsidiary links, **official website, published company contacts and official social accounts** | none | — |

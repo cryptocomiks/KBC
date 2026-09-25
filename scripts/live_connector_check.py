@@ -512,6 +512,37 @@ def check_uk_public_register() -> None:
     expect("officer search + appointments", len(roles) >= 1, f"{people[0].name if people else '-'}: {len(roles)} appointments")
 
 
+def check_european_registers() -> None:
+    from app.connectors.europe_registries import (
+        AresConnector,
+        AriregisterConnector,
+        BrregConnector,
+        KboConnector,
+        PrhConnector,
+    )
+
+    for label, conn, query, officers_min in (
+        ("Norway (Brønnøysund) — Equinor", BrregConnector(settings), "Equinor", 5),
+        ("Czech Republic (ARES) — Škoda Auto", AresConnector(settings), "Škoda Auto", 3),
+        ("Belgium (CBE/KBO) — Solvay", KboConnector(settings), "Solvay", 0),
+        ("Finland (PRH) — Nokia", PrhConnector(settings), "Nokia Oyj", 0),
+        ("Estonia (e-Business Register) — Bolt", AriregisterConnector(settings), "Bolt Technology", 0),
+    ):
+        found = conn.search_company(query)
+        expect(f"{label}: search", bool(found), ", ".join(f"{c.name} ({c.registration_number})" for c in found[:3]))
+        if not found or not officers_min:
+            continue
+        top = found[0]
+        links = conn.get_officers(top.id) + conn.get_shareholders(top.id)
+        for o in links[:3]:
+            print(f"      {o.entity.name} (born {o.entity.birth_date}) — {o.relationship.role}")
+        expect(f"{label}: officers / owners", len(links) >= officers_min, f"{len(links)} links")
+    kbo = KboConnector(settings)
+    solvay = kbo.get_company_details("kbo:0403091220")
+    directors = kbo.get_officers("kbo:0403091220")
+    expect("Belgium: Solvay SA details and directors", bool(solvay) and len(directors) >= 5, f"{solvay.name if solvay else '-'}: {len(directors)} functions")
+
+
 def check_rpvs() -> None:
     from app.connectors.rpvs import RpvsConnector
 
@@ -626,6 +657,7 @@ guarded("Casino Secrets (Curaçao gaming leak)", check_casino_secrets)
 guarded("Search by identifier (SIREN, Swiss UID, SEC CIK)", check_identifiers)
 guarded("Sanctioned public official, depth 2 (Elvira Nabiullina)", check_sanctioned_official)
 guarded("UK register without key (Companies House public site, overseas entities)", check_uk_public_register)
+guarded("European registers (NO, CZ, BE, FI, EE)", check_european_registers)
 guarded("Slovak beneficial owners (RPVS)", check_rpvs)
 guarded("Courts, public contracts, LittleSis, linked websites", check_documents_sources)
 for key, title, fn in [
