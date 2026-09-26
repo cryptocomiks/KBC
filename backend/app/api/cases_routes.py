@@ -10,11 +10,13 @@ from __future__ import annotations
 
 import hmac
 import os
-from typing import Literal
+import uuid
+from typing import Any, Literal
 
-from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi import APIRouter, Depends, File, Form, Header, HTTPException, UploadFile
 from pydantic import BaseModel, Field
 
+from app import bulk_import
 from app.cases import DECISIONS, CaseService
 from app.schemas import InvestigationRequest
 from app.service import KbcService
@@ -92,9 +94,68 @@ def status() -> dict:
     return cases_status()
 
 
+class QuestionnaireIn(BaseModel):
+    answers: dict[str, Any]
+    author: str = Field(default="", max_length=120)
+
+
+class ResolveIn(BaseModel):
+    record_ids: list[str] = Field(min_length=1, max_length=20)
+
+
 @router.get("", dependencies=[Depends(require_access)])
 def dashboard() -> dict:
     return cases().dashboard()
+
+
+# ------------------------------------------------------------------ bulk import
+def require_access_or_cron(
+    authorization: str | None = Header(default=None),
+    x_kbc_password: str | None = Header(default=None),
+) -> None:
+    token = (authorization or "").removeprefix("Bearer ").strip()
+    if _same(token, get_settings().cron_secret):
+        if not cases_status()["enabled"]:
+            raise HTTPException(status_code=503, detail=cases_status()["message"])
+        return
+    require_access(x_kbc_password)
+
+
+@router.post("/import", dependencies=[Depends(require_access)])
+async def import_file(
+    file: UploadFile = File(...),
+    depth: int = Form(default=2, ge=1, le=3),
+    max_nodes: int = Form(default=60, ge=5, le=250),
+    monitor: bool = Form(default=True),
+) -> dict:
+    """Client list (CSV / Excel) → one case per line, analysed step by step (see /import/next)."""
+    data = await file.read(bulk_import.MAX_BYTES + 1)
+    try:
+        rows, warnings = bulk_import.parse(file.filename or "", data)
+    except bulk_import.ImportError_ as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    batch = uuid.uuid4().hex[:8]
+    created = cases().import_rows(rows, depth, max_nodes, monitor, batch)
+    return {
+        "batch": batch,
+        "created": len(created),
+        "warnings": warnings,
+        **cases().import_status(),
+    }
+
+
+@router.get("/import/status", dependencies=[Depends(require_access)])
+def import_status() -> dict:
+    return cases().import_status()
+
+
+@router.post("/import/next", dependencies=[Depends(require_access_or_cron)])
+def import_next(case_id: str | None = None) -> dict:
+    """Process one step of the import queue (find a company, or investigate it).
+    With case_id: that imported case, e.g. right after the analyst picked its company."""
+    svc = cases()
+    step = svc.import_step(case_id)
+    return {"step": step, **svc.import_status()}
 
 
 @router.post("", dependencies=[Depends(require_access)])
@@ -140,8 +201,28 @@ def refresh(case_id: str) -> dict:
         case, changes = cases().refresh(case_id)
     except LookupError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
     case.pop("snapshot", None)
     return {"case": case, "changes": changes}
+
+
+@router.put("/{case_id}/questionnaire", dependencies=[Depends(require_access)])
+def save_questionnaire(case_id: str, q: QuestionnaireIn) -> dict:
+    try:
+        return cases().save_questionnaire(case_id, q.answers, q.author)
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@router.post("/{case_id}/resolve", dependencies=[Depends(require_access)])
+def resolve(case_id: str, r: ResolveIn) -> dict:
+    try:
+        case = cases().resolve(case_id, r.record_ids)
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    case.pop("snapshot", None)
+    return case
 
 
 @router.post("/{case_id}/seen", dependencies=[Depends(require_access)])

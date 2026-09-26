@@ -5,7 +5,9 @@ import { api, AuthError } from "../api";
 import type { Theme } from "../lib/theme";
 import type { Decision, DecisionValue, Entity, InvestigationParams } from "../types";
 import CaseBar from "./CaseBar";
+import ImportPending from "./ImportPending";
 import InvestigationView from "./InvestigationView";
+import KycQuestionnaire from "./KycQuestionnaire";
 import PasswordGate from "./PasswordGate";
 
 interface Props {
@@ -40,11 +42,14 @@ export default function CaseScreen({ caseId, theme, onBack, onInvestigate }: Pro
       </div>
     );
   }
+  const inv = q.data.investigation;
+  if (!inv) return <ImportPending view={q.data} onBack={onBack} />;
   return (
     <div className="space-y-4">
       <CaseBar key={q.data.case.updated_at} view={q.data} onDeleted={onBack} />
+      <KycQuestionnaire key={`${caseId}-${q.data.questionnaire.answered_at ?? ""}`} caseId={caseId} data={q.data.questionnaire} />
       <InvestigationView
-        investigation={q.data.investigation}
+        investigation={inv}
         theme={theme}
         refreshing={q.isFetching || decide.isPending}
         onBack={onBack}
@@ -52,7 +57,7 @@ export default function CaseScreen({ caseId, theme, onBack, onInvestigate }: Pro
         onInvestigate={
           onInvestigate &&
           ((entity) =>
-            onInvestigate(entity, { name: q.data!.case.subject_name as string, params: q.data!.investigation.params }))
+            onInvestigate(entity, { name: q.data!.case.subject_name as string, params: inv.params }))
         }
         decisions={decisions}
         onDecide={(key, label, decision) => {

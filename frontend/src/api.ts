@@ -8,6 +8,9 @@ import type {
   DocComparison,
   DocExtraction,
   DecisionValue,
+  ImportStatus,
+  KycAnswers,
+  KycQuestionnaire,
   Investigation,
   InvestigationParams,
   Meta,
@@ -89,6 +92,28 @@ export const api = {
   markSeen: (id: string) => request<{ ok: boolean }>(`/cases/${id}/seen`, { method: "POST" }),
   decide: (id: string, d: { item_key: string; item_label: string; decision: DecisionValue | "none"; comment?: string; author?: string }) =>
     request<{ decisions: Decision[] }>(`/cases/${id}/decisions`, { method: "PUT", body: JSON.stringify(d) }),
+
+  saveQuestionnaire: (id: string, answers: KycAnswers, author: string) =>
+    request<KycQuestionnaire>(`/cases/${id}/questionnaire`, { method: "PUT", body: JSON.stringify({ answers, author }) }),
+  resolveCase: (id: string, record_ids: string[]) =>
+    request<CaseRecord>(`/cases/${id}/resolve`, { method: "POST", body: JSON.stringify({ record_ids }) }),
+  importStatus: () => request<ImportStatus>("/cases/import/status"),
+  importNext: (caseId?: string) =>
+    request<ImportStatus & { step: { case_id: string; title: string; state: string } | null }>(
+      `/cases/import/next${caseId ? `?case_id=${encodeURIComponent(caseId)}` : ""}`,
+      { method: "POST" },
+    ),
+  async importFile(file: File, opts: { depth: number; monitor: boolean }) {
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("depth", String(opts.depth));
+    fd.append("monitor", String(opts.monitor));
+    const res = await fetch(`${BASE}/cases/import`, { method: "POST", body: fd, headers: authHeaders() });
+    if (res.status === 401) throw new AuthError("Password required");
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body?.detail ?? `Import failed (${res.status})`);
+    return body as ImportStatus & { batch: string; created: number; warnings: string[] };
+  },
 
   async extractDocument(file: File) {
     const fd = new FormData();

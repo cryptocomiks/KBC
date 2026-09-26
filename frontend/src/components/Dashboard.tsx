@@ -4,7 +4,17 @@ import { useState } from "react";
 import { api, auth, AuthError } from "../api";
 import { countryName, ENTITY_COLORS, flag, fmtDate } from "../lib/format";
 import type { CasesStatus, RiskLevel } from "../types";
+import ImportPanel from "./ImportPanel";
+import { VigilanceBadge } from "./KycQuestionnaire";
 import PasswordGate from "./PasswordGate";
+
+const IMPORT_LABEL: Record<string, string> = {
+  pending: "in the queue",
+  resolved: "analysis waiting",
+  ambiguous: "pick the company",
+  not_found: "not found",
+  error: "failed",
+};
 
 const LEVELS: RiskLevel[] = ["critical", "high", "medium", "low"];
 const SEV = { critical: AlertOctagon, warning: AlertTriangle, info: Info } as const;
@@ -82,10 +92,12 @@ export default function Dashboard({ status, onOpenCase }: Props) {
         ))}
       </div>
 
+      <ImportPanel status={d.imports} />
+
       {total === 0 ? (
         <div className="card p-8 text-center text-sm text-slate-500">
           <FolderOpen className="mx-auto mb-2 h-8 w-8 text-slate-300" />
-          No case yet. Open an investigation and click <b>Save as case</b> to follow it here.
+          No case yet. Open an investigation and click <b>Save as case</b>, or import a client list above.
         </div>
       ) : (
         <div className="grid gap-4 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
@@ -101,6 +113,7 @@ export default function Dashboard({ status, onOpenCase }: Props) {
                 <tr>
                   <th className="px-3 py-2">Case</th>
                   <th className="px-3 py-2">Risk</th>
+                  <th className="px-3 py-2">Vigilance</th>
                   <th className="px-3 py-2">Countries</th>
                   <th className="px-3 py-2">Last check</th>
                   <th className="px-3 py-2">Changes</th>
@@ -118,10 +131,25 @@ export default function Dashboard({ status, onOpenCase }: Props) {
                       </div>
                     </td>
                     <td className="px-3 py-2">
-                      {c.risk_level && (
+                      {c.import_state ? (
+                        <span
+                          className={`text-[11px] font-medium ${
+                            ["ambiguous", "not_found", "error"].includes(c.import_state) ? "text-amber-600" : "text-slate-500"
+                          }`}
+                        >
+                          {IMPORT_LABEL[c.import_state] ?? c.import_state}
+                        </span>
+                      ) : c.risk_level && (
                         <span className="rounded px-1.5 py-0.5 text-[10px] font-bold uppercase text-white" style={{ background: ENTITY_COLORS[c.risk_level] }}>
                           {c.risk_level} {c.risk_score?.toFixed(0)}
                         </span>
+                      )}
+                    </td>
+                    <td className="px-3 py-2">
+                      {c.questionnaire?.vigilance ? (
+                        <VigilanceBadge level={c.questionnaire.vigilance} small />
+                      ) : (
+                        !c.import_state && <span className="text-[11px] text-slate-400">to assess</span>
                       )}
                     </td>
                     <td className="px-3 py-2 text-xs">{c.countries.slice(0, 5).map((k) => flag(k)).join(" ")}</td>

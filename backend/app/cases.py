@@ -14,6 +14,7 @@ import os
 import time
 from typing import Any
 
+from app import questionnaire as kyc
 from app.brief import build_brief
 from app.cache import get_cache
 from app.doc_requests import build_requests
@@ -25,10 +26,17 @@ from app.risk.engine import RiskEngine
 from app.schemas import Investigation, InvestigationRequest
 from app.service import KbcService, build_tables
 from app.settings import get_settings
-from app.store import Store, get_store, now
+from app.store import IMPORT_ACTIVE, Store, get_store, now
 
 DECISIONS = {"confirmed", "false_positive", "to_review"}
 STRONG = 85.0
+# Name search: the best candidate is picked automatically only when there is no real doubt —
+# a near-exact name ahead of the rest, or a good match with no other plausible company.
+# Anything else is left to the analyst (a wrong company in a KYC file is worse than a click).
+IMPORT_EXACT_SCORE = 97.0
+IMPORT_EXACT_MARGIN = 4.0
+IMPORT_MIN_SCORE = 90.0
+IMPORT_RIVAL_SCORE = 80.0
 
 
 def hit_key(inv: Investigation, entity_id: str, dataset: str, matched_name: str) -> str:
@@ -68,6 +76,7 @@ def snapshot(inv: Investigation) -> dict[str, Any]:
     return {
         "score": inv.risk.score,
         "level": inv.risk.level,
+        "factors": sorted({f.key for f in inv.risk.factors}),
         "hits": hits,
         "links": links,
         "documents": documents,
@@ -271,6 +280,8 @@ class CaseService:
         case = self.store.get_case(case_id)
         if case is None:
             raise LookupError("Case not found")
+        if case.get("import_state"):
+            raise ValueError("This imported case has not been analysed yet.")
         cache = get_cache()
         cache.fresh_after = time.time()  # ignore cached API answers: we want today's data
         try:
@@ -284,6 +295,16 @@ class CaseService:
         case = self.store.get_case(case_id)
         if case is None:
             raise LookupError("Case not found")
+        kyc_view = self.questionnaire(case)
+        if case.get("import_state"):
+            case.pop("snapshot", None)
+            return {
+                "case": case,
+                "investigation": None,
+                "decisions": [],
+                "changes": [],
+                "questionnaire": kyc_view,
+            }
         decisions = self.store.decisions(case_id)
         inv = apply_decisions(self.service.investigate(self._params(case)), decisions)
         case.pop("snapshot", None)
@@ -292,6 +313,169 @@ class CaseService:
             "investigation": inv,
             "decisions": decisions,
             "changes": self.store.changes(case_id),
+            "questionnaire": kyc_view,
+        }
+
+    # --------------------------------------------------------- questionnaire
+    @staticmethod
+    def questionnaire(case: dict[str, Any]) -> dict[str, Any]:
+        saved = case.get("questionnaire") or {}
+        answers = saved.get("answers") or {}
+        return {
+            "form": kyc.QUESTIONS,
+            "answers": answers,
+            "author": saved.get("author", ""),
+            "answered_at": saved.get("answered_at"),
+            "suggested": kyc.suggest(case),
+            "assessment": kyc.assess({**answers, "_answered_at": saved.get("answered_at")}, case)
+            if answers
+            else None,
+        }
+
+    def save_questionnaire(
+        self, case_id: str, answers: dict[str, Any], author: str
+    ) -> dict[str, Any]:
+        case = self.store.get_case(case_id)
+        if case is None:
+            raise LookupError("Case not found")
+        answers = kyc.clean(answers)
+        stamp = now()
+        assessment = kyc.assess({**answers, "_answered_at": stamp}, case)
+        case = self.store.update_case(
+            case_id,
+            questionnaire={
+                "answers": answers,
+                "author": author,
+                "answered_at": stamp,
+                "vigilance": assessment["level"],
+                "next_review": assessment["next_review"],
+            },
+        )
+        return self.questionnaire(case)  # type: ignore[arg-type]
+
+    # ---------------------------------------------------------------- import
+    def import_rows(
+        self, rows: list[dict[str, Any]], depth: int, max_nodes: int, monitor: bool, batch: str
+    ) -> list[dict[str, Any]]:
+        created = []
+        for row in rows:
+            label = row["name"] or row["identifier"]
+            title = f"{row['reference']} · {label}" if row["reference"] else label
+            created.append(
+                self.store.create_case(
+                    title=title[:160],
+                    subject_name=label[:200],
+                    subject_type="company",
+                    record_ids=[],
+                    depth=depth,
+                    max_nodes=max_nodes,
+                    demo=False,
+                    monitor=monitor,
+                    import_state="pending",
+                    import_info={**row, "batch": batch},
+                )
+            )
+        return created
+
+    def _pick(self, info: dict[str, Any]) -> tuple[str, dict[str, Any]]:
+        """Find the company of an imported row: (new state, info update)."""
+        resp = self.service.search(info["query"], "company")
+        cands = [c for c in resp.candidates if c.entity.type == EntityType.COMPANY]
+        country = info.get("country")
+        if country:
+            local = [c for c in cands if (c.entity.jurisdiction or "").upper() == country]
+            cands = local or cands
+        # An identifier gives the exact company; the name search needs a clear winner.
+        exact = [c for c in cands if c.score >= 100 and "identifier" in " ".join(c.explanation)]
+        choices = [
+            {
+                "record_ids": c.entity.record_ids,
+                "name": c.entity.name,
+                "jurisdiction": c.entity.jurisdiction,
+                "registration_number": c.entity.registration_number,
+                "status": c.entity.status.value if c.entity.status else None,
+                "score": round(c.score, 1),
+            }
+            for c in cands[:6]
+        ]
+        best = exact[0] if len(exact) == 1 else None
+        if best is None and cands and not exact:
+            top = cands[0]
+            second = cands[1].score if len(cands) > 1 else 0.0
+            if (top.score >= IMPORT_EXACT_SCORE and top.score - second >= IMPORT_EXACT_MARGIN) or (
+                top.score >= IMPORT_MIN_SCORE and second < IMPORT_RIVAL_SCORE
+            ):
+                best = top
+        if best is None:
+            if not cands:
+                return "not_found", {
+                    "note": "No company found in the registers for this line.",
+                    "choices": [],
+                }
+            return "ambiguous", {
+                "note": "Several companies match: pick the right one.",
+                "choices": choices,
+            }
+        return "resolved", {
+            "record_ids": best.entity.record_ids,
+            "matched": best.entity.name,
+            "note": "; ".join(best.explanation[:2]),
+            "choices": [],
+        }
+
+    def import_step(self, case_id: str | None = None) -> dict[str, Any] | None:
+        """One step for the oldest imported case (or the one given): find the company, or
+        investigate it."""
+        case = self.store.get_case(case_id) if case_id else self.store.next_import()
+        if case is None or case.get("import_state") not in IMPORT_ACTIVE:
+            return None
+        info = dict(case.get("import_info") or {})
+        try:
+            if case["import_state"] == "pending":
+                state, update = self._pick(info)
+                info.update(update)
+                fields: dict[str, Any] = {"import_state": state, "import_info": info}
+                if state == "resolved":
+                    fields["record_ids"] = update["record_ids"]
+                    fields["subject_name"] = update["matched"]
+                self.store.update_case(case["id"], **fields)
+                return {"case_id": case["id"], "title": case["title"], "state": state}
+            inv = self.service.investigate(self._params(case))
+            subject = next(e for e in inv.entities if e.id == inv.subject_id)
+            self.store.update_case(
+                case["id"],
+                import_state="",
+                subject_name=subject.name,
+                subject_type=subject.type.value,
+                demo=inv.demo,
+                import_info={**info, "note": "", "choices": []},
+            )
+            self._record(case["id"], inv, {})
+            return {"case_id": case["id"], "title": case["title"], "state": "done"}
+        except Exception as exc:  # noqa: BLE001 - one bad line never blocks the queue
+            info["note"] = f"Analysis failed: {str(exc)[:300]}"
+            self.store.update_case(case["id"], import_state="error", import_info=info)
+            return {"case_id": case["id"], "title": case["title"], "state": "error"}
+
+    def resolve(self, case_id: str, record_ids: list[str]) -> dict[str, Any]:
+        """The analyst picked the company of an imported line (or retries a failed one)."""
+        case = self.store.get_case(case_id)
+        if case is None:
+            raise LookupError("Case not found")
+        info = {**(case.get("import_info") or {}), "note": "", "choices": []}
+        return self.store.update_case(  # type: ignore[return-value]
+            case_id,
+            record_ids=record_ids,
+            import_state="resolved",
+            import_info=info,
+        )
+
+    def import_status(self) -> dict[str, Any]:
+        counts = self.store.import_counts()
+        return {
+            "counts": counts,
+            "remaining": sum(counts.get(s, 0) for s in ("pending", "resolved")),
+            "to_fix": sum(counts.get(s, 0) for s in ("ambiguous", "not_found", "error")),
         }
 
     def dashboard(self) -> dict[str, Any]:
@@ -313,6 +497,7 @@ class CaseService:
                 key=lambda r: -r["cases"],
             ),
             "recent_changes": self.store.changes(limit=40),
+            "imports": self.import_status(),
             "to_review": sum(
                 1
                 for c in cases

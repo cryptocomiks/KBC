@@ -253,6 +253,80 @@ export interface CaseRecord {
   updated_at: string;
   last_run_at: string | null;
   unseen_changes?: number;
+  questionnaire?: { vigilance?: Vigilance; next_review?: string; answered_at?: string };
+  import_state?: ImportState;
+  import_info?: ImportInfo;
+}
+
+export type ImportState = "" | "pending" | "resolved" | "ambiguous" | "not_found" | "error";
+
+export interface ImportChoice {
+  record_ids: string[];
+  name: string;
+  jurisdiction: string | null;
+  registration_number: string | null;
+  status: string | null;
+  score: number;
+}
+
+export interface ImportInfo {
+  line?: number;
+  name?: string;
+  identifier?: string;
+  country?: string | null;
+  reference?: string;
+  query?: string;
+  batch?: string;
+  note?: string;
+  matched?: string;
+  choices?: ImportChoice[];
+}
+
+export interface ImportStatus {
+  counts: Record<string, number>;
+  remaining: number;
+  to_fix: number;
+}
+
+export type Vigilance = "simplified" | "standard" | "enhanced";
+
+export interface KycOption {
+  value: string;
+  label: string;
+  points: number;
+  enhanced: string | null;
+}
+
+export interface KycQuestion {
+  id: string;
+  section: string;
+  label: string;
+  type: "choice" | "text" | "countries";
+  help?: string;
+  options?: KycOption[];
+}
+
+export type KycAnswers = Record<string, string | string[]>;
+
+export interface KycAssessment {
+  level: Vigilance;
+  points: number;
+  reasons: { item: string; detail: string; points: number }[];
+  triggers: string[];
+  measures: string[];
+  missing: string[];
+  complete: boolean;
+  review_months: number;
+  next_review: string;
+}
+
+export interface KycQuestionnaire {
+  form: KycQuestion[];
+  answers: KycAnswers;
+  author: string;
+  answered_at: string | null;
+  suggested: KycAnswers;
+  assessment: KycAssessment | null;
 }
 
 export interface CaseChange {
@@ -280,9 +354,10 @@ export interface Decision {
 
 export interface CaseView {
   case: CaseRecord;
-  investigation: Investigation;
+  investigation: Investigation | null; // null while an imported case waits in the queue
   decisions: Decision[];
   changes: CaseChange[];
+  questionnaire: KycQuestionnaire;
 }
 
 export interface Dashboard {
@@ -291,6 +366,7 @@ export interface Dashboard {
   by_country: { code: string; country: string; cases: number }[];
   recent_changes: CaseChange[];
   to_review: number;
+  imports?: ImportStatus;
 }
 
 export interface DeclaredPerson {

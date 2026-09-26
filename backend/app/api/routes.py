@@ -83,11 +83,17 @@ def report_pdf(req: ReportRequest, x_kbc_password: str | None = Header(default=N
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     decisions: list[dict] = []
     changes: list[dict] = []
+    questionnaire: dict | None = None
     if req.case_id:
+        from app.cases import CaseService
+
         require_access(x_kbc_password)
         decisions = get_store().decisions(req.case_id)
         changes = get_store().changes(req.case_id)
         inv = apply_decisions(inv, decisions)
+        case = get_store().get_case(req.case_id)
+        if case:
+            questionnaire = CaseService.questionnaire(case)
     pdf = build_pdf(
         inv,
         graph_png_b64=req.graph_png,
@@ -96,6 +102,7 @@ def report_pdf(req: ReportRequest, x_kbc_password: str | None = Header(default=N
         decisions=decisions,
         template=req.template,
         changes=changes,
+        questionnaire=questionnaire,
     )
     subject = next(e for e in inv.entities if e.id == inv.subject_id)
     # HTTP headers are Latin-1: keep the file name ASCII ("S.à r.l." -> "S_a_r_l_")

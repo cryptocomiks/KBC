@@ -208,6 +208,7 @@ def build_pdf(
     decisions: list[dict] | None = None,
     template: str = "full",
     changes: list[dict] | None = None,
+    questionnaire: dict | None = None,
 ) -> bytes:
     st = _styles()
     ents = {e.id: e for e in inv.entities}
@@ -780,6 +781,68 @@ def build_pdf(
                 "No change recorded since the case was opened.",
             )
         )
+    kyc = questionnaire or {}
+    assessment = kyc.get("assessment")
+    if assessment:
+        from app.questionnaire import BY_ID, answer_label
+
+        vigilance = {
+            "simplified": "SIMPLIFIED",
+            "standard": "STANDARD",
+            "enhanced": "ENHANCED",
+        }[assessment["level"]]
+        story.append(Paragraph("KYC / AML-CFT questionnaire and vigilance level", st["h2"]))
+        story.append(
+            Paragraph(
+                f"<b>Vigilance level: {vigilance}</b> — {assessment['points']} risk points"
+                + (
+                    f" · triggers: {_esc(', '.join(assessment['triggers']))}"
+                    if assessment["triggers"]
+                    else ""
+                )
+                + f" · next review by {assessment['next_review']}",
+                st["warn"],
+            )
+        )
+        story.append(Spacer(1, 6))
+        answered = kyc.get("answered_at") or ""
+        story.append(
+            Paragraph(
+                f"Answered {str(answered)[:16].replace('T', ' ')} UTC"
+                + (f" by {_esc(kyc.get('author'))}" if kyc.get("author") else "")
+                + (
+                    f" · unanswered: {_esc(', '.join(assessment['missing']))}"
+                    if assessment["missing"]
+                    else ""
+                ),
+                st["muted"],
+            )
+        )
+        story.append(
+            _table(
+                [
+                    {"q": BY_ID[qid]["label"], "a": answer_label(qid, value)}
+                    for qid, value in (kyc.get("answers") or {}).items()
+                    if qid in BY_ID
+                ],
+                [("q", "Question", 4), ("a", "Answer", 7)],
+                st,
+                "",
+            )
+        )
+        if assessment["reasons"]:
+            story.append(Paragraph("What drives the level", st["h3"]))
+            story.append(
+                _table(
+                    assessment["reasons"],
+                    [("item", "Factor", 3.5), ("detail", "Detail", 6), ("points", "Points", 1)],
+                    st,
+                    "",
+                )
+            )
+        story.append(Paragraph("Measures required", st["h3"]))
+        for m in assessment["measures"]:
+            story.append(Paragraph(f"☐ {_esc(m)}", st["body"]))
     if inv.requests:
         story.append(Paragraph("Documents to request from the client", st["h2"]))
         story.append(
@@ -852,7 +915,12 @@ def build_pdf(
         )
         if template == "review":
             story.append(
-                Paragraph("Next review due: ____ / ____ / ________ (per risk level)", st["body"])
+                Paragraph(
+                    f"Next review due: {assessment['next_review']} (vigilance level)"
+                    if assessment
+                    else "Next review due: ____ / ____ / ________ (per risk level)",
+                    st["body"],
+                )
             )
 
     skip = SKIPPED_SECTIONS.get(template, set())

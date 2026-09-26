@@ -36,7 +36,10 @@ SCHEMA = [
         snapshot TEXT NOT NULL DEFAULT '{}',
         created_at TEXT NOT NULL,
         updated_at TEXT NOT NULL,
-        last_run_at TEXT
+        last_run_at TEXT,
+        questionnaire TEXT NOT NULL DEFAULT '{}',
+        import_state TEXT NOT NULL DEFAULT '',
+        import_info TEXT NOT NULL DEFAULT '{}'
     )""",
     """CREATE TABLE IF NOT EXISTS decisions (
         case_id TEXT NOT NULL,
@@ -69,9 +72,18 @@ SCHEMA = [
 CASE_FIELDS = (
     "id", "title", "subject_name", "subject_type", "record_ids", "depth", "max_nodes", "demo",
     "status", "monitor", "notes", "risk_score", "risk_level", "countries", "snapshot",
-    "created_at", "updated_at", "last_run_at",
+    "created_at", "updated_at", "last_run_at", "questionnaire", "import_state", "import_info",
 )  # fmt: skip
-JSON_FIELDS = ("record_ids", "countries", "snapshot")
+JSON_FIELDS = ("record_ids", "countries", "snapshot", "questionnaire", "import_info")
+# Columns added after the first release: created on existing databases at start-up.
+MIGRATIONS = {
+    "questionnaire": "TEXT NOT NULL DEFAULT '{}'",
+    "import_state": "TEXT NOT NULL DEFAULT ''",
+    "import_info": "TEXT NOT NULL DEFAULT '{}'",
+}
+# import_state: '' = analysed case; pending (company to find) -> resolved (to investigate);
+# ambiguous (several candidates: the analyst picks one) or not_found / error (to fix).
+IMPORT_ACTIVE = ("pending", "resolved")
 
 
 def now() -> str:
@@ -94,6 +106,17 @@ class Store:
             self._conn.row_factory = sqlite3.Row
         for stmt in SCHEMA:
             self._exec(stmt)
+        self._migrate()
+
+    def _migrate(self) -> None:
+        if self.kind == "postgres":
+            for col, decl in MIGRATIONS.items():
+                self._exec(f"ALTER TABLE cases ADD COLUMN IF NOT EXISTS {col} {decl}")
+            return
+        present = {r["name"] for r in self._exec("PRAGMA table_info(cases)")}
+        for col, decl in MIGRATIONS.items():
+            if col not in present:
+                self._exec(f"ALTER TABLE cases ADD COLUMN {col} {decl}")
 
     # ------------------------------------------------------------ low level
     def _sql(self, sql: str) -> str:
@@ -142,6 +165,9 @@ class Store:
             "last_run_at": None,
             "risk_score": None,
             "risk_level": None,
+            "questionnaire": {},
+            "import_state": "",
+            "import_info": {},
             **fields,
         }
         values = tuple(
@@ -194,10 +220,27 @@ class Store:
 
     def stalest_monitored(self) -> dict[str, Any] | None:
         rows = self._exec(
-            "SELECT id FROM cases WHERE monitor = 1 AND status = 'open' "
+            "SELECT id FROM cases WHERE monitor = 1 AND status = 'open' AND import_state = '' "
             "ORDER BY COALESCE(last_run_at, '') ASC LIMIT 1"
         )
         return self.get_case(rows[0]["id"]) if rows else None
+
+    # ---------------------------------------------------------------- import
+    def next_import(self) -> dict[str, Any] | None:
+        """Oldest imported case still to process (to find, then to investigate)."""
+        rows = self._exec(
+            "SELECT id FROM cases WHERE import_state IN (?, ?) ORDER BY created_at ASC, id ASC LIMIT 1",
+            IMPORT_ACTIVE,
+        )
+        return self.get_case(rows[0]["id"]) if rows else None
+
+    def import_counts(self) -> dict[str, int]:
+        return {
+            (r["import_state"] or "done"): int(r["n"])
+            for r in self._exec(
+                "SELECT import_state, COUNT(*) AS n FROM cases GROUP BY import_state"
+            )
+        }
 
     # ------------------------------------------------------------- decisions
     def decisions(self, case_id: str) -> list[dict[str, Any]]:

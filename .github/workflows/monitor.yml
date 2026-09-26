@@ -29,3 +29,15 @@ jobs:
             [ "$id" = "$first" ] && break   # every monitored case has been refreshed once
             [ -z "$first" ] && first="$id"
           done
+      - name: Analyse imported clients still in the queue
+        env:
+          BASE: ${{ vars.PRODUCTION_URL || 'https://kbc-lemon.vercel.app' }}
+          TOKEN: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$TOKEN" ]; then echo "CRON_SECRET secret not set: skipping"; exit 0; fi
+          for i in $(seq 1 120); do
+            out=$(curl -sS -X POST -H "Authorization: Bearer $TOKEN" "$BASE/api/cases/import/next" --max-time 300) || break
+            echo "$out" | head -c 300; echo
+            left=$(echo "$out" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('remaining', 0) if d.get('step') else 0)")
+            [ "$left" = "0" ] && break
+          done
