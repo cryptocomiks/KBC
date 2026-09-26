@@ -158,7 +158,7 @@ export default function Dashboard({ status, onOpenCase }: Props) {
                 {d.cases.filter((c) => !queue || c.queue === queue).map((c) => (
                   <tr key={c.id} onClick={() => onOpenCase(c.id)} className="cursor-pointer border-t border-slate-100 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800/50">
                     <td className="px-3 py-2">
-                      <div className="font-medium">{c.title}</div>
+                      <a href={`#/cases/${c.id}`} className="font-medium hover:text-brand-700 dark:hover:text-brand-400" onClick={(e) => e.stopPropagation()}>{c.title}</a>
                       <div className="text-[11px] text-slate-500">
                         {c.subject_type} · {c.status === "closed" ? "closed" : STATE_LABEL[c.workflow_state ?? "to_complete"]}
                         {c.monitor && <BellRing className="ml-1 inline h-3 w-3" />}

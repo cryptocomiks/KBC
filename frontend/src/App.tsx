@@ -1,6 +1,6 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Building2, FileSearch, Loader2, ShieldAlert } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { api, auth, AuthError } from "./api";
 import CaseScreen from "./components/CaseScreen";
 import Dashboard from "./components/Dashboard";
@@ -9,7 +9,9 @@ import Disclaimer from "./components/Disclaimer";
 import Header from "./components/Header";
 import InvestigationView from "./components/InvestigationView";
 import LoadingInvestigation from "./components/LoadingInvestigation";
+import CommandPalette from "./components/CommandPalette";
 import SearchPanel, { type SearchParams } from "./components/SearchPanel";
+import { type Route, useRoute } from "./lib/route";
 import { useTheme } from "./lib/theme";
 import type { Entity, InvestigationParams } from "./types";
 
@@ -17,14 +19,53 @@ const DEFAULT_SEARCH: SearchParams = { q: "", type: "any", depth: 2, maxNodes: 6
 
 export default function App() {
   const [theme, toggleTheme] = useTheme();
-  const [search, setSearch] = useState<SearchParams | null>(null);
-  const [target, setTarget] = useState<InvestigationParams | null>(null);
-  const [page, setPage] = useState<"main" | "cases">("main");
-  const [caseId, setCaseId] = useState<string | null>(null);
+  const [route, navigate] = useRoute();
+  const search: SearchParams | null =
+    route.name === "search" ? { q: route.q, type: route.type, depth: route.depth, maxNodes: route.maxNodes } : null;
+  const target: InvestigationParams | null =
+    route.name === "investigate" ? { record_ids: route.ids, depth: route.depth, max_nodes: route.maxNodes } : null;
+  const page = route.name === "cases" || route.name === "case" ? "cases" : "main";
+  const caseId = route.name === "case" ? route.id : null;
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [palette, setPalette] = useState(false);
   // Pivots: investigations opened from a linked person / company, newest last.
   const [trail, setTrail] = useState<{ name: string; params: InvestigationParams }[]>([]);
+  const lastSearch = useRef<Route | null>(null);
   const qc = useQueryClient();
+  const toInvestigation = (p: InvestigationParams): Route & { name: "investigate" } => ({
+    name: "investigate",
+    ids: p.record_ids,
+    depth: p.depth,
+    maxNodes: p.max_nodes,
+  });
+  const same = (a: InvestigationParams, b: InvestigationParams) => a.record_ids.join("|") === b.record_ids.join("|");
+
+  // Keep the breadcrumb in step with the browser's back / forward buttons.
+  const targetKey = target?.record_ids.join("|");
+  useEffect(() => {
+    if (route.name === "search") lastSearch.current = route;
+    if (!target) {
+      setTrail([]);
+      return;
+    }
+    setTrail((t) => {
+      const i = t.findIndex((x) => same(x.params, target));
+      return i >= 0 ? t.slice(0, i) : t;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [route.name, targetKey]);
+
+  // Ctrl+K / Cmd+K: quick open (cases, searches, pages)
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setPalette((o) => !o);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   const meta = useQuery({ queryKey: ["meta"], queryFn: api.meta, staleTime: Infinity });
   const connectors = useQuery({ queryKey: ["connectors"], queryFn: api.connectors });
@@ -48,29 +89,16 @@ export default function App() {
   });
 
   const casesStatus = meta.data?.cases;
-  const pivot = (entity: Entity, from: { name: string; params: InvestigationParams }) => {
-    setTrail((t) => [...t, from]);
-    setTarget({ record_ids: entity.record_ids, depth: Math.min(from.params.depth, 2), max_nodes: from.params.max_nodes });
-    setCaseId(null);
-    setPage("main");
+  const pivot = (entity: Entity, from: { name: string; params: InvestigationParams }, fresh = false) => {
+    setTrail((t) => [...(fresh ? [] : t), from]);
+    navigate({ name: "investigate", ids: entity.record_ids, depth: Math.min(from.params.depth, 2), maxNodes: from.params.max_nodes });
   };
   const back = () => {
-    if (trail.length) {
-      setTarget(trail[trail.length - 1].params);
-      setTrail((t) => t.slice(0, -1));
-    } else setTarget(null);
+    if (trail.length) navigate(toInvestigation(trail[trail.length - 1].params));
+    else navigate(lastSearch.current ?? { name: "home" });
   };
-  const home = () => {
-    setTrail([]);
-    setSearch(null);
-    setTarget(null);
-    setCaseId(null);
-    setPage("main");
-  };
-  const openCase = (id: string) => {
-    setCaseId(id);
-    setPage("cases");
-  };
+  const home = () => navigate({ name: "home" });
+  const openCase = (id: string) => navigate({ name: "case", id, tab: "kyc" });
   const saveCase = useMutation({
     mutationFn: (p: InvestigationParams) => api.createCase(p),
     onSuccess: (c) => {
@@ -98,24 +126,32 @@ export default function App() {
         theme={theme}
         onToggleTheme={toggleTheme}
         onHome={home}
-        onCases={() => {
-          setCaseId(null);
-          setPage("cases");
-        }}
+        onCases={() => navigate({ name: "cases" })}
         casesActive={page === "cases"}
+        onQuickOpen={() => setPalette(true)}
       />
+      {palette && (
+        <CommandPalette
+          casesEnabled={!!casesStatus?.enabled}
+          onClose={() => setPalette(false)}
+          onNavigate={(r) => {
+            setPalette(false);
+            navigate(r);
+          }}
+        />
+      )}
       <Disclaimer text={meta.data?.disclaimer} />
       <main className="mx-auto w-full max-w-[1600px] flex-1 space-y-5 px-4 py-5">
         {page === "cases" && !caseId && <Dashboard status={casesStatus} onOpenCase={openCase} />}
-        {page === "cases" && caseId && (
+        {route.name === "case" && (
           <CaseScreen
-            caseId={caseId}
+            key={route.id}
+            caseId={route.id}
+            tab={route.tab}
+            onTab={(tab) => navigate({ name: "case", id: route.id, tab }, { replace: true })}
             theme={theme}
-            onBack={() => setCaseId(null)}
-            onInvestigate={(entity, from) => {
-              setTrail([]);
-              pivot(entity, from);
-            }}
+            onBack={() => navigate({ name: "cases" })}
+            onInvestigate={(entity, from) => pivot(entity, from, true)}
           />
         )}
         {page === "main" && !target && (
@@ -151,7 +187,13 @@ export default function App() {
                 </div>
               </div>
             )}
-            <SearchPanel initial={search ?? DEFAULT_SEARCH} demo={!!meta.data?.demo_mode} live={live} onSearch={setSearch} />
+            <SearchPanel
+              key={search ? `${search.q}|${search.type}` : "new"}
+              initial={search ?? DEFAULT_SEARCH}
+              demo={!!meta.data?.demo_mode}
+              live={live}
+              onSearch={(p) => navigate({ name: "search", q: p.q, type: p.type, depth: p.depth, maxNodes: p.maxNodes })}
+            />
             {results.isFetching && (
               <div className="flex items-center gap-2 text-sm text-slate-500">
                 <Loader2 className="h-4 w-4 animate-spin" /> Searching sources…
@@ -161,10 +203,9 @@ export default function App() {
             {results.data && !results.isFetching && (
               <CandidateList
                 data={results.data}
-                onPick={(c) => {
-                  setTrail([]);
-                  setTarget({ record_ids: c.entity.record_ids, depth: search?.depth ?? 3, max_nodes: search?.maxNodes ?? 60 });
-                }}
+                onPick={(c) =>
+                  navigate({ name: "investigate", ids: c.entity.record_ids, depth: search?.depth ?? 2, maxNodes: search?.maxNodes ?? 60 })
+                }
               />
             )}
           </>
@@ -190,12 +231,9 @@ export default function App() {
                 theme={theme}
                 refreshing={investigation.isFetching}
                 onBack={back}
-                onDepthChange={(depth) => setTarget({ ...target, depth })}
+                onDepthChange={(depth) => navigate({ name: "investigate", ids: target.record_ids, depth, maxNodes: target.max_nodes }, { replace: true })}
                 trail={trail.map((t) => t.name)}
-                onTrail={(i) => {
-                  setTarget(trail[i].params);
-                  setTrail((t) => t.slice(0, i));
-                }}
+                onTrail={(i) => navigate(toInvestigation(trail[i].params))}
                 onInvestigate={(entity) => {
                   const inv = investigation.data!;
                   const subject = inv.entities.find((e) => e.id === inv.subject_id);

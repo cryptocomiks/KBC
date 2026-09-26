@@ -145,9 +145,12 @@ export default function InvestigationView({
       {/* Summary */}
       <div className="card flex flex-wrap items-center gap-x-8 gap-y-4 p-4">
         <div className="min-w-[260px] flex-1">
-          <button onClick={onBack} className="mb-1 inline-flex items-center gap-1 text-xs text-slate-500 hover:text-brand-600">
-            <ArrowLeft className="h-3 w-3" /> {caseId ? "Back to cases" : trail.length ? `Back to ${trail[trail.length - 1]}` : "Back to candidates"}
-          </button>
+          {/* Inside a case, the case header already has the way back */}
+          {!caseId && (
+            <button onClick={onBack} className="mb-1 inline-flex items-center gap-1 text-xs text-slate-500 hover:text-brand-600">
+              <ArrowLeft className="h-3 w-3" /> {trail.length ? `Back to ${trail[trail.length - 1]}` : "Back to candidates"}
+            </button>
+          )}
           <h1 className="flex items-center gap-2 text-xl font-bold tracking-tight">
             {subject.name}
             <span
@@ -252,7 +255,7 @@ export default function InvestigationView({
       )}
 
       {/* Tabs */}
-      <div className="sticky top-14 z-20 -mx-4 border-b border-slate-200 bg-slate-50/95 px-4 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-950/95">
+      <div className={`${caseId ? "" : "sticky top-14 z-20"} -mx-4 border-b border-slate-200 bg-slate-50/95 px-4 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-950/95`}>
         <div className="flex gap-1 overflow-x-auto" role="tablist">
           {TABS.map(([k, label, Icon]) => (
             <button
@@ -292,7 +295,11 @@ export default function InvestigationView({
               <OwnershipChart investigation={inv} onSelect={select} />
               <CountryExposure investigation={inv} onSelect={select} />
             </div>
-            <div className="space-y-4 xl:sticky xl:top-[116px] xl:max-h-[calc(100vh-132px)] xl:overflow-y-auto xl:rounded-[18px]">
+            <div
+              className={`space-y-4 xl:sticky xl:overflow-y-auto xl:rounded-[18px] ${
+                caseId ? "xl:top-[174px] xl:max-h-[calc(100vh-190px)]" : "xl:top-[116px] xl:max-h-[calc(100vh-132px)]"
+              }`}
+            >
               <DocRequests investigation={inv} />
             </div>
           </div>

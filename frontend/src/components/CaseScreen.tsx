@@ -4,8 +4,10 @@ import { useMemo, useState } from "react";
 import { api, AuthError } from "../api";
 import type { Theme } from "../lib/theme";
 import type { Decision, DecisionValue, Entity, InvestigationParams } from "../types";
-import CaseBar from "./CaseBar";
+import type { CaseTab } from "../lib/route";
 import CaseChecklist from "./CaseChecklist";
+import CaseHeader from "./CaseHeader";
+import CaseHistory from "./CaseHistory";
 import CaseWorkflow from "./CaseWorkflow";
 import ImportPending from "./ImportPending";
 import InvestigationView from "./InvestigationView";
@@ -14,13 +16,15 @@ import PasswordGate from "./PasswordGate";
 
 interface Props {
   caseId: string;
+  tab: CaseTab;
+  onTab: (tab: CaseTab) => void;
   theme: Theme;
   onBack: () => void;
   onInvestigate?: (entity: Entity, from: { name: string; params: InvestigationParams }) => void;
 }
 
 /** A saved case: case bar (monitoring, changes, notes) above the investigation, with analyst decisions. */
-export default function CaseScreen({ caseId, theme, onBack, onInvestigate }: Props) {
+export default function CaseScreen({ caseId, tab, onTab, theme, onBack, onInvestigate }: Props) {
   const [attempt, setAttempt] = useState(0);
   const qc = useQueryClient();
   const q = useQuery({ queryKey: ["case", caseId, attempt], queryFn: () => api.getCase(caseId), retry: false });
@@ -48,10 +52,23 @@ export default function CaseScreen({ caseId, theme, onBack, onInvestigate }: Pro
   if (!inv) return <ImportPending view={q.data} onBack={onBack} />;
   return (
     <div className="space-y-4">
-      <CaseBar key={q.data.case.updated_at} view={q.data} onDeleted={onBack} />
-      {q.data.workflow && <CaseWorkflow caseId={caseId} view={q.data.workflow} />}
-      <KycQuestionnaire key={`${caseId}-${q.data.questionnaire.answered_at ?? ""}`} caseId={caseId} data={q.data.questionnaire} />
-      {q.data.checklist && <CaseChecklist caseId={caseId} data={q.data.checklist} />}
+      <CaseHeader view={q.data} tab={tab} onTab={onTab} onBack={onBack} />
+      {tab === "kyc" && (
+        <div className="panel-enter space-y-4">
+          {q.data.workflow && <CaseWorkflow caseId={caseId} view={q.data.workflow} />}
+          <KycQuestionnaire key={`${caseId}-${q.data.questionnaire.answered_at ?? ""}`} caseId={caseId} data={q.data.questionnaire} />
+          {q.data.checklist && <CaseChecklist caseId={caseId} data={q.data.checklist} />}
+          <p className="text-center text-xs text-slate-500">
+            Findings, network, evidence and reports are in the{" "}
+            <button className="font-medium text-brand-700 underline dark:text-brand-400" onClick={() => onTab("investigation")}>
+              Investigation
+            </button>{" "}
+            tab.
+          </p>
+        </div>
+      )}
+      {tab === "history" && <CaseHistory key={q.data.case.updated_at} view={q.data} />}
+      {tab === "investigation" && (
       <InvestigationView
         investigation={inv}
         theme={theme}
@@ -70,6 +87,7 @@ export default function CaseScreen({ caseId, theme, onBack, onInvestigate }: Pro
           decide.mutate({ item_key: key, item_label: label, decision, comment });
         }}
       />
+      )}
     </div>
   );
 }
