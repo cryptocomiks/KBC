@@ -12,9 +12,12 @@ from __future__ import annotations
 
 import os
 import time
+import uuid
+from datetime import date, timedelta
 from typing import Any
 
 from app import questionnaire as kyc
+from app import workflow as wf
 from app.brief import build_brief
 from app.cache import get_cache
 from app.doc_requests import build_requests
@@ -258,6 +261,10 @@ class CaseService:
             last_run_at=run_at,
         )
         self.store.add_changes(case_id, run_at, changes)
+        case = self.store.get_case(case_id)
+        reopened = wf.auto_reopen(case or {}, changes, run_at)
+        if reopened:
+            self.store.update_case(case_id, workflow=reopened)
         return changes
 
     def create(self, req: InvestigationRequest, title: str | None, monitor: bool) -> dict[str, Any]:
@@ -307,6 +314,10 @@ class CaseService:
             }
         decisions = self.store.decisions(case_id)
         inv = apply_decisions(self.service.investigate(self._params(case)), decisions)
+        checklist = wf.checklist_view(
+            case, [r.model_dump() for r in inv.requests], kyc_view["assessment"]
+        )
+        workflow = self.workflow_view(case, checklist, kyc_view["assessment"])
         case.pop("snapshot", None)
         return {
             "case": case,
@@ -314,7 +325,77 @@ class CaseService:
             "decisions": decisions,
             "changes": self.store.changes(case_id),
             "questionnaire": kyc_view,
+            "checklist": checklist,
+            "workflow": workflow,
         }
+
+    # ------------------------------------------------- workflow & checklist
+    @staticmethod
+    def workflow_view(
+        case: dict[str, Any], checklist: dict[str, Any], assessment: dict | None
+    ) -> dict[str, Any]:
+        saved = case.get("workflow") or {}
+        state = wf.state_of(case)
+        return {
+            "state": state,
+            "label": wf.STATE_LABELS[state],
+            "history": list(reversed(saved.get("history") or [])),
+            "submitted_by": saved.get("submitted_by"),
+            "validated_by": saved.get("validated_by"),
+            "validated_at": saved.get("validated_at"),
+            "blockers": wf.blockers(case, checklist, assessment),
+        }
+
+    def _case_file(self, case: dict[str, Any]) -> tuple[dict, dict, dict | None]:
+        """Checklist, workflow and assessment of a case (runs the cached investigation)."""
+        assessment = self.questionnaire(case)["assessment"]
+        inv = self.service.investigate(self._params(case))
+        checklist = wf.checklist_view(case, [r.model_dump() for r in inv.requests], assessment)
+        return checklist, self.workflow_view(case, checklist, assessment), assessment
+
+    def _get(self, case_id: str) -> dict[str, Any]:
+        case = self.store.get_case(case_id)
+        if case is None:
+            raise LookupError("Case not found")
+        if case.get("import_state"):
+            raise wf.WorkflowError("This imported case has not been analysed yet.")
+        return case
+
+    def act(self, case_id: str, action: str, who: str, comment: str) -> dict[str, Any]:
+        case = self._get(case_id)
+        checklist, _, assessment = self._case_file(case)
+        blocking = wf.blockers(case, checklist, assessment) if action == "submit" else []
+        state = wf.transition(case, action, who, comment, now(), blocking)
+        case = self.store.update_case(case_id, workflow=state)
+        return self.workflow_view(case, checklist, assessment)  # type: ignore[arg-type]
+
+    def tick(self, case_id: str, item_key: str, done: bool, by: str, note: str) -> dict[str, Any]:
+        case = self._get(case_id)
+        saved = dict(case.get("checklist") or {})
+        ticks = dict(saved.get("ticks") or {})
+        ticks[item_key] = {"done": done, "by": by, "at": now(), "note": note[:1000]}
+        saved["ticks"] = ticks
+        self.store.update_case(case_id, checklist=saved)
+        return self._case_file(self.store.get_case(case_id))[0]  # type: ignore[arg-type]
+
+    def add_diligence(self, case_id: str, label: str) -> dict[str, Any]:
+        case = self._get(case_id)
+        saved = dict(case.get("checklist") or {})
+        custom = list(saved.get("custom") or [])
+        custom.append({"key": "c" + uuid.uuid4().hex[:11], "label": label.strip()[:500]})
+        saved["custom"] = custom[-100:]
+        self.store.update_case(case_id, checklist=saved)
+        return self._case_file(self.store.get_case(case_id))[0]  # type: ignore[arg-type]
+
+    def remove_diligence(self, case_id: str, item_key: str) -> dict[str, Any]:
+        case = self._get(case_id)
+        saved = dict(case.get("checklist") or {})
+        custom = [c for c in saved.get("custom") or [] if c["key"] != item_key]
+        if len(custom) == len(saved.get("custom") or []):
+            saved["removed"] = sorted({*(saved.get("removed") or []), item_key})
+        saved["custom"] = custom
+        self.store.update_case(case_id, checklist=saved)
+        return self._case_file(self.store.get_case(case_id))[0]  # type: ignore[arg-type]
 
     # --------------------------------------------------------- questionnaire
     @staticmethod
@@ -488,9 +569,21 @@ class CaseService:
             )
             for code in c.get("countries") or []:
                 by_country[code] = by_country.get(code, 0) + 1
+        horizon = (date.today() + timedelta(days=30)).isoformat()
+        queues = {
+            q: 0 for q in ("sensitive", "to_validate", "to_complete", "review_due", "validated")
+        }
+        for c in cases:
+            c["queue"] = wf.queue_of(c, horizon)
+            c["workflow_state"] = wf.state_of(c)
+            c.pop("workflow", None)
+            c.pop("checklist", None)
+            if c["queue"]:
+                queues[c["queue"]] += 1
         jur = get_jurisdictions()
         return {
             "cases": cases,
+            "queues": queues,
             "by_level": by_level,
             "by_country": sorted(
                 ({"code": k, "country": jur.name(k), "cases": v} for k, v in by_country.items()),

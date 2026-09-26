@@ -8,7 +8,10 @@ import type {
   DocComparison,
   DocExtraction,
   DecisionValue,
+  Checklist,
   ImportStatus,
+  WorkflowAction,
+  WorkflowView,
   KycAnswers,
   KycQuestionnaire,
   Investigation,
@@ -95,6 +98,14 @@ export const api = {
 
   saveQuestionnaire: (id: string, answers: KycAnswers, author: string) =>
     request<KycQuestionnaire>(`/cases/${id}/questionnaire`, { method: "PUT", body: JSON.stringify({ answers, author }) }),
+  workflowAction: (id: string, action: WorkflowAction, by: string, comment = "") =>
+    request<WorkflowView>(`/cases/${id}/workflow`, { method: "POST", body: JSON.stringify({ action, by, comment }) }),
+  tick: (id: string, key: string, done: boolean, by: string) =>
+    request<Checklist>(`/cases/${id}/checklist/${key}`, { method: "PUT", body: JSON.stringify({ done, by }) }),
+  addDiligence: (id: string, label: string) =>
+    request<Checklist>(`/cases/${id}/diligences`, { method: "POST", body: JSON.stringify({ label }) }),
+  removeDiligence: (id: string, key: string) =>
+    request<Checklist>(`/cases/${id}/diligences/${key}`, { method: "DELETE" }),
   resolveCase: (id: string, record_ids: string[]) =>
     request<CaseRecord>(`/cases/${id}/resolve`, { method: "POST", body: JSON.stringify({ record_ids }) }),
   importStatus: () => request<ImportStatus>("/cases/import/status"),

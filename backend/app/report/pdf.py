@@ -209,6 +209,7 @@ def build_pdf(
     template: str = "full",
     changes: list[dict] | None = None,
     questionnaire: dict | None = None,
+    case_file: dict | None = None,
 ) -> bytes:
     st = _styles()
     ents = {e.id: e for e in inv.entities}
@@ -843,6 +844,87 @@ def build_pdf(
         story.append(Paragraph("Measures required", st["h3"]))
         for m in assessment["measures"]:
             story.append(Paragraph(f"☐ {_esc(m)}", st["body"]))
+    checklist = (case_file or {}).get("checklist")
+    if checklist:
+        story.append(Paragraph("Case checklist", st["h2"]))
+        story.append(Paragraph("Documents", st["h3"]))
+        story.append(
+            _table(
+                [
+                    {
+                        "doc": ("☑ " if d["done"] else "☐ ") + d["label"],
+                        "prio": "Required" if d["required"] else "Recommended",
+                        "by": f"{d['by']} {str(d['at'] or '')[:10]}" if d["done"] else "",
+                    }
+                    for d in checklist["documents"]
+                ],
+                [
+                    ("doc", "Document", 6),
+                    ("prio", "Priority", 1.3),
+                    ("by", "Received (by, on)", 2.2),
+                ],
+                st,
+                "No document requested.",
+            )
+        )
+        story.append(Paragraph("Additional diligences", st["h3"]))
+        story.append(
+            _table(
+                [
+                    {
+                        "d": ("☑ " if d["done"] else "☐ ") + d["label"],
+                        "by": f"{d['by']} {str(d['at'] or '')[:10]}" if d["done"] else "",
+                    }
+                    for d in checklist["diligences"]
+                ],
+                [("d", "Control", 7.5), ("by", "Done (by, on)", 2.2)],
+                st,
+                "",
+            )
+        )
+    workflow = (case_file or {}).get("workflow")
+    if workflow:
+        actions = {
+            "submit": "Sent for validation",
+            "validate": "Validated",
+            "reject": "Sent back",
+            "reopen": "Reopened",
+        }
+        story.append(Paragraph("Validation (four-eyes principle)", st["h2"]))
+        story.append(
+            Paragraph(
+                f"<b>Status: {_esc(workflow['label'])}</b>"
+                + (
+                    f" — validated by {_esc(workflow['validated_by'])} on "
+                    f"{str(workflow['validated_at'])[:10]}"
+                    if workflow.get("validated_by")
+                    else ""
+                ),
+                st["warn"],
+            )
+        )
+        story.append(Spacer(1, 6))
+        story.append(
+            _table(
+                [
+                    {
+                        "at": str(h["at"])[:16].replace("T", " "),
+                        "what": actions.get(h["action"], h["action"]),
+                        "by": h["by"],
+                        "comment": h.get("comment", ""),
+                    }
+                    for h in workflow["history"]
+                ],
+                [
+                    ("at", "When (UTC)", 1.5),
+                    ("what", "Step", 1.8),
+                    ("by", "By", 1.5),
+                    ("comment", "Comment", 5),
+                ],
+                st,
+                "Not sent for validation yet.",
+            )
+        )
     if inv.requests:
         story.append(Paragraph("Documents to request from the client", st["h2"]))
         story.append(

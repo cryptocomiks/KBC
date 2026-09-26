@@ -22,6 +22,7 @@ from app.schemas import InvestigationRequest
 from app.service import KbcService
 from app.settings import get_settings
 from app.store import get_store
+from app.workflow import WorkflowError
 
 router = APIRouter(prefix="/cases", tags=["cases"])
 
@@ -97,6 +98,22 @@ def status() -> dict:
 class QuestionnaireIn(BaseModel):
     answers: dict[str, Any]
     author: str = Field(default="", max_length=120)
+
+
+class WorkflowIn(BaseModel):
+    action: Literal["submit", "validate", "reject", "reopen"]
+    by: str = Field(max_length=120)
+    comment: str = Field(default="", max_length=2000)
+
+
+class TickIn(BaseModel):
+    done: bool
+    by: str = Field(default="", max_length=120)
+    note: str = Field(default="", max_length=1000)
+
+
+class DiligenceIn(BaseModel):
+    label: str = Field(min_length=3, max_length=500)
 
 
 class ResolveIn(BaseModel):
@@ -213,6 +230,36 @@ def save_questionnaire(case_id: str, q: QuestionnaireIn) -> dict:
         return cases().save_questionnaire(case_id, q.answers, q.author)
     except LookupError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+def _run(fn, *args):
+    try:
+        return fn(*args)
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except WorkflowError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+
+@router.post("/{case_id}/workflow", dependencies=[Depends(require_access)])
+def workflow_action(case_id: str, w: WorkflowIn) -> dict:
+    """Send for validation, validate (four eyes), send back or reopen a case."""
+    return _run(cases().act, case_id, w.action, w.by, w.comment)
+
+
+@router.put("/{case_id}/checklist/{item_key}", dependencies=[Depends(require_access)])
+def tick(case_id: str, item_key: str, t: TickIn) -> dict:
+    return _run(cases().tick, case_id, item_key[:40], t.done, t.by, t.note)
+
+
+@router.post("/{case_id}/diligences", dependencies=[Depends(require_access)])
+def add_diligence(case_id: str, d: DiligenceIn) -> dict:
+    return _run(cases().add_diligence, case_id, d.label)
+
+
+@router.delete("/{case_id}/diligences/{item_key}", dependencies=[Depends(require_access)])
+def remove_diligence(case_id: str, item_key: str) -> dict:
+    return _run(cases().remove_diligence, case_id, item_key[:40])
 
 
 @router.post("/{case_id}/resolve", dependencies=[Depends(require_access)])

@@ -5,6 +5,8 @@ import { api, AuthError } from "../api";
 import type { Theme } from "../lib/theme";
 import type { Decision, DecisionValue, Entity, InvestigationParams } from "../types";
 import CaseBar from "./CaseBar";
+import CaseChecklist from "./CaseChecklist";
+import CaseWorkflow from "./CaseWorkflow";
 import ImportPending from "./ImportPending";
 import InvestigationView from "./InvestigationView";
 import KycQuestionnaire from "./KycQuestionnaire";
@@ -47,7 +49,9 @@ export default function CaseScreen({ caseId, theme, onBack, onInvestigate }: Pro
   return (
     <div className="space-y-4">
       <CaseBar key={q.data.case.updated_at} view={q.data} onDeleted={onBack} />
+      {q.data.workflow && <CaseWorkflow caseId={caseId} view={q.data.workflow} />}
       <KycQuestionnaire key={`${caseId}-${q.data.questionnaire.answered_at ?? ""}`} caseId={caseId} data={q.data.questionnaire} />
+      {q.data.checklist && <CaseChecklist caseId={caseId} data={q.data.checklist} />}
       <InvestigationView
         investigation={inv}
         theme={theme}

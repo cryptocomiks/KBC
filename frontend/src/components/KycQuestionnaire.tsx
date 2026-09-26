@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { CalendarClock, Check, ChevronDown, ChevronRight, ClipboardCheck, Loader2, Sparkles, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { api } from "../api";
+import { analyst } from "../lib/analyst";
 import { countryName, flag, fmtDate } from "../lib/format";
 import type { KycAnswers, KycQuestion, KycQuestionnaire as Q, Vigilance } from "../types";
 
@@ -138,7 +139,7 @@ export default function KycQuestionnaire({ caseId, data }: Props) {
   const [open, setOpen] = useState(!answered);
   // Unanswered questions start from what the screening already shows.
   const [answers, setAnswers] = useState<KycAnswers>({ ...data.suggested, ...data.answers });
-  const [author, setAuthor] = useState(data.author);
+  const [author, setAuthor] = useState(data.author || analyst.get());
   const [dirty, setDirty] = useState(false);
   const save = useMutation({
     mutationFn: () => api.saveQuestionnaire(caseId, answers, author),

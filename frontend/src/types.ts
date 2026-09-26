@@ -256,6 +256,40 @@ export interface CaseRecord {
   questionnaire?: { vigilance?: Vigilance; next_review?: string; answered_at?: string };
   import_state?: ImportState;
   import_info?: ImportInfo;
+  queue?: Queue | null;
+  workflow_state?: WorkflowState;
+}
+
+export type Queue = "sensitive" | "to_validate" | "to_complete" | "review_due" | "validated";
+export type WorkflowState = "to_complete" | "pending_validation" | "validated" | "rejected";
+export type WorkflowAction = "submit" | "validate" | "reject" | "reopen";
+
+export interface WorkflowView {
+  state: WorkflowState;
+  label: string;
+  history: { at: string; by: string; action: WorkflowAction; comment: string }[];
+  submitted_by: string | null;
+  validated_by: string | null;
+  validated_at: string | null;
+  blockers: string[];
+}
+
+export interface ChecklistItem {
+  key: string;
+  label: string;
+  done: boolean;
+  by: string;
+  at: string | null;
+  note: string;
+  reason?: string;
+  required?: boolean;
+  custom?: boolean;
+}
+
+export interface Checklist {
+  documents: ChecklistItem[];
+  diligences: ChecklistItem[];
+  missing_required: string[];
 }
 
 export type ImportState = "" | "pending" | "resolved" | "ambiguous" | "not_found" | "error";
@@ -358,6 +392,8 @@ export interface CaseView {
   decisions: Decision[];
   changes: CaseChange[];
   questionnaire: KycQuestionnaire;
+  checklist?: Checklist;
+  workflow?: WorkflowView;
 }
 
 export interface Dashboard {
@@ -367,6 +403,7 @@ export interface Dashboard {
   recent_changes: CaseChange[];
   to_review: number;
   imports?: ImportStatus;
+  queues?: Record<Queue, number>;
 }
 
 export interface DeclaredPerson {

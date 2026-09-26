@@ -84,6 +84,7 @@ def report_pdf(req: ReportRequest, x_kbc_password: str | None = Header(default=N
     decisions: list[dict] = []
     changes: list[dict] = []
     questionnaire: dict | None = None
+    case_file: dict | None = None
     if req.case_id:
         from app.cases import CaseService
 
@@ -93,7 +94,16 @@ def report_pdf(req: ReportRequest, x_kbc_password: str | None = Header(default=N
         inv = apply_decisions(inv, decisions)
         case = get_store().get_case(req.case_id)
         if case:
+            from app.workflow import checklist_view
+
             questionnaire = CaseService.questionnaire(case)
+            checklist = checklist_view(
+                case, [r.model_dump() for r in inv.requests], questionnaire["assessment"]
+            )
+            case_file = {
+                "checklist": checklist,
+                "workflow": CaseService.workflow_view(case, checklist, questionnaire["assessment"]),
+            }
     pdf = build_pdf(
         inv,
         graph_png_b64=req.graph_png,
@@ -103,6 +113,7 @@ def report_pdf(req: ReportRequest, x_kbc_password: str | None = Header(default=N
         template=req.template,
         changes=changes,
         questionnaire=questionnaire,
+        case_file=case_file,
     )
     subject = next(e for e in inv.entities if e.id == inv.subject_id)
     # HTTP headers are Latin-1: keep the file name ASCII ("S.à r.l." -> "S_a_r_l_")

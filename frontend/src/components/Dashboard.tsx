@@ -1,12 +1,39 @@
 import { useQuery } from "@tanstack/react-query";
-import { AlertOctagon, AlertTriangle, BellRing, FolderOpen, Info, Loader2, Lock } from "lucide-react";
+import {
+  AlertOctagon,
+  AlertTriangle,
+  BellRing,
+  CalendarClock,
+  CheckCircle2,
+  FolderOpen,
+  Info,
+  Loader2,
+  Lock,
+  PencilLine,
+  ShieldAlert,
+  Stamp,
+} from "lucide-react";
 import { useState } from "react";
 import { api, auth, AuthError } from "../api";
 import { countryName, ENTITY_COLORS, flag, fmtDate } from "../lib/format";
-import type { CasesStatus, RiskLevel } from "../types";
+import type { CasesStatus, Queue, RiskLevel } from "../types";
 import ImportPanel from "./ImportPanel";
 import { VigilanceBadge } from "./KycQuestionnaire";
 import PasswordGate from "./PasswordGate";
+
+const QUEUES: { key: Queue; title: string; sub: string; Icon: typeof ShieldAlert; head: string; num: string }[] = [
+  { key: "sensitive", title: "Sensitive", sub: "PEP / sanctions to review", Icon: ShieldAlert, head: "bg-[#7a5af8]/15 text-[#6938ef] dark:text-[#bdb4fe]", num: "text-[#6938ef] dark:text-[#bdb4fe]" },
+  { key: "to_validate", title: "To validate", sub: "awaiting a second person", Icon: Stamp, head: "bg-[#f04438]/12 text-[#d92d20] dark:text-[#fda29b]", num: "text-[#d92d20] dark:text-[#fda29b]" },
+  { key: "to_complete", title: "To complete", sub: "documents, questionnaire", Icon: PencilLine, head: "bg-[#2e90fa]/12 text-[#1570ef] dark:text-[#84caff]", num: "text-[#1570ef] dark:text-[#84caff]" },
+  { key: "review_due", title: "Review due", sub: "within 30 days", Icon: CalendarClock, head: "bg-[#f79009]/15 text-[#dc6803] dark:text-[#fec84b]", num: "text-[#dc6803] dark:text-[#fec84b]" },
+  { key: "validated", title: "Validated", sub: "accepted clients", Icon: CheckCircle2, head: "bg-[#17b26a]/12 text-[#079455] dark:text-[#75e0a7]", num: "text-[#079455] dark:text-[#75e0a7]" },
+];
+const STATE_LABEL: Record<string, string> = {
+  to_complete: "to complete",
+  pending_validation: "to validate",
+  validated: "validated",
+  rejected: "sent back",
+};
 
 const IMPORT_LABEL: Record<string, string> = {
   pending: "in the queue",
@@ -27,6 +54,7 @@ interface Props {
 /** All cases at a glance: risk distribution, what needs review, latest changes, countries. */
 export default function Dashboard({ status, onOpenCase }: Props) {
   const [attempt, setAttempt] = useState(0);
+  const [queue, setQueue] = useState<Queue | null>(null);
   const q = useQuery({ queryKey: ["dashboard", attempt], queryFn: api.dashboard, retry: false, enabled: status?.enabled !== false });
 
   if (status && !status.enabled) {
@@ -68,29 +96,36 @@ export default function Dashboard({ status, onOpenCase }: Props) {
         </button>
       </div>
 
-      {/* Tiles */}
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        {[
-          ["Cases", String(total), "neutral"],
-          ["Need review", String(d.to_review), d.to_review ? "warning" : "good"],
-          ["New changes", String(unseen), unseen ? "critical" : "good"],
-          ["Monitored", String(monitored), "neutral"],
-        ].map(([label, value, tone]) => (
-          <div
-            key={label}
-            className={`rounded-lg border p-3 ${
-              tone === "critical"
-                ? "border-red-200 bg-red-50 text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-200"
-                : tone === "warning"
-                  ? "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200"
-                  : "card"
-            }`}
-          >
-            <div className="text-[11px] font-semibold uppercase tracking-wide opacity-70">{label}</div>
-            <div className="text-2xl font-bold">{value}</div>
-          </div>
-        ))}
+      {/* Work queues */}
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
+        {QUEUES.map((qd) => {
+          const n = d.queues?.[qd.key] ?? 0;
+          const on = queue === qd.key;
+          return (
+            <button
+              key={qd.key}
+              onClick={() => setQueue(on ? null : qd.key)}
+              className={`card lift overflow-hidden text-left transition-shadow ${on ? "ring-2 ring-brand-500" : ""}`}
+            >
+              <div className={`flex items-center gap-2 px-3 py-2 text-[11px] font-semibold ${qd.head}`}>
+                <qd.Icon className="h-4 w-4" /> {qd.title}
+              </div>
+              <div className="flex items-baseline gap-2 px-3 py-3">
+                <span className={`text-3xl font-bold ${n ? qd.num : "text-slate-400"}`}>{n}</span>
+                <span className="text-xs text-slate-500">{qd.sub}</span>
+              </div>
+            </button>
+          );
+        })}
       </div>
+      <p className="-mt-2 text-[11px] text-slate-500">
+        {total} case{total === 1 ? "" : "s"} · {monitored} monitored · {unseen} new change{unseen === 1 ? "" : "s"}
+        {queue && (
+          <button className="ml-2 text-brand-700 underline dark:text-brand-400" onClick={() => setQueue(null)}>
+            show all cases
+          </button>
+        )}
+      </p>
 
       <ImportPanel status={d.imports} />
 
@@ -120,12 +155,12 @@ export default function Dashboard({ status, onOpenCase }: Props) {
                 </tr>
               </thead>
               <tbody>
-                {d.cases.map((c) => (
+                {d.cases.filter((c) => !queue || c.queue === queue).map((c) => (
                   <tr key={c.id} onClick={() => onOpenCase(c.id)} className="cursor-pointer border-t border-slate-100 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800/50">
                     <td className="px-3 py-2">
                       <div className="font-medium">{c.title}</div>
                       <div className="text-[11px] text-slate-500">
-                        {c.subject_type} · {c.status}
+                        {c.subject_type} · {c.status === "closed" ? "closed" : STATE_LABEL[c.workflow_state ?? "to_complete"]}
                         {c.monitor && <BellRing className="ml-1 inline h-3 w-3" />}
                         {c.demo && " · demo"}
                       </div>
