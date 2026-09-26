@@ -220,7 +220,7 @@ def build_pdf(
         canvas.saveState()
         canvas.setFont("DejaVu", 7)
         canvas.setFillColor(MUTED)
-        footer = f"KBC Corporate Mapping — Due diligence report on {subject.name} — generated {inv.generated_at:%Y-%m-%d %H:%M} UTC"
+        footer = f"KYC 1 CLICK — Due diligence report on {subject.name} — generated {inv.generated_at:%Y-%m-%d %H:%M} UTC"
         canvas.drawString(MARGIN, 8 * mm, footer)
         canvas.drawRightString(PAGE[0] - MARGIN, 8 * mm, f"Page {doc.page}")
         canvas.drawString(
@@ -244,7 +244,7 @@ def build_pdf(
         topMargin=MARGIN,
         bottomMargin=MARGIN,
         title=f"Due diligence report — {subject.name}",
-        author=analyst or "KBC",
+        author=analyst or "KYC 1 CLICK",
     )
     story: list[Any] = []
 

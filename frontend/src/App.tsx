@@ -209,7 +209,7 @@ export default function App() {
         )}
       </main>
       <footer className="border-t border-slate-200 py-3 text-center text-[11px] text-slate-500 dark:border-slate-800">
-        KBC Corporate Mapping v{meta.data?.version ?? "…"} · public & lawfully accessible sources only · personal data kept only in the
+        KYC 1 CLICK v{meta.data?.version ?? "…"} · public & lawfully accessible sources only · personal data kept only in the
         local cache (clearable) · not legal advice
       </footer>
     </div>

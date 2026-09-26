@@ -1,4 +1,4 @@
-# KBC — Corporate Mapping for Due Diligence & AML/KYC
+# KYC 1 CLICK — Due diligence & AML/KYC in one click
 
 [![CI](https://github.com/cryptocomiks/KBC/actions/workflows/ci.yml/badge.svg)](https://github.com/cryptocomiks/KBC/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-3.11%2B-blue)

@@ -69,7 +69,7 @@ TEXT = {
             "☐ Fonds gelés (sanctions) — information de la DG Trésor",
         ],
         "attachments": [
-            "Rapport de vigilance KBC (PDF) — mêmes paramètres",
+            "Rapport de vigilance KYC 1 CLICK (PDF) — mêmes paramètres",
             "Pièces KYC collectées (identité, extrait Kbis, déclaration des bénéficiaires effectifs…)",
             "Relevés des opérations concernées",
         ],
@@ -100,7 +100,7 @@ TEXT = {
             "☐ Assets frozen (sanctions) — competent authority informed",
         ],
         "attachments": [
-            "KBC due diligence report (PDF) — same parameters",
+            "KYC 1 CLICK due diligence report (PDF) — same parameters",
             "KYC documents collected (ID, register extract, UBO declaration…)",
             "Statements of the transactions concerned",
         ],

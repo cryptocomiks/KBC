@@ -22,7 +22,7 @@ logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("kbc")
 
 app = FastAPI(
-    title="KBC — Corporate Mapping API",
+    title="KYC 1 CLICK — Due diligence & AML/KYC API",
     version=__version__,
     description="Corporate mapping, ownership analysis and AML/KYC red flags from public sources.",
     docs_url="/api/docs",

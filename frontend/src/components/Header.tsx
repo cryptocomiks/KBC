@@ -37,8 +37,8 @@ export default function Header({ meta, theme, onToggleTheme, onHome, onCases, ca
         <button onClick={onHome} className="flex items-center gap-2.5" aria-label="Home">
           <img src="/favicon.svg" alt="" className="h-7 w-7" />
           <div className="hidden text-left leading-tight sm:block">
-            <div className="text-sm font-bold tracking-tight">KBC · Corporate Mapping</div>
-            <div className="text-[11px] text-slate-300">Due diligence & AML/KYC network analysis</div>
+            <div className="text-sm font-extrabold tracking-tight">KYC <span className="text-glow">1</span> CLICK</div>
+            <div className="text-[11px] text-slate-300">Due diligence & AML/KYC in one click</div>
           </div>
         </button>
         {meta?.demo_mode && (

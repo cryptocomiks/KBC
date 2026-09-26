@@ -25,7 +25,7 @@ from app.settings import Settings, get_settings
 
 log = logging.getLogger(__name__)
 
-USER_AGENT = "KBC-CorporateMapping/0.2 (+https://github.com/cryptocomiks/KBC)"
+USER_AGENT = "KYC1Click/0.3 (+https://github.com/cryptocomiks/KBC)"
 MAX_RETRIES = 2
 RETRY_BACKOFF_SECONDS = 0.8
 
