@@ -80,7 +80,7 @@ const CATEGORY: Record<string, { label: string; Icon: typeof Building2 }> = {
   media: { label: "Press", Icon: Newspaper },
   archive: { label: "Websites & archives", Icon: Globe2 },
 };
-const WATCHLISTS = 124; // 121 bulk lists (sanctions, PEPs of 59 parliaments & governments, regulators…) + OFAC SDN + UN + Israel crypto wallets
+const WATCHLISTS = 123; // 120 bulk lists (sanctions, PEPs of 58 parliaments & governments, regulators…) + OFAC SDN + UN + Israel crypto wallets
 
 function Section({ tag, title, children }: { tag: string; title: string; children: ReactNode }) {
   return (

@@ -75,7 +75,7 @@ class Settings(BaseSettings):
         "ae_dfsa_prohibited,my_consumer_alert_list,lt_illegal_websites,"
         "hk_icac_wanted,us_dea_fugitives,"
         # Politically exposed persons (national parliaments, governments, world leaders)
-        "us_cia_world_leaders,un_ga_protocol,eu_meps,eu_public_functions,eu_cor_members,"
+        "us_cia_world_leaders,un_ga_protocol,eu_meps,eu_cor_members,"
         "fr_assemblee,fr_senat,mc_conseil_national,ch_parlament,li_landtag,lu_chamber,"
         "lu_bourgmestres,be_chamber,be_senate,nl_house_of_representatives,nl_senate,"
         "de_bundestag,de_bundesrat,at_parlament,it_deputies,it_senate,es_parliament,"

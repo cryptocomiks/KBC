@@ -1315,7 +1315,13 @@ class LatviaRegisterConnector(_EuropeanRegistry):
         return [r for r in (data.get("result") or {}).get("records") or [] if r.get("regcode")]
 
     def search_company(self, name: str, **filters: Any) -> list[Entity]:
-        return [self._company(r) for r in self._query(q=name, limit=10)]
+        rows = self._query(q=name, limit=10)
+        if not rows:
+            # Full-text search works on words: "airBaltic" -> "air Baltic"
+            split = re.sub(r"(?<=[a-z])(?=[A-Z])", " ", name)
+            if split != name:
+                rows = self._query(q=split, limit=10)
+        return [self._company(r) for r in rows]
 
     def get_company_details(self, company_id: str) -> Entity | None:
         code = self.native_id(company_id)

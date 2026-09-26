@@ -133,7 +133,6 @@ DATASETS = {
         ListType.PEP,
     ),
     "eu_meps": ("PEP — European Parliament members", ListType.PEP),
-    "eu_public_functions": ("PEP — EU prominent public functions", ListType.PEP),
     "eu_cor_members": ("PEP — EU Committee of the Regions members", ListType.PEP),
     "fr_assemblee": ("PEP — France — National Assembly members", ListType.PEP),
     "fr_senat": ("PEP — France — Senators", ListType.PEP),

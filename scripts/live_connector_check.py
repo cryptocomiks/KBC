@@ -432,7 +432,7 @@ def check_new_sources() -> None:
     from app.connectors.official_sanctions import IL_CRYPTO_LABEL, _Index, _load_il_crypto
     from app.identifiers import Identifier
 
-    lv = LatviaRegisterConnector(settings).search_company("airBaltic")
+    lv = LatviaRegisterConnector(settings).search_company("Air Baltic Corporation")
     found = "; ".join(f"{c.name} ({c.registration_number})" for c in lv[:3])
     expect("Latvia: company found", bool(lv), found)
     krs = KrsConnector(settings).get_by_identifier(Identifier("registration", "0000019193", "KRS"))
