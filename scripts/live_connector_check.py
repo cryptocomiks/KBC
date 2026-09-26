@@ -429,6 +429,9 @@ def check_sec() -> None:
 
 def check_casino_secrets() -> None:
     reg = CasinoSecretsConnector(settings)
+    if not reg.enabled:
+        print(f"SKIP  {reg.status()[1]}")
+        return
     found = reg.search_company("Medium Rare N.V.")
     expect(
         "licence holder found",
@@ -498,10 +501,16 @@ def check_uk_public_register() -> None:
     conn = CompaniesHouseWebConnector(Settings(live_sources=True, companies_house_api_key=""))
     found = conn.search_company("Tesco PLC")
     tesco = next((c for c in found if c.registration_number == "00445790"), None)
-    expect("company search (public site, JSON)", tesco is not None, ", ".join(c.name for c in found[:3]))
+    expect(
+        "company search (public site, JSON)",
+        tesco is not None,
+        ", ".join(c.name for c in found[:3]),
+    )
     officers = conn.get_officers("companies_house_web:00445790")
     for o in officers[:3]:
-        print(f"      {o.entity.name} — {o.relationship.role} (from {o.relationship.start_date}, born {o.entity.birth_date})")
+        print(
+            f"      {o.entity.name} — {o.relationship.role} (from {o.relationship.start_date}, born {o.entity.birth_date})"
+        )
     expect("officers parsed from the public page", len(officers) >= 5, f"{len(officers)} officers")
     owners = conn.get_shareholders("companies_house_web:OE000001")
     for o in owners[:3]:
@@ -509,7 +518,11 @@ def check_uk_public_register() -> None:
     expect("overseas entity: registrable beneficial owners", len(owners) >= 1)
     people = conn.search_person("Alisher Usmanov")
     roles = conn.get_person_roles(people[0].id) if people else []
-    expect("officer search + appointments", len(roles) >= 1, f"{people[0].name if people else '-'}: {len(roles)} appointments")
+    expect(
+        "officer search + appointments",
+        len(roles) >= 1,
+        f"{people[0].name if people else '-'}: {len(roles)} appointments",
+    )
 
 
 def check_european_registers() -> None:
@@ -526,10 +539,19 @@ def check_european_registers() -> None:
         ("Czech Republic (ARES) — Škoda Auto", AresConnector(settings), "Škoda Auto", 3),
         ("Belgium (CBE/KBO) — Solvay", KboConnector(settings), "Solvay", 0),
         ("Finland (PRH) — Nokia", PrhConnector(settings), "Nokia Oyj", 0),
-        ("Estonia (e-Business Register) — Bolt", AriregisterConnector(settings), "Bolt Technology", 0),
+        (
+            "Estonia (e-Business Register) — Bolt",
+            AriregisterConnector(settings),
+            "Bolt Technology",
+            0,
+        ),
     ):
         found = conn.search_company(query)
-        expect(f"{label}: search", bool(found), ", ".join(f"{c.name} ({c.registration_number})" for c in found[:3]))
+        expect(
+            f"{label}: search",
+            bool(found),
+            ", ".join(f"{c.name} ({c.registration_number})" for c in found[:3]),
+        )
         if not found or not officers_min:
             continue
         top = found[0]
@@ -540,7 +562,11 @@ def check_european_registers() -> None:
     kbo = KboConnector(settings)
     solvay = kbo.get_company_details("kbo:0403091220")
     directors = kbo.get_officers("kbo:0403091220")
-    expect("Belgium: Solvay SA details and directors", bool(solvay) and len(directors) >= 5, f"{solvay.name if solvay else '-'}: {len(directors)} functions")
+    expect(
+        "Belgium: Solvay SA details and directors",
+        bool(solvay) and len(directors) >= 5,
+        f"{solvay.name if solvay else '-'}: {len(directors)} functions",
+    )
 
 
 def check_rpvs() -> None:
@@ -548,10 +574,16 @@ def check_rpvs() -> None:
 
     conn = RpvsConnector(settings)
     found = conn.search_company("Slovnaft")
-    expect("partner search", bool(found), ", ".join(f"{c.name} ({c.registration_number})" for c in found[:3]))
+    expect(
+        "partner search",
+        bool(found),
+        ", ".join(f"{c.name} ({c.registration_number})" for c in found[:3]),
+    )
     owners = [o for c in found[:3] for o in conn.get_shareholders(c.id)]
     for o in owners[:4]:
-        print(f"      {o.entity.name} (born {o.entity.birth_date}) — {o.relationship.role}, until {o.relationship.end_date}")
+        print(
+            f"      {o.entity.name} (born {o.entity.birth_date}) — {o.relationship.role}, until {o.relationship.end_date}"
+        )
     expect("verified beneficial owners", len(owners) >= 1)
 
 
@@ -582,10 +614,20 @@ def check_documents_sources() -> None:
     certs = raw.json() if raw.status_code == 200 else []
     # crt.sh is a volunteer-run service that often answers 404 / 502 when overloaded: a warning,
     # not a failure (the connector retries and the rest of the investigation is unaffected).
-    print(f"{'PASS' if certs else 'WARN'}  certificate transparency (crt.sh) answers  — {len(certs)} certificates")
-    ids = web.http_get_text("https://api.hackertarget.com/analyticslookup/", params={"q": "glencore.com"}) or ""
+    print(
+        f"{'PASS' if certs else 'WARN'}  certificate transparency (crt.sh) answers  — {len(certs)} certificates"
+    )
+    ids = (
+        web.http_get_text(
+            "https://api.hackertarget.com/analyticslookup/", params={"q": "glencore.com"}
+        )
+        or ""
+    )
     print(f"      analytics lookup: {ids.strip()[:120]!r}")
-    expect("analytics ID lookup answers (or daily quota reached)", "GTM-" in ids or "UA-" in ids or "API count" in ids)
+    expect(
+        "analytics ID lookup answers (or daily quota reached)",
+        "GTM-" in ids or "UA-" in ids or "API count" in ids,
+    )
     site = company("Glencore")
     site.extra["website"] = "https://www.glencore.com"
     docs = web.get_documents(site)
@@ -633,7 +675,9 @@ def check_opensanctions() -> None:
         if raw.headers.get(h):
             print(f"      {h}: {raw.headers[h]}")
     if raw.status_code == 429:
-        print("WARN  OpenSanctions API key: monthly quota exceeded (account limit, not a code error)")
+        print(
+            "WARN  OpenSanctions API key: monthly quota exceeded (account limit, not a code error)"
+        )
         return
     conn = OpenSanctionsConnector(settings)
     hits = conn.screen_many([person("Vladimir Putin", "1952-10-07")])
@@ -646,7 +690,11 @@ def check_opensanctions() -> None:
     firms = conn.screen_many([company("Rosneft", "RU")])
     for h in firms[:2]:
         print(f"      hit: {h.list_type} {h.matched_name} | {h.dataset} | {h.score}")
-    expect("sanctioned reference company found", any(h.score >= 85 for h in firms), f"{len(firms)} hits")
+    expect(
+        "sanctioned reference company found",
+        any(h.score >= 85 for h in firms),
+        f"{len(firms)} hits",
+    )
 
 
 def check_companies_house() -> None:
@@ -701,7 +749,10 @@ guarded("Country risk indicators", check_country_risk)
 guarded("Casino Secrets (Curaçao gaming leak)", check_casino_secrets)
 guarded("Search by identifier (SIREN, Swiss UID, SEC CIK)", check_identifiers)
 guarded("Sanctioned public official, depth 2 (Elvira Nabiullina)", check_sanctioned_official)
-guarded("UK register without key (Companies House public site, overseas entities)", check_uk_public_register)
+guarded(
+    "UK register without key (Companies House public site, overseas entities)",
+    check_uk_public_register,
+)
 guarded("European registers (NO, CZ, BE, FI, EE)", check_european_registers)
 guarded("Slovak beneficial owners (RPVS)", check_rpvs)
 guarded("Courts, public contracts, LittleSis, linked websites", check_documents_sources)

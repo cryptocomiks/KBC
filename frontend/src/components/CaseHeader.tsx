@@ -141,7 +141,7 @@ export default function CaseHeader({ view, tab, onTab, onBack }: Props) {
                 {badge[t.id]}
               </span>
             )}
-            {tab === t.id && <span className="absolute inset-x-2 -bottom-px h-0.5 rounded-full bg-brand-500 shadow-[0_0_10px_rgb(94_224_42/0.6)]" />}
+            {tab === t.id && <span className="absolute inset-x-2 -bottom-px h-0.5 rounded-full bg-brand-500" />}
           </button>
         ))}
       </nav>

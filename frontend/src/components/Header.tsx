@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, Database, FolderOpen, Moon, Plug, Search, Sun, Trash2, XCircle } from "lucide-react";
 import { useState } from "react";
 import { api } from "../api";
+import Logo from "./Logo";
 import type { Theme } from "../lib/theme";
 import type { Meta } from "../types";
 
@@ -34,13 +35,15 @@ export default function Header({ meta, theme, onToggleTheme, onHome, onCases, ca
   const live = connectors.data?.some((c) => c.enabled && !c.demo);
 
   return (
-    <header className="sticky top-0 z-30 border-b border-white/[0.06] bg-[#0a0b0a]/80 text-white backdrop-blur-xl [&_.btn-ghost]:text-slate-300 [&_.btn-ghost:hover]:bg-white/[0.06] [&_.btn-ghost:hover]:text-white">
+    <header className="sticky top-0 z-30 border-b border-white/[0.06] bg-[#07090b]/85 text-white backdrop-blur-xl [&_.btn-ghost]:text-slate-300 [&_.btn-ghost:hover]:bg-white/[0.06] [&_.btn-ghost:hover]:text-white">
       <div className="mx-auto flex h-14 max-w-[1600px] items-center gap-3 px-4">
         <button onClick={onHome} className="flex items-center gap-2.5" aria-label="Home">
-          <img src="/favicon.svg" alt="" className="h-7 w-7" />
+          <Logo className="h-8 w-8" />
           <div className="hidden text-left leading-tight sm:block">
-            <div className="text-sm font-extrabold tracking-tight">KYC <span className="text-glow">1</span> CLICK</div>
-            <div className="text-[11px] text-slate-300">Due diligence & AML/KYC in one click</div>
+            <div className="text-[14px] font-bold tracking-[0.06em]">
+              KYC <span className="text-glow">1</span> CLICK
+            </div>
+            <div className="text-[10.5px] tracking-wide text-slate-400">Due diligence & AML/KYC</div>
           </div>
         </button>
         {meta?.demo_mode && (

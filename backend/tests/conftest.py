@@ -9,6 +9,7 @@ os.environ.setdefault("STORE_PATH", ":memory:")
 import pytest  # noqa: E402
 
 from app.cache import Cache, set_cache  # noqa: E402
+from app.connectors.base import reset_circuit_breakers  # noqa: E402
 from app.connectors.registry import ConnectorRegistry  # noqa: E402
 
 
@@ -16,6 +17,7 @@ from app.connectors.registry import ConnectorRegistry  # noqa: E402
 def memory_cache():
     cache = Cache(":memory:", ttl_hours=1)
     set_cache(cache)
+    reset_circuit_breakers()
     yield cache
 
 

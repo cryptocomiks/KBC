@@ -9,7 +9,7 @@ interface Props {
   onSelect: (id: string) => void;
 }
 
-const PALETTE = ["#5ee02a", "#3b82f6", "#8b5cf6", "#f97316", "#22d3ee", "#eab308", "#ec4899", "#94a3b8"];
+const PALETTE = ["#2fb67f", "#3b82f6", "#8b5cf6", "#f97316", "#22d3ee", "#eab308", "#ec4899", "#94a3b8"];
 
 function Card({ icon: Icon, title, hint, tag, children, className = "" }: { icon: typeof Globe2; title: string; hint?: string; tag?: string; children: React.ReactNode; className?: string }) {
   return (
@@ -132,7 +132,7 @@ export function OwnershipChart({ investigation: inv, onSelect }: Props) {
 /* ------------------------------------------------------------ financials */
 
 const METRICS = [
-  { key: "revenue", label: "Revenue", color: "#5ee02a" },
+  { key: "revenue", label: "Revenue", color: "#2fb67f" },
   { key: "net_income", label: "Net income", color: "#3b82f6" },
   { key: "total_assets", label: "Total assets", color: "#8b5cf6" },
 ] as const;
@@ -195,7 +195,7 @@ export function FinancialsChart({ investigation: inv, onSelect }: Props) {
               key={id}
               onClick={() => setPick(id)}
               className={`rounded-full px-3 py-1 text-xs font-medium transition ${
-                id === entityId ? "bg-brand-500 text-[#052e0a] shadow-[0_0_16px_-2px_rgb(94_224_42/0.6)]" : "border border-slate-300 text-slate-600 hover:border-slate-400 dark:border-white/15 dark:text-slate-300 dark:hover:border-white/30"
+                id === entityId ? "bg-brand-500 text-white" : "border border-slate-300 text-slate-600 hover:border-slate-400 dark:border-white/15 dark:text-slate-300 dark:hover:border-white/30"
               }`}
             >
               {String(r[0].name)}

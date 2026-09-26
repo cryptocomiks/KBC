@@ -45,6 +45,15 @@ class _Client(BaseConnector):
     timeout_seconds = 8.0
     max_retries = 1
 
+    def status(self) -> tuple[bool, str]:
+        enabled, message = super().status()
+        if enabled and not self.settings.casino_secrets_enabled:
+            return False, (
+                "Offline: casinosecrets.lol no longer answers (domain removed, September 2026). "
+                "Set CASINO_SECRETS_ENABLED=true if the site comes back."
+            )
+        return enabled, message
+
     def _search(self, query: str) -> list[dict[str, Any]]:
         if len(query.strip()) < 2:
             return []

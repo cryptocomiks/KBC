@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { ChevronDown, ChevronRight, FileCheck2, ListChecks, Loader2, Plus, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronRight, FileCheck2, ListChecks, Loader2, Mail, Plus, Trash2 } from "lucide-react";
+import { documentRequest, openEmail } from "../lib/email";
 import { useState } from "react";
 import { api } from "../api";
 import { analyst } from "../lib/analyst";
@@ -9,6 +10,7 @@ import type { Checklist, ChecklistItem } from "../types";
 interface Props {
   caseId: string;
   data: Checklist;
+  subjectName?: string;
 }
 
 function Row({
@@ -59,7 +61,7 @@ function Row({
 }
 
 /** Documents received and additional diligences of a case, ticked by the analyst (signed and dated). */
-export default function CaseChecklist({ caseId, data }: Props) {
+export default function CaseChecklist({ caseId, data, subjectName }: Props) {
   const qc = useQueryClient();
   const [open, setOpen] = useState(true);
   const [text, setText] = useState("");
@@ -114,7 +116,19 @@ export default function CaseChecklist({ caseId, data }: Props) {
                 <Row key={d.key} item={d} busy={busy} onToggle={() => tick.mutate(d)} />
               ))}
             </ul>
-            <p className="mt-1.5 text-[11px] text-slate-500">Tick a document once received and checked. Derived from the findings of the case.</p>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <button
+                className="btn-outline py-1 text-xs"
+                disabled={data.documents.every((d) => d.done)}
+                onClick={() => {
+                  const { subject, body } = documentRequest(subjectName, data.documents.filter((d) => !d.done).map((d) => d.label));
+                  openEmail(subject, body);
+                }}
+              >
+                <Mail className="h-3.5 w-3.5" /> E-mail the missing documents to the client
+              </button>
+              <span className="text-[11px] text-slate-500">Tick a document once received and checked.</span>
+            </div>
           </section>
           <section>
             <h3 className="label mb-2 flex items-center gap-1.5">

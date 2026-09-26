@@ -9,7 +9,7 @@ from typing import Any
 
 from app.brief import build_brief
 from app.cache import get_cache
-from app.connectors.base import ConnectorError
+from app.connectors.base import ConnectorError, group_warnings
 from app.connectors.crypto_util import detect_chain
 from app.connectors.registry import ConnectorRegistry
 from app.doc_requests import build_requests
@@ -254,7 +254,7 @@ class KbcService:
             requests=build_requests(net, risk, get_jurisdictions().name),
             queries=net.queries,
             merges=net.merges,
-            warnings=net.warnings,
+            warnings=group_warnings(net.warnings),
             truncated=net.truncated,
             unscreened=net.unscreened,
             stats={

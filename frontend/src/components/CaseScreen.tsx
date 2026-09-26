@@ -57,7 +57,7 @@ export default function CaseScreen({ caseId, tab, onTab, theme, onBack, onInvest
         <div className="panel-enter space-y-4">
           {q.data.workflow && <CaseWorkflow caseId={caseId} view={q.data.workflow} />}
           <KycQuestionnaire key={`${caseId}-${q.data.questionnaire.answered_at ?? ""}`} caseId={caseId} data={q.data.questionnaire} />
-          {q.data.checklist && <CaseChecklist caseId={caseId} data={q.data.checklist} />}
+          {q.data.checklist && <CaseChecklist caseId={caseId} data={q.data.checklist} subjectName={q.data.case.subject_name} />}
           <p className="text-center text-xs text-slate-500">
             Findings, network, evidence and reports are in the{" "}
             <button className="font-medium text-brand-700 underline dark:text-brand-400" onClick={() => onTab("investigation")}>

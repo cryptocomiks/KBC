@@ -1,4 +1,5 @@
-import { Check, ClipboardList, Copy } from "lucide-react";
+import { Check, ClipboardList, Copy, Mail } from "lucide-react";
+import { documentRequest, openEmail } from "../lib/email";
 import { useState } from "react";
 import type { Investigation } from "../types";
 
@@ -15,28 +16,18 @@ export default function DocRequests({ investigation: inv }: Props) {
   const subject = inv.entities.find((e) => e.id === inv.subject_id);
   const pending = items.filter((_, i) => !done.has(i));
 
+  const email = () => {
+    const { subject: title, body } = documentRequest(subject?.name, pending.map((r) => r.document));
+    openEmail(title, body);
+  };
   const copyEmail = async () => {
-    const lines = pending.map((r, i) => `${i + 1}. ${r.document}`);
-    const text = [
-      `Subject: Documents required — ${subject?.name ?? "your file"}`,
-      "",
-      "Dear client,",
-      "",
-      "As part of our customer due diligence obligations, we kindly ask you to provide the following documents:",
-      "",
-      ...lines,
-      "",
-      "Documents should be recent (less than 3 months old for register extracts and proofs of address) and certified where applicable.",
-      "",
-      "Thank you for your cooperation.",
-      "Kind regards,",
-    ].join("\n");
+    const { subject: title, body } = documentRequest(subject?.name, pending.map((r) => r.document));
     try {
-      await navigator.clipboard.writeText(text);
+      await navigator.clipboard.writeText(`${title}\n\n${body}`);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      window.prompt("Copy the e-mail:", text);
+      /* clipboard refused: the e-mail button still works */
     }
   };
 
@@ -49,17 +40,31 @@ export default function DocRequests({ investigation: inv }: Props) {
           {items.filter((r) => r.priority === "required").length} required · {items.length - items.filter((r) => r.priority === "required").length} recommended ·
           derived from the findings
         </span>
-        <button
-          className="btn-outline ml-auto py-1 text-xs"
-          onClick={(e) => {
-            e.preventDefault();
-            copyEmail();
-          }}
-          disabled={!pending.length}
-        >
-          {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-          {copied ? "Copied" : `Copy as e-mail to the client (${pending.length})`}
-        </button>
+        <span className="ml-auto flex gap-1.5">
+          <button
+            className="btn-primary py-1 text-xs"
+            onClick={(e) => {
+              e.preventDefault();
+              email();
+            }}
+            disabled={!pending.length}
+            title="Opens your mail app with the request written"
+          >
+            <Mail className="h-3.5 w-3.5" /> E-mail the client ({pending.length})
+          </button>
+          <button
+            className="btn-outline px-2.5 py-1 text-xs"
+            onClick={(e) => {
+              e.preventDefault();
+              copyEmail();
+            }}
+            disabled={!pending.length}
+            aria-label="Copy the e-mail"
+            title="Copy the e-mail text"
+          >
+            {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+          </button>
+        </span>
       </summary>
       <ul className="divide-y divide-black/[0.06] border-t border-black/[0.06] px-5 dark:divide-white/[0.08] dark:border-white/[0.08]">
         {items.map((r, i) => (

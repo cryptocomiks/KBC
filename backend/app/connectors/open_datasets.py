@@ -90,6 +90,44 @@ DATASETS = {
     ),
     "us_fbi_most_wanted": ("US FBI most wanted", ListType.ADVERSE),
     "de_bka_wanted": ("Germany BKA wanted fugitives", ListType.ADVERSE),
+    # National asset freezes and sanctions regimes not in the EU / UN lists
+    "fr_tresor_gels_avoir": ("France national asset freezes (DG Trésor)", ListType.SANCTION),
+    "mc_fund_freezes": ("Monaco national fund freezes", ListType.SANCTION),
+    "ch_fiaa_freezes": ("Swiss freezes of assets of foreign PEPs (FIAA)", ListType.SANCTION),
+    "eu_travel_bans": ("EU consolidated travel bans", ListType.SANCTION),
+    "gb_hmt_invbans": ("UK HM Treasury investment bans", ListType.SANCTION),
+    "ee_international_sanctions": ("Estonia international sanctions", ListType.SANCTION),
+    "lv_fiu_sanctions": ("Latvia FIU sanctions and asset freezes", ListType.SANCTION),
+    "lt_magnitsky_amendments": ("Lithuania Magnitsky sanctions", ListType.SANCTION),
+    "pl_mswia_sanctions": (
+        "Poland national sanctions (Ministry of the Interior)",
+        ListType.SANCTION,
+    ),
+    "cz_national_sanctions": ("Czech Republic national sanctions", ListType.SANCTION),
+    "ca_facfoa": ("Canada freezes of assets of corrupt foreign officials", ListType.SANCTION),
+    "us_klepto_hr_visa": ("US anti-kleptocracy visa restrictions", ListType.SANCTION),
+    "us_bis_denied": ("US BIS denied persons (export bans)", ListType.SANCTION),
+    "us_fincen_special_measures": ("US FinCEN 311 / 9714 special measures", ListType.SANCTION),
+    "tr_fcib": ("Türkiye asset freezes (MASAK)", ListType.SANCTION),
+    "za_fic_sanctions": ("South Africa targeted financial sanctions", ListType.SANCTION),
+    "jp_meti_ru": ("Japan METI export sanctions — Russia", ListType.SANCTION),
+    # Financial regulators: enforcement actions, bans and consumer alerts
+    "us_fincen_enforcement": ("US FinCEN enforcement actions (AML)", ListType.ADVERSE),
+    "us_ofac_enforcement_actions": (
+        "US OFAC enforcement actions (sanctions breaches)",
+        ListType.ADVERSE,
+    ),
+    "us_cftc_enforcement_actions": ("US CFTC enforcement actions", ListType.ADVERSE),
+    "us_nfa_enforcement_actions": ("US NFA enforcement actions", ListType.ADVERSE),
+    "us_finra_barred": ("US FINRA barred individuals", ListType.ADVERSE),
+    "us_ddtc_debarred": ("US State Department arms-export debarments", ListType.ADVERSE),
+    "sg_mas_enforcement_actions": ("Singapore MAS enforcement actions", ListType.ADVERSE),
+    "ae_dfsa_prohibited": ("Dubai DFSA prohibited / restricted individuals", ListType.ADVERSE),
+    "my_consumer_alert_list": ("Malaysia financial consumer alert list", ListType.ADVERSE),
+    "lt_illegal_websites": ("Lithuania illegal financial services", ListType.ADVERSE),
+    # Law enforcement
+    "hk_icac_wanted": ("Hong Kong ICAC wanted (corruption)", ListType.ADVERSE),
+    "us_dea_fugitives": ("US DEA fugitives", ListType.ADVERSE),
 }
 SKIPPED_SCHEMAS = {"Vessel", "Airplane", "CryptoWallet", "Address", "Security"}
 

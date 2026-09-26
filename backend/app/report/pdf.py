@@ -22,7 +22,10 @@ from reportlab.lib.units import mm
 from reportlab.lib.utils import ImageReader
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.pdfgen import canvas as pdf_canvas
 from reportlab.platypus import (
+    CondPageBreak,
+    HRFlowable,
     Image,
     KeepTogether,
     PageBreak,
@@ -42,10 +45,13 @@ pdfmetrics.registerFont(TTFont("DejaVu-Bold", str(FONT_DIR / "DejaVuSans-Bold.tt
 pdfmetrics.registerFontFamily("DejaVu", normal="DejaVu", bold="DejaVu-Bold")
 
 INK = colors.HexColor("#101828")
-NAVY = colors.HexColor("#12355b")
+NAVY = colors.HexColor("#0f2a44")
+DARK = colors.HexColor("#0b0e11")
+BRAND = colors.HexColor("#1f9467")
 MUTED = colors.HexColor("#475467")
 LINE = colors.HexColor("#d0d5dd")
-HEAD_BG = colors.HexColor("#eef1f5")
+HEAD_BG = colors.HexColor("#1b2733")
+ZEBRA = colors.HexColor("#f6f8fa")
 LEVEL_COLORS = {
     "low": colors.HexColor("#15803d"),
     "medium": colors.HexColor("#b45309"),
@@ -77,7 +83,12 @@ def _styles() -> dict[str, ParagraphStyle]:
         "muted": ParagraphStyle("muted", parent=body, fontSize=7.5, textColor=MUTED),
         "cell": ParagraphStyle("cell", parent=body, fontSize=7, leading=8.6),
         "head": ParagraphStyle(
-            "head", parent=body, fontName="DejaVu-Bold", fontSize=7, leading=8.6
+            "head",
+            parent=body,
+            fontName="DejaVu-Bold",
+            fontSize=7,
+            leading=8.6,
+            textColor=colors.white,
         ),
         "h1": ParagraphStyle(
             "h1", parent=body, fontName="DejaVu-Bold", fontSize=17, leading=21, textColor=NAVY
@@ -148,9 +159,11 @@ def _table(
         TableStyle(
             [
                 ("BACKGROUND", (0, 0), (-1, 0), HEAD_BG),
-                ("GRID", (0, 0), (-1, -1), 0.3, LINE),
+                ("LINEBELOW", (0, 1), (-1, -1), 0.3, LINE),
+                ("BOX", (0, 0), (-1, -1), 0.3, LINE),
                 ("VALIGN", (0, 0), (-1, -1), "TOP"),
-                ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#f8fafc")]),
+                ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, ZEBRA]),
+                ("LINEBELOW", (0, 0), (-1, 0), 1.2, BRAND),
                 ("TOPPADDING", (0, 0), (-1, -1), 2.5),
                 ("BOTTOMPADDING", (0, 0), (-1, -1), 2.5),
             ]
@@ -188,6 +201,71 @@ SKIPPED_SECTIONS = {
 }
 
 
+def _draw_logo(c, x: float, y: float, size: float, on_dark: bool = True) -> None:
+    """The K1 monogram (same drawing as the web app), bottom-left corner at (x, y)."""
+    k = size / 32.0
+    c.saveState()
+    c.setFillColor(DARK)
+    c.setStrokeColor(BRAND)
+    c.setLineWidth(1.5 * k)
+    c.roundRect(x + 1 * k, y + 1 * k, 30 * k, 30 * k, 8 * k, stroke=1, fill=1)
+    c.setLineWidth(2.3 * k)
+    c.setLineCap(1)
+    c.setLineJoin(1)
+
+    def line(x1, y1, x2, y2, color):
+        c.setStrokeColor(color)
+        c.line(x + x1 * k, y + (32 - y1) * k, x + x2 * k, y + (32 - y2) * k)
+
+    white = colors.HexColor("#eef2f4")
+    line(9.5, 9, 9.5, 23, white)
+    line(9.5, 16.2, 16, 9, white)
+    line(12.2, 13.3, 16.4, 23, white)
+    line(20.2, 11.6, 23.4, 9, BRAND)
+    line(23.4, 9, 23.4, 23, BRAND)
+    c.restoreState()
+
+
+class _NumberedCanvas(pdf_canvas.Canvas):
+    """Adds "Page X of Y" once the total number of pages is known."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._saved: list[dict] = []
+
+    def showPage(self):  # noqa: N802 - ReportLab API
+        self._saved.append(dict(self.__dict__))
+        self._startPage()
+
+    def save(self):
+        total = len(self._saved)
+        for state in self._saved:
+            self.__dict__.update(state)
+            if self._pageNumber > 1:
+                self.setFont("DejaVu", 7)
+                self.setFillColor(MUTED)
+                self.drawRightString(
+                    PAGE[0] - MARGIN, 8 * mm, f"Page {self._pageNumber} of {total}"
+                )
+            super().showPage()
+        super().save()
+
+
+def _underline_headings(story: list[Any]) -> list[Any]:
+    """A thin brand-coloured rule under every section title, and no title alone at a page bottom."""
+    out: list[Any] = []
+    for flow in story:
+        if isinstance(flow, Paragraph) and getattr(flow.style, "name", "") == "h2":
+            out.append(CondPageBreak(40 * mm))
+            out.append(flow)
+            out.append(
+                HRFlowable(width="100%", thickness=0.8, color=BRAND, spaceBefore=0, spaceAfter=5)
+            )
+        else:
+            out.append(flow)
+    return out
+
+
 def _drop_sections(story: list[Any], prefixes: set[str]) -> list[Any]:
     """Remove whole report sections (from their h2 title to the next h2)."""
     out, skipping = [], False
@@ -218,24 +296,99 @@ def build_pdf(
     risk = inv.risk
     buf = io.BytesIO()
 
+    title = TITLES.get(template, TITLES["full"])
+
     def on_page(canvas, doc):
         canvas.saveState()
+        # Header band: logo, product, report and subject
+        band = 11 * mm
+        canvas.setFillColor(DARK)
+        canvas.rect(0, PAGE[1] - band, PAGE[0], band, stroke=0, fill=1)
+        canvas.setFillColor(BRAND)
+        canvas.rect(0, PAGE[1] - band - 0.8, PAGE[0], 0.8, stroke=0, fill=1)
+        _draw_logo(canvas, MARGIN, PAGE[1] - band + 1.8 * mm, 7.4 * mm)
+        canvas.setFillColor(colors.white)
+        canvas.setFont("DejaVu-Bold", 8.5)
+        canvas.drawString(MARGIN + 10 * mm, PAGE[1] - 6.6 * mm, "KYC 1 CLICK")
+        canvas.setFont("DejaVu", 7.5)
+        canvas.setFillColor(colors.HexColor("#aab4be"))
+        canvas.drawRightString(
+            PAGE[0] - MARGIN, PAGE[1] - 6.6 * mm, f"{title} — {subject.name}"[:140]
+        )
+        # Footer
         canvas.setFont("DejaVu", 7)
         canvas.setFillColor(MUTED)
-        footer = f"KYC 1 CLICK — Due diligence report on {subject.name} — generated {inv.generated_at:%Y-%m-%d %H:%M} UTC"
-        canvas.drawString(MARGIN, 8 * mm, footer)
-        canvas.drawRightString(PAGE[0] - MARGIN, 8 * mm, f"Page {doc.page}")
         canvas.drawString(
             MARGIN,
-            PAGE[1] - 8 * mm,
-            "CONFIDENTIAL — for compliance use only — findings require human verification",
+            8 * mm,
+            f"CONFIDENTIAL — compliance use only — findings require human verification · "
+            f"generated {inv.generated_at:%Y-%m-%d %H:%M} UTC",
         )
         if inv.demo:
             canvas.setFont("DejaVu-Bold", 60)
-            canvas.setFillColor(colors.Color(0.8, 0.1, 0.1, alpha=0.07))
+            canvas.setFillColor(colors.Color(0.8, 0.1, 0.1, alpha=0.06))
             canvas.translate(PAGE[0] / 2, PAGE[1] / 2)
             canvas.rotate(25)
             canvas.drawCentredString(0, 0, "DEMO — FICTITIOUS DATA")
+        canvas.restoreState()
+
+    def on_cover(canvas, doc):
+        canvas.saveState()
+        # Dark upper half with the brand, the report title and the subject
+        top = PAGE[1] * 0.46
+        canvas.setFillColor(DARK)
+        canvas.rect(0, PAGE[1] - top, PAGE[0], top, stroke=0, fill=1)
+        canvas.setFillColor(BRAND)
+        canvas.rect(0, PAGE[1] - top - 1.5, PAGE[0], 1.5, stroke=0, fill=1)
+        _draw_logo(canvas, MARGIN, PAGE[1] - 26 * mm, 13 * mm)
+        canvas.setFillColor(colors.white)
+        canvas.setFont("DejaVu-Bold", 13)
+        canvas.drawString(MARGIN + 17 * mm, PAGE[1] - 19 * mm, "KYC 1 CLICK")
+        canvas.setFont("DejaVu", 8)
+        canvas.setFillColor(colors.HexColor("#aab4be"))
+        canvas.drawString(MARGIN + 17 * mm, PAGE[1] - 23.5 * mm, "Due diligence & AML/KYC")
+        canvas.drawRightString(
+            PAGE[0] - MARGIN, PAGE[1] - 19 * mm, "CONFIDENTIAL — compliance use only"
+        )
+        canvas.setFillColor(colors.HexColor("#7fdcb0"))
+        canvas.setFont("DejaVu-Bold", 10)
+        canvas.drawString(MARGIN, PAGE[1] - 48 * mm, title.upper())
+        canvas.setFillColor(colors.white)
+        name = subject.name if len(subject.name) <= 48 else subject.name[:46] + "…"
+        canvas.setFont("DejaVu-Bold", 28 if len(name) <= 32 else 21)
+        canvas.drawString(MARGIN, PAGE[1] - 62 * mm, name)
+        canvas.setFont("DejaVu", 9)
+        canvas.setFillColor(colors.HexColor("#c3cad2"))
+        ident = " · ".join(
+            p
+            for p in (
+                subject.type.value.capitalize(),
+                get_jurisdictions().name(subject.jurisdiction) if subject.jurisdiction else None,
+                subject.registration_number,
+                f"born {subject.birth_date}" if subject.birth_date else None,
+            )
+            if p
+        )
+        canvas.drawString(MARGIN, PAGE[1] - 70 * mm, ident)
+        meta = [f"Generated {inv.generated_at:%d %B %Y, %H:%M} UTC"]
+        if reference:
+            meta.append(f"Reference {reference}")
+        if analyst:
+            meta.append(f"Analyst {analyst}")
+        meta.append(f"Network depth {inv.params.depth} · {inv.stats.get('sources', 0)} sources")
+        canvas.drawString(MARGIN, PAGE[1] - 77 * mm, "   ·   ".join(meta))
+        if inv.demo:
+            canvas.setFillColor(colors.HexColor("#fec84b"))
+            canvas.setFont("DejaVu-Bold", 8)
+            canvas.drawRightString(PAGE[0] - MARGIN, PAGE[1] - 77 * mm, "DEMO — FICTITIOUS DATA")
+        canvas.setFont("DejaVu", 7)
+        canvas.setFillColor(MUTED)
+        canvas.drawString(
+            MARGIN,
+            8 * mm,
+            "Analytical aid only — automated matches must be verified by a qualified analyst "
+            "against primary sources before any decision.",
+        )
         canvas.restoreState()
 
     doc = SimpleDocTemplate(
@@ -243,28 +396,89 @@ def build_pdf(
         pagesize=PAGE,
         leftMargin=MARGIN,
         rightMargin=MARGIN,
-        topMargin=MARGIN,
+        topMargin=MARGIN + 6 * mm,
         bottomMargin=MARGIN,
-        title=f"Due diligence report — {subject.name}",
+        title=f"{title} — {subject.name}",
         author=analyst or "KYC 1 CLICK",
     )
     story: list[Any] = []
 
-    # ---------------------------------------------------------------- header
-    story.append(
-        Paragraph(f"{TITLES.get(template, TITLES['full'])} — {_esc(subject.name)}", st["h1"])
+    # ----------------------------------------------------------------- cover
+    level_color = LEVEL_COLORS.get(risk.level, INK)
+    b = inv.brief
+    story.append(Spacer(1, PAGE[1] * 0.46 - MARGIN - 6 * mm + 8 * mm))
+    rating = Table(
+        [
+            [Paragraph("<font color='#667085'>RISK RATING</font>", st["small"])],
+            [
+                Paragraph(
+                    f"<font size=22 color='{level_color.hexval()}'><b>{risk.level.upper()}</b></font>",
+                    ParagraphStyle("lvl", parent=st["body"], leading=26),
+                )
+            ],
+            [Paragraph(f"Score <b>{risk.score:g}</b> / 100", st["body"])],
+        ],
+        colWidths=[62 * mm],
     )
-    meta = [
-        f"Subject type: <b>{subject.type.value}</b>",
-        f"Generated: <b>{inv.generated_at:%Y-%m-%d %H:%M} UTC</b>",
-        f"Network depth: <b>{inv.params.depth}</b> (node limit {inv.params.max_nodes})",
-    ]
-    if reference:
-        meta.append(f"Reference: <b>{_esc(reference)}</b>")
-    if analyst:
-        meta.append(f"Analyst: <b>{_esc(analyst)}</b>")
-    story.append(Paragraph(" &nbsp;·&nbsp; ".join(meta), st["muted"]))
-    story.append(Spacer(1, 6))
+    rating.setStyle(
+        TableStyle(
+            [
+                ("LINEBEFORE", (0, 0), (0, -1), 3, level_color),
+                ("LEFTPADDING", (0, 0), (-1, -1), 10),
+                ("BACKGROUND", (0, 0), (-1, -1), ZEBRA),
+                ("TOPPADDING", (0, 0), (-1, -1), 4),
+                ("BOTTOMPADDING", (0, -1), (-1, -1), 8),
+            ]
+        )
+    )
+    verdict = []
+    if b:
+        verdict.append(
+            Paragraph(
+                f"<b>{_esc(b.headline)}</b>",
+                ParagraphStyle("v", parent=st["body"], fontSize=11, leading=14),
+            )
+        )
+        if b.action:
+            verdict.append(Spacer(1, 4))
+            verdict.append(Paragraph(f"<b>Recommended action:</b> {_esc(b.action)}", st["body"]))
+        figs = [
+            [
+                Paragraph(f"<font color='#667085'>{_esc(f.label)}</font>", st["small"]),
+                Paragraph(f"<b>{_esc(f.value)}</b>", st["body"]),
+            ]
+            for f in b.figures[:8]
+        ]
+        if figs:
+            # two columns of key figures
+            half = (len(figs) + 1) // 2
+            rows = [
+                figs[i] + (figs[i + half] if i + half < len(figs) else ["", ""])
+                for i in range(half)
+            ]
+            grid = Table(rows, colWidths=[34 * mm, 48 * mm, 34 * mm, 48 * mm])
+            grid.setStyle(
+                TableStyle(
+                    [
+                        ("LINEBELOW", (0, 0), (-1, -1), 0.3, LINE),
+                        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                        ("TOPPADDING", (0, 0), (-1, -1), 3),
+                        ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+                    ]
+                )
+            )
+            verdict += [Spacer(1, 8), grid]
+    cover = Table([[rating, verdict or ""]], colWidths=[70 * mm, WIDTH - 70 * mm])
+    cover.setStyle(
+        TableStyle([("VALIGN", (0, 0), (-1, -1), "TOP"), ("LEFTPADDING", (1, 0), (1, 0), 14)])
+    )
+    story.append(cover)
+    story.append(Spacer(1, 10))
+    toc_index = len(story)  # the contents are filled in once every section is known
+    story.append(PageBreak())
+
+    # ------------------------------------------------------ executive summary
+    story.append(Paragraph("1. Executive summary", st["h2"]))
     disclaimer = inv.disclaimer
     if inv.demo:
         disclaimer = (
@@ -273,64 +487,6 @@ def build_pdf(
         )
     story.append(Paragraph(_esc(disclaimer), st["warn"]))
     story.append(Spacer(1, 8))
-
-    # ------------------------------------------------------ executive summary
-    level_color = LEVEL_COLORS.get(risk.level, INK)
-    score_box = Table(
-        [
-            [
-                Paragraph(
-                    f"<font size=26><b>{risk.score:g}</b></font><font size=10> / 100</font>",
-                    ParagraphStyle("score", parent=st["body"], leading=30),
-                )
-            ],
-            [
-                Paragraph(
-                    f"<font color='{level_color.hexval()}'><b>{risk.level.upper()} RISK</b></font>",
-                    st["body"],
-                )
-            ],
-        ],
-        colWidths=[45 * mm],
-    )
-    score_box.setStyle(
-        TableStyle(
-            [
-                ("BOX", (0, 0), (-1, -1), 1, level_color),
-                ("LEFTPADDING", (0, 0), (-1, -1), 8),
-                ("TOPPADDING", (0, 0), (-1, -1), 6),
-            ]
-        )
-    )
-    s = inv.stats
-    key_figures = Paragraph(
-        f"Network: <b>{s['persons']}</b> persons, <b>{s['companies']}</b> companies, "
-        f"<b>{s['addresses']}</b> addresses, <b>{s['relationships']}</b> relationships.<br/>"
-        f"Screening: <b>{len(inv.tables['screening'])}</b> sanctions/PEP hits, "
-        f"<b>{len(inv.tables['leaks'])}</b> leak appearances.<br/>"
-        f"Sources: <b>{s['sources']}</b> sources, <b>{s['queries']}</b> queries. "
-        f"Cross-source merges: <b>{len(inv.merges)}</b>."
-        + (
-            "<br/><font color='#b91c1c'>Network truncated at node limit — results are partial.</font>"
-            if inv.truncated
-            else ""
-        ),
-        st["body"],
-    )
-    top = (
-        "".join(
-            f"• <b>{_esc(f.label)}</b> (+{f.points:g}) — {_esc(f.evidence[0])}<br/>"
-            for f in risk.factors[:6]
-        )
-        or "No risk factor triggered."
-    )
-    summary = Table(
-        [[score_box, key_figures, Paragraph(top, st["small"])]],
-        colWidths=[50 * mm, 80 * mm, WIDTH - 130 * mm],
-    )
-    summary.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "TOP")]))
-    story.append(Paragraph("1. Executive summary", st["h2"]))
-    b = inv.brief
     if b:
         verdict_color = {
             "critical": "#991b1b",
@@ -349,7 +505,13 @@ def build_pdf(
                 st["small"],
             )
         )
-    story.append(summary)
+    if inv.truncated:
+        story.append(
+            Paragraph(
+                "<font color='#b91c1c'>Network truncated at the node limit — results are partial.</font>",
+                st["small"],
+            )
+        )
     if b and b.owners:
         story.append(
             Paragraph(
@@ -464,7 +626,7 @@ def build_pdf(
             [
                 ("label", "Factor", 2.2),
                 ("weight", "Weight", 0.75),
-                ("distance", "Hops", 0.5),
+                ("distance", "Hops", 0.7),
                 ("mult", "Proximity", 0.9),
                 ("points", "Points", 0.7),
                 ("evidence", "Evidence", 7),
@@ -575,7 +737,7 @@ def build_pdf(
                 ("status", "Status", 0.8),
                 ("incorporation_date", "Incorporated", 1.05),
                 ("last_accounts_date", "Last accounts", 1.05),
-                ("depth", "Hops", 0.55),
+                ("depth", "Hops", 0.7),
                 ("risk_level", "Risk", 0.7),
                 ("flags", "Flags", 3),
             ],
@@ -1008,5 +1170,33 @@ def build_pdf(
     skip = SKIPPED_SECTIONS.get(template, set())
     if skip:
         story = _drop_sections(story, skip)
-    doc.build(story, onFirstPage=on_page, onLaterPages=on_page)
+    # Contents (on the cover), from the sections actually in this report
+    sections = [
+        f.getPlainText()
+        for f in story
+        if isinstance(f, Paragraph) and getattr(f.style, "name", "") == "h2"
+    ]
+    if sections:
+        cols = 3
+        per = (len(sections) + cols - 1) // cols
+        toc = Table(
+            [
+                [
+                    Paragraph(_esc(sections[c * per + r]), st["small"])
+                    if c * per + r < len(sections)
+                    else ""
+                    for c in range(cols)
+                ]
+                for r in range(per)
+            ],
+            colWidths=[WIDTH / cols] * cols,
+        )
+        toc.setStyle(
+            TableStyle(
+                [("TOPPADDING", (0, 0), (-1, -1), 1), ("BOTTOMPADDING", (0, 0), (-1, -1), 1)]
+            )
+        )
+        story[toc_index:toc_index] = [Paragraph("Contents", st["h3"]), toc]
+    story = _underline_headings(story)
+    doc.build(story, onFirstPage=on_cover, onLaterPages=on_page, canvasmaker=_NumberedCanvas)
     return buf.getvalue()

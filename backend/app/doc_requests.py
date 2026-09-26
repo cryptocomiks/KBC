@@ -24,6 +24,16 @@ class DocRequest(BaseModel):
     entity_ids: list[str] = Field(default_factory=list)
 
 
+def _identity_evidence(entity, label: str) -> str:
+    """What identifies a party beyond doubt: a passport for a person, register data for an entity."""
+    if entity is not None and entity.type == EntityType.PERSON:
+        return f"Passport copy of {label} (full date of birth and nationality)"
+    return (
+        f"Register extract of {label} (registration number, registered office, directors) "
+        "and its link with the client"
+    )
+
+
 def build_requests(
     net: Network, risk: RiskAssessment, jur_name=lambda c: c or "?"
 ) -> list[DocRequest]:
@@ -103,7 +113,7 @@ def build_requests(
         if k in ("sanctions_match", "sanctions_possible_match", "watchlist_match"):
             for eid in ids[:3]:
                 add(
-                    f"Passport copy of {name(eid)} (full date of birth and nationality)",
+                    _identity_evidence(ents.get(eid), name(eid)),
                     f"Confirm or rule out the {f.label.lower()} — {f.evidence[0][:120]}",
                     "required",
                     [eid],

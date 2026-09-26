@@ -51,6 +51,52 @@ class ConnectorError(RuntimeError):
     pass
 
 
+# Circuit breaker: a source that cannot be reached (DNS failure, connection refused,
+# repeated timeouts, rate limit) is skipped for a few minutes instead of being called —
+# and reported — for every entity of the investigation.
+_DOWN: dict[str, tuple[float, str]] = {}
+_DOWN_GUARD = threading.Lock()
+DOWN_SECONDS = {"unreachable": 300.0, "rate limited": 120.0}
+
+
+def _mark_down(name: str, reason: str) -> None:
+    with _DOWN_GUARD:
+        _DOWN[name] = (time.monotonic() + DOWN_SECONDS.get(reason, 120.0), reason)
+
+
+def _down_reason(name: str) -> str | None:
+    with _DOWN_GUARD:
+        until, reason = _DOWN.get(name, (0.0, ""))
+        if until > time.monotonic():
+            return reason
+        _DOWN.pop(name, None)
+        return None
+
+
+def reset_circuit_breakers() -> None:
+    """Tests: forget the sources marked as down."""
+    with _DOWN_GUARD:
+        _DOWN.clear()
+
+
+def group_warnings(warnings: list[str]) -> list[str]:
+    """One line per problem: repeated messages from the same source are counted, not repeated."""
+    counts: dict[str, int] = {}
+    for w in warnings:
+        counts[w] = counts.get(w, 0) + 1
+    by_source: dict[str, list[str]] = {}
+    for w in counts:
+        source = w.split(": ", 1)[0] if ": " in w else w
+        by_source.setdefault(source, []).append(w)
+    out = []
+    for messages in by_source.values():
+        total = sum(counts[m] for m in messages)
+        # the root cause first, not the "skipped" follow-ups
+        first = next((m for m in messages if "skipped for a few minutes" not in m), messages[0])
+        out.append(first + (f" (×{total})" if total > 1 else ""))
+    return out
+
+
 class BaseConnector(ABC):
     #: stable identifier, used as record id prefix ("pappers:552100554")
     name: ClassVar[str]
@@ -243,6 +289,9 @@ class BaseConnector(ABC):
             "Accept": "*/*" if as_text else "application/json",
             **(headers or {}),
         }
+        down = _down_reason(self.name)
+        if down:
+            raise ConnectorError(f"{self.label}: {down}, skipped for a few minutes")
         resp = None
         retries = self.max_retries
         for attempt in range(retries + 1):
@@ -263,6 +312,11 @@ class BaseConnector(ABC):
                 if attempt < retries:
                     time.sleep(RETRY_BACKOFF_SECONDS * (2**attempt))
                     continue
+                if isinstance(exc, httpx.ConnectError):
+                    _mark_down(self.name, "unreachable")
+                    raise ConnectorError(
+                        f"{self.label}: source unreachable ({exc}) — skipped for this investigation"
+                    ) from exc
                 raise ConnectorError(f"{self.label}: network error ({exc})") from exc
             # Rate limited or transient server error: back off and retry.
             if resp.status_code in (429, 502, 503, 504) and attempt < retries:
@@ -282,6 +336,9 @@ class BaseConnector(ABC):
             raise ConnectorError(
                 f"{self.label}: access refused (HTTP {resp.status_code}) — check the API key"
             )
+        elif resp.status_code == 429:
+            _mark_down(self.name, "rate limited")
+            raise ConnectorError(f"{self.label}: rate limited by the source (HTTP 429)")
         elif resp.status_code >= 400:
             raise ConnectorError(f"{self.label}: HTTP {resp.status_code}")
         elif as_text:
