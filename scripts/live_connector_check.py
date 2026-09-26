@@ -21,6 +21,7 @@ os.environ.setdefault("CACHE_PATH", ":memory:")
 
 from app.connectors.aleph import AlephConnector  # noqa: E402
 from app.connectors.annuaire_fr import AnnuaireEntreprisesConnector  # noqa: E402
+from app.connectors.base import ConnectorError  # noqa: E402
 from app.connectors.bodacc import BodaccConnector  # noqa: E402
 from app.connectors.casino_secrets import (  # noqa: E402
     CasinoSecretsConnector,
@@ -653,7 +654,14 @@ def check_documents_sources() -> None:
         ("EU public contracts (TED)", TedConnector(settings), company("Thales")),
         ("LittleSis relationships", LittleSisConnector(settings), company("Glencore Plc")),
     ):
-        docs = conn.get_documents(entity)
+        try:
+            docs = conn.get_documents(entity)
+        except ConnectorError as exc:
+            if "rate limited" not in str(exc):
+                raise
+            # Anonymous quota of the source (HTTP 429), not a code error.
+            print(f"WARN  {label}: rate limited by the source — {exc}")
+            continue
         for d in docs[:2]:
             print(f"      {d.date} | {d.title[:90]} | {d.url}")
         expect(label, bool(docs), f"{len(docs)} documents")
