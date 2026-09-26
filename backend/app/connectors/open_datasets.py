@@ -278,7 +278,7 @@ class OpenDatasetsConnector(BaseConnector):
                 timeout = max(self.settings.http_timeout_seconds, 30.0)
                 datasets = self._datasets()
                 # Download all lists in parallel (I/O bound), then index them one by one.
-                with ThreadPoolExecutor(max_workers=max(1, min(8, len(datasets)))) as pool:
+                with ThreadPoolExecutor(max_workers=max(1, min(16, len(datasets)))) as pool:
                     futures = {d: pool.submit(_fetch, d, timeout) for d in datasets}
                 for dataset, future in futures.items():
                     try:
