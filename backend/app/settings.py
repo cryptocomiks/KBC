@@ -67,12 +67,12 @@ class Settings(BaseSettings):
         "ch_finma_rulings,fr_amf_regulatory_sanctions,fr_illegal_financial_services,eu_esma_sanctions,"
         "us_sec_pause,no_nbim_exclusions,fr_hatvp_declarations,eu_europol_wanted,gb_nca_most_wanted,"
         "gb_nca_press_releases,us_fbi_most_wanted,de_bka_wanted,"
-        "fr_tresor_gels_avoir,mc_fund_freezes,ch_fiaa_freezes,eu_travel_bans,gb_hmt_invbans,"
+        "fr_tresor_gels_avoir,mc_fund_freezes,ch_fiaa_freezes,eu_travel_bans,"
         "ee_international_sanctions,lv_fiu_sanctions,lt_magnitsky_amendments,pl_mswia_sanctions,"
         "cz_national_sanctions,ca_facfoa,us_klepto_hr_visa,us_bis_denied,us_fincen_special_measures,"
         "tr_fcib,za_fic_sanctions,jp_meti_ru,us_fincen_enforcement,us_ofac_enforcement_actions,"
         "us_cftc_enforcement_actions,us_nfa_enforcement_actions,us_finra_barred,us_ddtc_debarred,"
-        "sg_mas_enforcement_actions,ae_dfsa_prohibited,my_consumer_alert_list,lt_illegal_websites,"
+        "ae_dfsa_prohibited,my_consumer_alert_list,lt_illegal_websites,"
         "hk_icac_wanted,us_dea_fugitives"
     )
     # casinosecrets.lol went offline in Sept 2026 (the domain no longer resolves): set to true

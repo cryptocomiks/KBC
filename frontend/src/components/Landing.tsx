@@ -80,7 +80,7 @@ const CATEGORY: Record<string, { label: string; Icon: typeof Building2 }> = {
   media: { label: "Press", Icon: Newspaper },
   archive: { label: "Websites & archives", Icon: Globe2 },
 };
-const WATCHLISTS = 66; // bulk lists (EU, UK, CH, FR, MC, US enforcement…) + OFAC SDN + UN
+const WATCHLISTS = 64; // bulk lists (EU, UK, CH, FR, MC, US enforcement…) + OFAC SDN + UN
 
 function Section({ tag, title, children }: { tag: string; title: string; children: ReactNode }) {
   return (
