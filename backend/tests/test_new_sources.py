@@ -105,6 +105,9 @@ def test_israel_crypto_wallets_are_screened():
         '"il-2","CryptoWallet","Cryptocurrency wallet","","","","","112604404","","","","","x","","",""\n'
     )
     respx.get(IL_CRYPTO).mock(return_value=httpx.Response(200, text=csv_text))
+    respx.get(url__startswith="https://data.opensanctions.org/").mock(
+        return_value=httpx.Response(404)
+    )
     index = _Index()
     _load_il_crypto(index, 10)
     assert len(index.wallets) == 1 and not index.by_key

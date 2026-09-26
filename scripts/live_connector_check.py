@@ -446,6 +446,40 @@ def check_new_sources() -> None:
     expect(f"{IL_CRYPTO_LABEL}: addresses", len(index.wallets) > 100, f"{len(index.wallets)}")
 
 
+def check_world_sources() -> None:
+    from app.connectors.official_sanctions import CRYPTO_LISTS, _Index, _load_crypto_list
+    from app.connectors.world_registries import (
+        AcraConnector,
+        CanadaRegistriesConnector,
+        CjeuConnector,
+        IsraelRegistrarConnector,
+    )
+
+    for conn, query in (
+        (AcraConnector(settings), "DBS Bank"),
+        (IsraelRegistrarConnector(settings), "Teva"),
+        (CanadaRegistriesConnector(settings), "Shopify"),
+    ):
+        found = conn.search_company(query)
+        names = "; ".join(f"{c.name} ({c.registration_number})" for c in found[:3])
+        expect(f"{conn.name}: {query} found", bool(found), names)
+    docs = CjeuConnector(settings).get_documents(company("Gazprom"))
+    expect("CJEU: judgments naming Gazprom", bool(docs), docs[0].title[:100] if docs else "none")
+    for dataset, label, owner in CRYPTO_LISTS:
+        n = _load_crypto_list(_Index(), 30, dataset, label, owner)
+        expect(f"crypto addresses: {label}", n > 0, str(n))
+
+
+def check_extended_watchlists() -> None:
+    from app.connectors import open_datasets
+
+    conn = open_datasets.OpenDatasetsExtendedConnector(settings)
+    index = conn._index()
+    state = conn._state
+    print(f"      extended index: {len(index.entries)} entries; errors: {state.errors}")
+    expect("extended lists loaded", len(index.entries) > 1000 and not state.errors)
+
+
 def check_casino_secrets() -> None:
     reg = CasinoSecretsConnector(settings)
     if not reg.enabled:
@@ -777,6 +811,8 @@ guarded("Slovak beneficial owners (RPVS)", check_rpvs)
 guarded("Courts, public contracts, LittleSis, linked websites", check_documents_sources)
 guarded("Financial regulators (ESMA, REGAFI/ACPR)", check_regulators)
 guarded("Latvia, Poland KRS, securities (ISIN), Israel crypto wallets", check_new_sources)
+guarded("Singapore, Israel, Canada registers; EU Court of Justice", check_world_sources)
+guarded("Extended watchlists (second batch)", check_extended_watchlists)
 for key, title, fn in [
     ("OPENSANCTIONS_API_KEY", "OpenSanctions", check_opensanctions),
     ("COMPANIES_HOUSE_API_KEY", "Companies House", check_companies_house),

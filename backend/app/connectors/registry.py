@@ -30,7 +30,7 @@ def _connector_classes() -> list[type[BaseConnector]]:
     from app.connectors.icij import IcijLocalConnector, IcijReconcileConnector
     from app.connectors.littlesis import LittleSisConnector
     from app.connectors.official_sanctions import OfficialSanctionsConnector
-    from app.connectors.open_datasets import OpenDatasetsConnector
+    from app.connectors.open_datasets import OpenDatasetsConnector, OpenDatasetsExtendedConnector
     from app.connectors.opencorporates import OpenCorporatesConnector
     from app.connectors.opensanctions import OpenSanctionsConnector
     from app.connectors.pappers import PappersConnector
@@ -41,6 +41,12 @@ def _connector_classes() -> list[type[BaseConnector]]:
     from app.connectors.wayback import WaybackConnector
     from app.connectors.websites import LinkedWebsitesConnector
     from app.connectors.wikidata import WikidataConnector, WikidataPepConnector
+    from app.connectors.world_registries import (
+        AcraConnector,
+        CanadaRegistriesConnector,
+        CjeuConnector,
+        IsraelRegistrarConnector,
+    )
     from app.connectors.zefix import ZefixConnector
 
     # To add a source (e.g. Zefix for Switzerland, LBR for Luxembourg): implement
@@ -61,12 +67,16 @@ def _connector_classes() -> list[type[BaseConnector]]:
         AriregisterConnector,
         LatviaRegisterConnector,
         KrsConnector,
+        AcraConnector,
+        IsraelRegistrarConnector,
+        CanadaRegistriesConnector,
         RpvsConnector,
         SecEdgarConnector,
         OpenCorporatesConnector,
         OpenSanctionsConnector,
         OfficialSanctionsConnector,
         OpenDatasetsConnector,
+        OpenDatasetsExtendedConnector,
         WikidataConnector,
         WikidataPepConnector,
         GdeltConnector,
@@ -74,6 +84,7 @@ def _connector_classes() -> list[type[BaseConnector]]:
         LinkedWebsitesConnector,
         SwissCourtsConnector,
         CourtListenerConnector,
+        CjeuConnector,
         TedConnector,
         RegulatorsConnector,
         LittleSisConnector,

@@ -295,34 +295,56 @@ def _load_un(index: _Index, timeout: float) -> None:
         )
 
 
-IL_CRYPTO = "https://data.opensanctions.org/datasets/latest/il_mod_crypto/targets.simple.csv"
+CRYPTO_URL = "https://data.opensanctions.org/datasets/latest/{dataset}/targets.simple.csv"
+IL_CRYPTO = CRYPTO_URL.format(dataset="il_mod_crypto")
 IL_CRYPTO_LABEL = "Israel NBCTF seized / sanctioned crypto wallets (terror financing)"
+# Crypto address lists matched verbatim, like the OFAC addresses: (dataset, label, owner)
+CRYPTO_LISTS = (
+    ("il_mod_crypto", IL_CRYPTO_LABEL, "Wallet listed by Israel's NBCTF"),
+    (
+        "us_fbi_lazarus_crypto",
+        "US FBI — Lazarus Group (North Korea) crypto wallets",
+        "Lazarus Group (DPRK)",
+    ),
+    ("ransomwhere", "Ransomware payment addresses (ransomwhe.re)", "Ransomware operator"),
+)
 
 
-def _load_il_crypto(index: _Index, timeout: float) -> None:
-    """Crypto addresses seized by Israel's counter-terror financing bureau (NBCTF): addresses
-    only (the owners are rarely named), matched verbatim like the OFAC addresses."""
+def _load_crypto_list(index: _Index, timeout: float, dataset: str, label: str, owner: str) -> int:
     added = 0
-    for row in csv.DictReader(io.StringIO(_download(IL_CRYPTO, timeout))):
-        address = (row.get("name") or "").strip()
-        chain = detect_chain(address)
-        if row.get("schema") != "CryptoWallet" or not chain:
+    for row in csv.DictReader(io.StringIO(_download(CRYPTO_URL.format(dataset=dataset), timeout))):
+        candidates = [(row.get("name") or "").strip()] + [
+            i.strip() for i in (row.get("identifiers") or "").split(";")
+        ]
+        address = next((a for a in candidates if a and detect_chain(a)), None)
+        if row.get("schema") != "CryptoWallet" or not address:
             continue
+        chain = detect_chain(address)
         entry = ListedEntry(
-            entity=Entity(
-                id=f"il_mod_crypto:{row.get('id')}",
-                type=EntityType.COMPANY,
-                name="Wallet listed by Israel's NBCTF",
-            ),
-            dataset=IL_CRYPTO_LABEL,
+            entity=Entity(id=f"{dataset}:{row.get('id')}", type=EntityType.COMPANY, name=owner),
+            dataset=label,
             url=f"https://www.opensanctions.org/entities/{row.get('id')}/",
             program=(row.get("sanctions") or "").strip('"') or None,
         )
         index.entries.append(entry)  # addresses only: not in the name index
-        index.wallets[normalize_address(address, chain)] = (len(index.entries) - 1, "", chain)
+        index.wallets.setdefault(
+            normalize_address(address, chain), (len(index.entries) - 1, "", chain)
+        )
         added += 1
+    return added
+
+
+def _load_il_crypto(index: _Index, timeout: float) -> None:
+    """Crypto addresses seized by Israel's NBCTF, the FBI's Lazarus Group (North Korea)
+    addresses and ransomware payment addresses: matched verbatim like the OFAC addresses."""
+    added, errors = 0, []
+    for dataset, label, owner in CRYPTO_LISTS:
+        try:
+            added += _load_crypto_list(index, timeout, dataset, label, owner)
+        except httpx.HTTPError as exc:
+            errors.append(f"{dataset}: {exc}")
     if not added:
-        raise ValueError("Israel crypto list downloaded but empty")
+        raise ValueError("crypto address lists downloaded but empty " + "; ".join(errors))
 
 
 class OfficialSanctionsConnector(BaseConnector):

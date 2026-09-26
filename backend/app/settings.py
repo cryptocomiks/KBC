@@ -90,6 +90,46 @@ class Settings(BaseSettings):
     # casinosecrets.lol went offline in Sept 2026 (the domain no longer resolves): set to true
     # to query it again if the consortium republishes it at the same address.
     casino_secrets_enabled: bool = False
+    # Second batch of watchlists, loaded in the background (never delays the core screening)
+    open_datasets_extended: str = (
+        "ua_nsdc_sanctions,ua_sfms_blacklist,us_ofac_cons,us_state_terrorist_orgs,"
+        "us_state_terrorist_exclusion,us_cuba_sanctions,us_dhs_uflpa,us_bis_mieu,"
+        "us_cbp_forced_labor,us_nk_jointventures,us_dod_chinese_milcorps,us_fcc_covered_list,"
+        "gb_proscribed_orgs,ca_listed_terrorists,au_listed_terrorist_orgs,"
+        "nz_designated_terrorists,nl_terrorism_list,cz_terrorists,at_nbter_sanctions,"
+        "lt_fiu_freezes,pl_finanse_sanctions,ro_onpcsb_sanctions,bg_mft_national,"
+        "rs_apml_domestic,md_terror_sanctions,ge_ot_list,az_fiu_sanctions,kg_fiu_national,"
+        "il_mod_terrorists,il_wmd_sanctions,ae_local_terrorists,qa_nctc_sanctions,"
+        "sa_pcct_terrorism_list,jo_sanctions,iq_aml_list,eg_terrorists,tn_cnlct,"
+        "ke_frc_sanctions,ng_nigsac_sanctions,in_mha_banned,pk_proscribed_persons,"
+        "np_mha_sanctions,id_dttot,my_moha_sanctions,sg_terrorists,th_designated_person,"
+        "ph_amlc_sanctions,vn_terrorist_orgs,ps_local_freezing,ar_repet,de_bfv_extremism,"
+        "ie_unlawful_organizations,jp_meti_eul,us_fed_enforcements,us_occ_enfact,us_bis_export,"
+        "us_bis_antiboycott,us_ddtc_enforcements,us_sec_harmed_investors,us_special_leg,"
+        "gg_disqualified_directors,im_disqualified_directors,tr_cmb_banned,in_nse_debarred,"
+        "my_aob_sanctions,my_investor_alert_list,ph_sec_advisories,ph_gppb_debarred,br_ceis,"
+        "br_tcu_debarred,br_bcb_disqualified_persons,md_interdictie,si_conflicts,"
+        "lt_illegal_gambling,li_entsg,br_slavery,ru_dossier_center_poi,ru_kremlin_persons,"
+        "ru_billionaires_2021,md_rise_profiles,thesentry_atlas,ir_uani_business_registry,"
+        "shu_uyghur_companies,c4ads_xinjiang,ps_ohchr_settlement,tr_wanted,es_cnp_wanted,"
+        "nl_most_wanted,us_ice_wanted,us_ss_wanted,za_wanted,ar_parliament,ar_senado,"
+        "br_chamber_deputies,br_federal_senate,cl_chamber_deputies,cl_senate,mx_deputies,"
+        "mx_senators,mx_governors,co_join_dots,pe_congreso,ve_asamblea_nacional,py_congreso,"
+        "pa_asamblea,gt_congress,ca_senate,ca_foreign_reps,au_parliament,nz_parliament,"
+        "ky_parliament,ky_judicial,cn_npc,hk_legco,hk_principal_officials,mo_legislature,"
+        "tw_legislature,jp_shugiin,jp_sangiin,kr_assembly,in_sansad,pk_na_members,"
+        "pk_senate_members,sg_gov_dir,my_parliament,th_cabinet,vn_national_assembly,"
+        "mn_parliament,kz_senate,uz_legislative_chamber,uz_senate,kg_jogorku_kenesh,"
+        "tj_majlisi_milli,tm_mejlis,by_council_republic,qa_shura_council,bh_nuwab,"
+        "bh_shura_council,om_parliament,eg_house_representatives,ma_representatives,"
+        "ma_house_councillors,dz_apn,dz_council_nation,tn_arp,ng_join_dots,ke_national_assembly,"
+        "ke_senate,gh_parliament,za_pmg_legislators,ci_national_assembly,sn_assembly,"
+        "cm_national_assembly,al_kuvendi,ba_parliament,me_skupstina,xk_assembly,is_althingi,"
+        "sm_consiglio,ad_consell_general,be_flemish_parliament,be_walloon_parliament,"
+        "de_abgeordnetenwatch,at_meine_abgeordneten,si_zvezoskop,sk_public_officials,"
+        "ro_fiu_declarations,hr_public_officials,ge_declarations,se_soe,no_brreg,"
+        "us_plural_legislators"
+    )
     icij_db_path: str = str(REPO_ROOT / "data" / "icij_offshore_leaks.db")
 
     risk_config_path: str = str(CONFIG_DIR / "risk.yaml")
