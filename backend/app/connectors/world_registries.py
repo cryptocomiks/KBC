@@ -326,7 +326,10 @@ SELECT DISTINCT ?celex ?title ?date WHERE {{
   FILTER(CONTAINS(LCASE(STR(?title)), "{name}"))
 }} ORDER BY DESC(?date) LIMIT {MAX_JUDGMENTS}"""
         data: Any = self.http_get_json(
-            CELLAR_SPARQL, params={"query": query, "format": "application/sparql-results+json"}
+            CELLAR_SPARQL,
+            params={"query": query, "format": "application/sparql-results+json"},
+            # the endpoint answers 406 to a plain "application/json"
+            headers={"Accept": "application/sparql-results+json"},
         )
         rows = ((data or {}).get("results") or {}).get("bindings") or []
         docs = []
