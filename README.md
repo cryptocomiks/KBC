@@ -1,5 +1,7 @@
 # KYC 1 CLICK — Due diligence & AML/KYC in one click
 
+**Demo video (1 min 30):** [docs/video/kyc1click_demo.mp4](docs/video/kyc1click_demo.mp4) — search, investigation, KYC case, decision memo and PDF report (fictitious demo data).
+
 [![CI](https://github.com/cryptocomiks/KBC/actions/workflows/ci.yml/badge.svg)](https://github.com/cryptocomiks/KBC/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-3.11%2B-blue)
 ![React](https://img.shields.io/badge/react-19-61dafb)
