@@ -5,10 +5,10 @@ import { useCallback, useEffect, useState } from "react";
  *  #/search?q=…&type=…&depth=…&n=…     search results
  *  #/investigate?ids=a,b&depth=…&n=…   investigation
  *  #/cases                             cases dashboard
- *  #/cases/<id>[/<tab>]                a case (tab: kyc | investigation | history)
+ *  #/cases/<id>[/<tab>]                a case (tab: kyc | investigation | memo | history)
  */
 export type SearchType = "any" | "person" | "company";
-export type CaseTab = "kyc" | "investigation" | "history";
+export type CaseTab = "kyc" | "investigation" | "memo" | "history";
 export type Route =
   | { name: "home" }
   | { name: "search"; q: string; type: SearchType; depth: number; maxNodes: number }
@@ -16,7 +16,7 @@ export type Route =
   | { name: "cases" }
   | { name: "case"; id: string; tab: CaseTab };
 
-const TABS: CaseTab[] = ["kyc", "investigation", "history"];
+const TABS: CaseTab[] = ["kyc", "investigation", "memo", "history"];
 const int = (v: string | null, fallback: number, min: number, max: number) => {
   const n = Number(v);
   return Number.isFinite(n) && n >= min && n <= max ? Math.round(n) : fallback;

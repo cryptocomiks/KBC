@@ -9,6 +9,8 @@ import CaseChecklist from "./CaseChecklist";
 import CaseHeader from "./CaseHeader";
 import CaseHistory from "./CaseHistory";
 import CaseWorkflow from "./CaseWorkflow";
+import DecisionMemo from "./DecisionMemo";
+import RiskMap from "./RiskMap";
 import ImportPending from "./ImportPending";
 import InvestigationView from "./InvestigationView";
 import KycQuestionnaire from "./KycQuestionnaire";
@@ -57,6 +59,7 @@ export default function CaseScreen({ caseId, tab, onTab, theme, onBack, onInvest
         <div className="panel-enter space-y-4">
           {q.data.workflow && <CaseWorkflow caseId={caseId} view={q.data.workflow} />}
           <KycQuestionnaire key={`${caseId}-${q.data.questionnaire.answered_at ?? ""}`} caseId={caseId} data={q.data.questionnaire} />
+          <RiskMap caseId={caseId} data={q.data.questionnaire} />
           {q.data.checklist && <CaseChecklist caseId={caseId} data={q.data.checklist} subjectName={q.data.case.subject_name} />}
           <p className="text-center text-xs text-slate-500">
             Findings, network, evidence and reports are in the{" "}
@@ -67,6 +70,7 @@ export default function CaseScreen({ caseId, tab, onTab, theme, onBack, onInvest
           </p>
         </div>
       )}
+      {tab === "memo" && <DecisionMemo caseId={caseId} />}
       {tab === "history" && <CaseHistory key={q.data.case.updated_at} view={q.data} />}
       {tab === "investigation" && (
       <InvestigationView

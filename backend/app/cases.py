@@ -23,6 +23,7 @@ from app.cache import get_cache
 from app.doc_requests import build_requests
 from app.graph.expander import Network
 from app.insights import build_summary, build_timeline
+from app.memo import build_memo
 from app.models import EntityType, RelationType
 from app.risk.config import get_jurisdictions
 from app.risk.engine import RiskEngine
@@ -407,11 +408,85 @@ class CaseService:
             "answers": answers,
             "author": saved.get("author", ""),
             "answered_at": saved.get("answered_at"),
+            "override_history": list(reversed(saved.get("override_history") or [])),
             "suggested": kyc.suggest(case),
             "assessment": kyc.assess({**answers, "_answered_at": saved.get("answered_at")}, case)
             if answers
             else None,
         }
+
+    def memo(self, case_id: str, regenerate: bool = False) -> dict[str, Any]:
+        """The saved memo, or a draft written from the current state of the case."""
+        case = self._get(case_id)
+        saved = case.get("memo") or {}
+        if saved.get("text") and not regenerate:
+            return {"title": case["title"], "draft": False, **saved}
+        decisions = self.store.decisions(case_id)
+        inv = apply_decisions(self.service.investigate(self._params(case)), decisions)
+        kyc_view = self.questionnaire(case)
+        checklist = wf.checklist_view(
+            case, [r.model_dump() for r in inv.requests], kyc_view["assessment"]
+        )
+        workflow = self.workflow_view(case, checklist, kyc_view["assessment"])
+        text = build_memo(case, inv, kyc_view, checklist, workflow, decisions)
+        return {
+            "title": case["title"],
+            "draft": True,
+            "text": text,
+            "generated_at": now(),
+            "updated_by": saved.get("updated_by"),
+            "updated_at": saved.get("updated_at"),
+        }
+
+    def save_memo(self, case_id: str, text: str, by: str) -> dict[str, Any]:
+        case = self._get(case_id)
+        memo = {"text": text, "updated_by": by.strip(), "updated_at": now()}
+        self.store.update_case(case_id, memo=memo)
+        return {"title": case["title"], "draft": False, **memo}
+
+    def override_vigilance(
+        self, case_id: str, level: str | None, justification: str, by: str
+    ) -> dict[str, Any]:
+        """The analyst sets the final vigilance level (or goes back to the computed one)."""
+        case = self.store.get_case(case_id)
+        if case is None:
+            raise LookupError("Case not found")
+        saved = dict(case.get("questionnaire") or {})
+        if not saved.get("answers"):
+            raise wf.WorkflowError("Answer the questionnaire before adjusting the level.")
+        if level is not None and level not in kyc.LEVELS:
+            raise wf.WorkflowError("Unknown vigilance level.")
+        if not by.strip():
+            raise wf.WorkflowError("Give your name: the adjustment is signed.")
+        if len(justification.strip()) < 15:
+            raise wf.WorkflowError("A justification of at least 15 characters is required.")
+        stamp = now()
+        history = list(saved.get("override_history") or [])
+        history.append(
+            {
+                "level": level,
+                "justification": justification.strip()[:2000],
+                "by": by.strip(),
+                "at": stamp,
+            }
+        )
+        saved["override_history"] = history[-50:]
+        saved["override"] = (
+            {
+                "level": level,
+                "justification": justification.strip()[:2000],
+                "by": by.strip(),
+                "at": stamp,
+            }
+            if level
+            else None
+        )
+        case = self.store.update_case(case_id, questionnaire=saved)
+        view = self.questionnaire(case)  # type: ignore[arg-type]
+        a = view["assessment"]
+        saved.update(vigilance=a["level"], next_review=a["next_review"])
+        self.store.update_case(case_id, questionnaire=saved)
+        return view
 
     def save_questionnaire(
         self, case_id: str, answers: dict[str, Any], author: str
@@ -422,9 +497,11 @@ class CaseService:
         answers = kyc.clean(answers)
         stamp = now()
         assessment = kyc.assess({**answers, "_answered_at": stamp}, case)
+        previous = case.get("questionnaire") or {}
         case = self.store.update_case(
             case_id,
             questionnaire={
+                **{k: previous[k] for k in ("override", "override_history") if k in previous},
                 "answers": answers,
                 "author": author,
                 "answered_at": stamp,

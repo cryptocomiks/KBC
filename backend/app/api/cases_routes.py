@@ -106,6 +106,17 @@ class WorkflowIn(BaseModel):
     comment: str = Field(default="", max_length=2000)
 
 
+class OverrideIn(BaseModel):
+    level: Literal["simplified", "standard", "enhanced"] | None = None
+    justification: str = Field(default="", max_length=2000)
+    by: str = Field(default="", max_length=120)
+
+
+class MemoIn(BaseModel):
+    text: str = Field(max_length=60000)
+    by: str = Field(default="", max_length=120)
+
+
 class TickIn(BaseModel):
     done: bool
     by: str = Field(default="", max_length=120)
@@ -245,6 +256,39 @@ def _run(fn, *args):
 def workflow_action(case_id: str, w: WorkflowIn) -> dict:
     """Send for validation, validate (four eyes), send back or reopen a case."""
     return _run(cases().act, case_id, w.action, w.by, w.comment)
+
+
+@router.put("/{case_id}/vigilance", dependencies=[Depends(require_access)])
+def override_vigilance(case_id: str, o: OverrideIn) -> dict:
+    """Analyst's final vigilance level (null = back to the computed one), with a justification."""
+    return _run(cases().override_vigilance, case_id, o.level, o.justification, o.by)
+
+
+@router.get("/{case_id}/memo", dependencies=[Depends(require_access)])
+def get_memo(case_id: str, regenerate: bool = False) -> dict:
+    """Decision memo: the saved version, or a fresh draft written from the case."""
+    return _run(cases().memo, case_id, regenerate)
+
+
+@router.put("/{case_id}/memo", dependencies=[Depends(require_access)])
+def save_memo(case_id: str, m: MemoIn) -> dict:
+    return _run(cases().save_memo, case_id, m.text, m.by)
+
+
+@router.get("/{case_id}/memo.pdf", dependencies=[Depends(require_access)])
+def memo_pdf(case_id: str):
+    from fastapi.responses import Response
+
+    from app.report.memo_pdf import build_memo_pdf
+
+    memo = _run(cases().memo, case_id, False)
+    pdf = build_memo_pdf(memo)
+    safe = "".join(ch if ch.isascii() and ch.isalnum() else "_" for ch in memo["title"])[:60]
+    return Response(
+        content=pdf,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="decision_memo_{safe}.pdf"'},
+    )
 
 
 @router.put("/{case_id}/checklist/{item_key}", dependencies=[Depends(require_access)])

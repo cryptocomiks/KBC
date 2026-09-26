@@ -427,6 +427,25 @@ def check_sec() -> None:
     )
 
 
+def check_new_sources() -> None:
+    from app.connectors.europe_registries import KrsConnector, LatviaRegisterConnector
+    from app.connectors.official_sanctions import IL_CRYPTO_LABEL, _Index, _load_il_crypto
+    from app.identifiers import Identifier
+
+    lv = LatviaRegisterConnector(settings).search_company("airBaltic")
+    found = "; ".join(f"{c.name} ({c.registration_number})" for c in lv[:3])
+    expect("Latvia: company found", bool(lv), found)
+    krs = KrsConnector(settings).get_by_identifier(Identifier("registration", "0000019193", "KRS"))
+    expect("Poland KRS: extract by number", bool(krs and "KOLEJE" in krs.name), krs and krs.name)
+    glencore = company("Glencore plc")
+    glencore.identifiers["LEI"] = "2138002658CPO9NBH955"
+    sec = [d for d in GleifConnector(settings).get_documents(glencore) if d.kind == "securities"]
+    expect("GLEIF: securities issued (ISIN)", bool(sec), sec[0].summary[:120] if sec else "none")
+    index = _Index()
+    _load_il_crypto(index, 30)
+    expect(f"{IL_CRYPTO_LABEL}: addresses", len(index.wallets) > 100, f"{len(index.wallets)}")
+
+
 def check_casino_secrets() -> None:
     reg = CasinoSecretsConnector(settings)
     if not reg.enabled:
@@ -757,6 +776,7 @@ guarded("European registers (NO, CZ, BE, FI, EE)", check_european_registers)
 guarded("Slovak beneficial owners (RPVS)", check_rpvs)
 guarded("Courts, public contracts, LittleSis, linked websites", check_documents_sources)
 guarded("Financial regulators (ESMA, REGAFI/ACPR)", check_regulators)
+guarded("Latvia, Poland KRS, securities (ISIN), Israel crypto wallets", check_new_sources)
 for key, title, fn in [
     ("OPENSANCTIONS_API_KEY", "OpenSanctions", check_opensanctions),
     ("COMPANIES_HOUSE_API_KEY", "Companies House", check_companies_house),

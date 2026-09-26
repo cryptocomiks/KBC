@@ -21,6 +21,8 @@ def _connector_classes() -> list[type[BaseConnector]]:
         AriregisterConnector,
         BrregConnector,
         KboConnector,
+        KrsConnector,
+        LatviaRegisterConnector,
         PrhConnector,
     )
     from app.connectors.gdelt import GdeltConnector
@@ -57,6 +59,8 @@ def _connector_classes() -> list[type[BaseConnector]]:
         KboConnector,
         PrhConnector,
         AriregisterConnector,
+        LatviaRegisterConnector,
+        KrsConnector,
         RpvsConnector,
         SecEdgarConnector,
         OpenCorporatesConnector,

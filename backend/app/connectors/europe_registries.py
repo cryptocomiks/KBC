@@ -1264,3 +1264,155 @@ class KboConnector(_EuropeanRegistry):
             seen.add(link.relationship.id)
             out.append(link)
         return out[:MAX_LINKS]
+
+
+# ------------------------------------------------------------------ Latvia
+LV_API = "https://data.gov.lv/dati/api/3/action/datastore_search"
+LV_RESOURCE = "25e80bf3-f107-4ab4-89ef-251b5b9374e9"  # Uzņēmumu reģistrs — register entries
+LV_UI = "https://info.ur.gov.lv/#/data-search/legal-entity/{code}"
+
+
+class LatviaRegisterConnector(_EuropeanRegistry):
+    """Latvian Register of Enterprises (Uzņēmumu reģistrs), open data on data.gov.lv."""
+
+    name = "lv_ur"
+    label = "Uzņēmumu reģistrs — Latvian register of enterprises"
+    jurisdictions = {"LV"}
+    country = "LV"
+    register_name = "Latvian Register of Enterprises"
+    homepage = "https://www.ur.gov.lv"
+
+    def ui_url(self, native: str) -> str:
+        return LV_UI.format(code=native)
+
+    def valid_number(self, native: str) -> bool:
+        return bool(re.fullmatch(r"\d{11}", native or ""))
+
+    def _company(self, r: dict[str, Any]) -> Entity:
+        code = str(r.get("regcode") or "")
+        rid = self.record_id(code)
+        ended = r.get("terminated")
+        name = (r.get("name") or code).strip()
+        return Entity(
+            id=rid,
+            record_ids=[rid],
+            type=EntityType.COMPANY,
+            name=name,
+            jurisdiction="LV",
+            registration_number=code,
+            legal_form=r.get("type_text") or None,
+            status=CompanyStatus.DISSOLVED if ended else CompanyStatus.ACTIVE,
+            incorporation_date=parse_date(str(r.get("registered") or "")[:10]),
+            dissolution_date=parse_date(str(ended or "")[:10]),
+            address=r.get("address") or None,
+            identifiers={"Registration number": code},
+            sources=[self.provenance(rid, self.ui_url(code))],
+            extra={"accounts_unknown": True, "register": r.get("regtype_text")},
+        )
+
+    def _query(self, **params: Any) -> list[dict[str, Any]]:
+        data = self.http_get_json(LV_API, params={"resource_id": LV_RESOURCE, **params}) or {}
+        return [r for r in (data.get("result") or {}).get("records") or [] if r.get("regcode")]
+
+    def search_company(self, name: str, **filters: Any) -> list[Entity]:
+        return [self._company(r) for r in self._query(q=name, limit=10)]
+
+    def get_company_details(self, company_id: str) -> Entity | None:
+        code = self.native_id(company_id)
+        if not self.valid_number(code):
+            return None
+        rows = self._query(filters=f'{{"regcode": {int(code)}}}', limit=1)
+        return self._company(rows[0]) if rows else None
+
+    def get_by_identifier(self, ident: Any) -> Entity | None:
+        value = re.sub(r"\D", "", ident.value or "")
+        return self.get_company_details(self.record_id(value)) if self.valid_number(value) else None
+
+
+# ------------------------------------------------------------------ Poland
+KRS_API = "https://api-krs.ms.gov.pl/api/krs/OdpisAktualny/{krs}"
+KRS_UI = "https://wyszukiwarka-krs.ms.gov.pl/details?krs={krs}"
+
+
+class KrsConnector(_EuropeanRegistry):
+    """Polish National Court Register (KRS), official extract by KRS number (no name search:
+    the Ministry of Justice API only answers for a known number)."""
+
+    name = "krs"
+    label = "KRS — Polish National Court Register (by KRS number)"
+    jurisdictions = {"PL"}
+    country = "PL"
+    register_name = "Polish National Court Register (KRS)"
+    homepage = "https://ekrs.ms.gov.pl"
+
+    def ui_url(self, native: str) -> str:
+        return KRS_UI.format(krs=native)
+
+    def valid_number(self, native: str) -> bool:
+        return bool(re.fullmatch(r"\d{10}", native or ""))
+
+    def _extract(self, krs: str) -> dict[str, Any] | None:
+        for register in ("P", "S"):  # businesses, then associations / foundations
+            data = self.http_get_json(
+                KRS_API.format(krs=krs), params={"rejestr": register, "format": "json"}
+            )
+            if data and data.get("odpis"):
+                return data["odpis"]
+        return None
+
+    def get_company_details(self, company_id: str) -> Entity | None:
+        krs = self.native_id(company_id)
+        if not self.valid_number(krs):
+            return None
+        odpis = self._extract(krs)
+        if not odpis:
+            return None
+        head = odpis.get("naglowekA") or {}
+        d1 = (odpis.get("dane") or {}).get("dzial1") or {}
+        firm = d1.get("danePodmiotu") or {}
+        ids = firm.get("identyfikatory") or {}
+        seat = d1.get("siedzibaIAdres") or {}
+        adr = seat.get("adres") or {}
+        address = ", ".join(
+            p
+            for p in (
+                " ".join(x for x in (adr.get("ulica"), adr.get("nrDomu")) if x),
+                " ".join(x for x in (adr.get("kodPocztowy"), adr.get("miejscowosc")) if x),
+                adr.get("kraj"),
+            )
+            if p
+        )
+        rid = self.record_id(krs)
+        registered = head.get("dataRejestracjiWKRS")
+        identifiers = {"KRS": krs}
+        if ids.get("nip"):
+            identifiers["NIP"] = ids["nip"]
+        if ids.get("regon"):
+            identifiers["REGON"] = ids["regon"]
+        return Entity(
+            id=rid,
+            record_ids=[rid],
+            type=EntityType.COMPANY,
+            name=(firm.get("nazwa") or krs).strip(),
+            jurisdiction="PL",
+            registration_number=krs,
+            legal_form=firm.get("formaPrawna") or None,
+            status=CompanyStatus.ACTIVE,
+            incorporation_date=parse_date(
+                "-".join(reversed(registered.split("."))) if registered else None
+            ),
+            address=address or None,
+            identifiers=identifiers,
+            sources=[self.provenance(rid, self.ui_url(krs))],
+            extra={
+                "accounts_unknown": True,
+                "last_entry": head.get("dataOstatniegoWpisu"),
+                "court": head.get("oznaczenieSaduDokonujacegoOstatniegoWpisu"),
+            },
+        )
+
+    def get_by_identifier(self, ident: Any) -> Entity | None:
+        value = re.sub(r"\D", "", ident.value or "")
+        if len(value) < 10 and value:
+            value = value.zfill(10)  # KRS numbers are often written without leading zeros
+        return self.get_company_details(self.record_id(value)) if self.valid_number(value) else None

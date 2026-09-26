@@ -16,6 +16,7 @@ const STATE_STYLE: Record<string, string> = {
 const TABS: { id: CaseTab; label: string }[] = [
   { id: "kyc", label: "KYC file" },
   { id: "investigation", label: "Investigation" },
+  { id: "memo", label: "Decision memo" },
   { id: "history", label: "History & notes" },
 ];
 

@@ -186,6 +186,7 @@ def test_ofac_crypto_addresses_are_indexed_and_linked(monkeypatch):
     respx.get(osl.OFAC_SDN).mock(return_value=httpx.Response(200, text=SDN))
     respx.get(osl.OFAC_ALT).mock(return_value=httpx.Response(200, text=""))
     respx.get(osl.UN_XML).mock(return_value=httpx.Response(200, text="<CONSOLIDATED_LIST/>"))
+    respx.get(osl.IL_CRYPTO).mock(return_value=httpx.Response(404))
     conn = osl.OfficialSanctionsConnector(LIVE)
     wallet = Entity(id=wallet_id("TRON", TRX), type=EntityType.WALLET, name=TRX, chain="TRON")
     [hit] = conn.screen(wallet)

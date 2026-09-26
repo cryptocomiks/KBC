@@ -963,7 +963,22 @@ def build_pdf(
                     if assessment["triggers"]
                     else ""
                 )
-                + f" · next review by {assessment['next_review']}",
+                + f" · next review by {assessment['next_review']}"
+                + (
+                    f"<br/>Adjusted by {_esc(assessment['override']['by'])} on "
+                    f"{str(assessment['override']['at'])[:10]} from "
+                    f"{assessment['computed_level'].upper()}: {_esc(assessment['override']['justification'])}"
+                    if assessment.get("override")
+                    else ""
+                )
+                + (
+                    "<br/>Risk map: "
+                    + " · ".join(
+                        f"{v['label']} {v['score']}/100" for v in assessment["axes"].values()
+                    )
+                    if assessment.get("axes")
+                    else ""
+                ),
                 st["warn"],
             )
         )

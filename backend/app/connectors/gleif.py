@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from app.connectors.base import BaseConnector
+from app.connectors.base import BaseConnector, ConnectorError
 from app.connectors.util import parse_date
 from app.models import (
     CompanyStatus,
@@ -164,7 +164,7 @@ class GleifConnector(BaseConnector):
         lei = entity.identifiers.get("LEI")
         if not lei:
             return []
-        return [
+        docs = [
             Document(
                 title="LEI record (GLEIF)",
                 kind="register",
@@ -173,3 +173,28 @@ class GleifConnector(BaseConnector):
                 source=self.label,
             )
         ]
+        # Securities issued by the entity (ISIN ↔ LEI mapping published by GLEIF and ANNA):
+        # shows a listed issuer or a bond issuer, and links the company to its securities.
+        try:
+            data = self._get(f"/lei-records/{lei}/isins", **{"page[size]": 50}) or {}
+        except ConnectorError:
+            return docs
+        isins = sorted(
+            {i.get("attributes", {}).get("isin") for i in data.get("data") or []} - {None}
+        )
+        if isins:
+            total = (data.get("meta") or {}).get("pagination", {}).get("total") or len(isins)
+            markets = sorted({i[:2] for i in isins})
+            docs.append(
+                Document(
+                    title=f"Securities issued: {total} ISIN(s)",
+                    kind="securities",
+                    url=f"https://search.gleif.org/#/record/{lei}",
+                    summary=", ".join(isins[:12])
+                    + (f" … (+{total - 12})" if total > 12 else "")
+                    + f" · ISIN prefixes: {', '.join(markets)}",
+                    source="GLEIF — ISIN to LEI mapping (ANNA)",
+                    flags=["securities_issuer"],
+                )
+            )
+        return docs

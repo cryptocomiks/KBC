@@ -41,7 +41,8 @@ SCHEMA = [
         import_state TEXT NOT NULL DEFAULT '',
         import_info TEXT NOT NULL DEFAULT '{}',
         workflow TEXT NOT NULL DEFAULT '{}',
-        checklist TEXT NOT NULL DEFAULT '{}'
+        checklist TEXT NOT NULL DEFAULT '{}',
+        memo TEXT NOT NULL DEFAULT '{}'
     )""",
     """CREATE TABLE IF NOT EXISTS decisions (
         case_id TEXT NOT NULL,
@@ -75,10 +76,10 @@ CASE_FIELDS = (
     "id", "title", "subject_name", "subject_type", "record_ids", "depth", "max_nodes", "demo",
     "status", "monitor", "notes", "risk_score", "risk_level", "countries", "snapshot",
     "created_at", "updated_at", "last_run_at", "questionnaire", "import_state", "import_info",
-    "workflow", "checklist",
+    "workflow", "checklist", "memo",
 )  # fmt: skip
 JSON_FIELDS = (
-    "record_ids", "countries", "snapshot", "questionnaire", "import_info", "workflow", "checklist",
+    "record_ids", "countries", "snapshot", "questionnaire", "import_info", "workflow", "checklist", "memo",
 )  # fmt: skip
 # Columns added after the first release: created on existing databases at start-up.
 MIGRATIONS = {
@@ -87,6 +88,7 @@ MIGRATIONS = {
     "import_info": "TEXT NOT NULL DEFAULT '{}'",
     "workflow": "TEXT NOT NULL DEFAULT '{}'",
     "checklist": "TEXT NOT NULL DEFAULT '{}'",
+    "memo": "TEXT NOT NULL DEFAULT '{}'",
 }
 # import_state: '' = analysed case; pending (company to find) -> resolved (to investigate);
 # ambiguous (several candidates: the analyst picks one) or not_found / error (to fix).
@@ -177,6 +179,7 @@ class Store:
             "import_info": {},
             "workflow": {},
             "checklist": {},
+            "memo": {},
             **fields,
         }
         values = tuple(
@@ -207,6 +210,7 @@ class Store:
         for r in rows:
             r = self._decode(r)
             r["factors"] = (r.pop("snapshot", None) or {}).get("factors") or []
+            r.pop("memo", None)
             r["unseen_changes"] = int(unseen.get(r["id"], 0))
             out.append(r)
         return out

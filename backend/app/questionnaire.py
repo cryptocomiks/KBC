@@ -295,6 +295,83 @@ def suggest(case: dict[str, Any]) -> dict[str, Any]:
     return out
 
 
+# Risk map: each question and each screening factor feeds one of four axes.
+AXES = {
+    "geography": "Geography",
+    "activity": "Activity",
+    "client": "Client",
+    "transactions": "Transactions",
+}
+QUESTION_AXIS = {
+    "countries": "geography",
+    "channel": "client",
+    "sector": "activity",
+    "structure": "client",
+    "ubo": "client",
+    "pep": "client",
+    "behaviour": "client",
+    "relationship": "transactions",
+    "volume": "transactions",
+    "cash": "transactions",
+    "funds": "transactions",
+}
+FACTOR_AXIS = {
+    "fatf_blacklist": ("geography", 5, "FATF black list jurisdiction in the network"),
+    "fatf_greylist": ("geography", 3, "FATF grey list jurisdiction in the network"),
+    "eu_tax_blacklist": ("geography", 2, "EU tax blacklist jurisdiction in the network"),
+    "offshore_jurisdiction": ("geography", 2, "offshore entity in the network"),
+    "high_risk_country": ("geography", 2, "high-risk country (Basel AML / CPI)"),
+    "shell_company_indicators": ("activity", 3, "shell-company indicators"),
+    "insolvency_proceedings": ("activity", 2, "insolvency proceedings"),
+    "adverse_media": ("activity", 2, "adverse media"),
+    "authorisation_withdrawn": ("activity", 3, "regulator authorisation withdrawn"),
+    "sanctions_match": ("client", 6, "sanctions match"),
+    "pep_match": ("client", 4, "politically exposed person"),
+    "pep_relative": ("client", 2, "close to a politically exposed person"),
+    "leak_appearance": ("client", 2, "named in leaked data"),
+    "watchlist_match": ("client", 4, "watchlist match"),
+    "ubo_discrepancy": ("client", 3, "undeclared beneficial owner"),
+    "circular_ownership": ("client", 3, "circular ownership"),
+    "long_ownership_chain": ("client", 2, "long ownership chain"),
+    "nominee_director": ("client", 2, "possible nominee director"),
+    "sanctioned_counterparty": ("transactions", 6, "crypto flows with a sanctioned wallet"),
+}
+AXIS_MAX = {"geography": 8, "activity": 6, "client": 12, "transactions": 10}
+
+
+def risk_axes(answers: dict[str, Any], factors: set[str]) -> dict[str, Any]:
+    """Score 0-100 per axis with what drives it (answers and screening factors)."""
+    pts = {a: 0.0 for a in AXES}
+    items: dict[str, list[str]] = {a: [] for a in AXES}
+    for qid, axis in QUESTION_AXIS.items():
+        value = answers.get(qid)
+        q = BY_ID[qid]
+        if q["type"] == "countries":
+            p, reasons, _ = _country_points(value if isinstance(value, list) else [])
+            pts[axis] += p
+            items[axis] += [f"{r['item']}: {r['detail']}" for r in reasons]
+            continue
+        option = next((o for o in q["options"] if o["value"] == value), None)
+        if option and option["points"] > 0:
+            pts[axis] += option["points"]
+            items[axis].append(f"{q['label']}: {option['label']}")
+    for f in sorted(factors):
+        if f in FACTOR_AXIS:
+            axis, p, label = FACTOR_AXIS[f]
+            pts[axis] += p
+            items[axis].append(f"Screening: {label}")
+    out = {}
+    for axis, label in AXES.items():
+        score = min(100, round(100 * pts[axis] / AXIS_MAX[axis]))
+        out[axis] = {
+            "label": label,
+            "score": score,
+            "level": "high" if score >= 67 else "medium" if score >= 34 else "low",
+            "items": items[axis],
+        }
+    return out
+
+
 def assess(answers: dict[str, Any], case: dict[str, Any]) -> dict[str, Any]:
     """Vigilance level from the answers and the automatic screening of the case."""
     points = 0
@@ -375,6 +452,13 @@ def assess(answers: dict[str, Any], case: dict[str, Any]) -> dict[str, Any]:
     if level == "incomplete":
         measures.insert(0, "The automatic screening is incomplete: re-check the case first.")
 
+    # Analyst override: the computed level stays visible, the final one is the analyst's.
+    computed = vigilance
+    override = (case.get("questionnaire") or {}).get("override") or None
+    if override and override.get("level") in LEVELS:
+        vigilance = override["level"]
+        measures = list(MEASURES[vigilance]) + [m for m in measures if m not in MEASURES[computed]]
+
     answered = answers.get("_answered_at")
     try:
         start = datetime.fromisoformat(answered).date() if answered else date.today()
@@ -382,6 +466,9 @@ def assess(answers: dict[str, Any], case: dict[str, Any]) -> dict[str, Any]:
         start = date.today()
     return {
         "level": vigilance,
+        "computed_level": computed,
+        "override": override,
+        "axes": risk_axes(answers, factors),
         "points": points,
         "reasons": reasons,
         "triggers": list(dict.fromkeys(triggers)),

@@ -73,7 +73,19 @@ class Settings(BaseSettings):
         "tr_fcib,za_fic_sanctions,jp_meti_ru,us_fincen_enforcement,us_ofac_enforcement_actions,"
         "us_cftc_enforcement_actions,us_nfa_enforcement_actions,us_finra_barred,us_ddtc_debarred,"
         "ae_dfsa_prohibited,my_consumer_alert_list,lt_illegal_websites,"
-        "hk_icac_wanted,us_dea_fugitives"
+        "hk_icac_wanted,us_dea_fugitives,"
+        # Politically exposed persons (national parliaments, governments, world leaders)
+        "us_cia_world_leaders,un_ga_protocol,eu_meps,eu_public_functions,eu_cor_members,"
+        "fr_assemblee,fr_senat,mc_conseil_national,ch_parlament,li_landtag,lu_chamber,"
+        "lu_bourgmestres,be_chamber,be_senate,nl_house_of_representatives,nl_senate,"
+        "de_bundestag,de_bundesrat,at_parlament,it_deputies,it_senate,es_parliament,"
+        "pt_parliament,gb_commons,gb_lords,ie_parliament,mt_parlament,cy_parliament,"
+        "gr_parliament,dk_pep,se_riksdag,no_storting,fi_eduskunta,ee_riigikogu,lv_saeima,"
+        "lt_seimas,pl_sejm,pl_senate,cz_pep_declarations,sk_nrsr_poslanci,hu_national_assembly,"
+        "si_dz_rs,hr_sabor,ro_cdep_deputies,ro_senate,bg_parliament,rs_national_assembly,"
+        "ua_rada,ru_duma_deputies,ru_federation_council,ge_parliament,am_national_assembly,"
+        "az_parliament,kz_mazhilis,tr_parliament,il_knesset_members,us_congress,us_state_dept,"
+        "ca_commons"
     )
     # casinosecrets.lol went offline in Sept 2026 (the domain no longer resolves): set to true
     # to query it again if the consortium republishes it at the same address.

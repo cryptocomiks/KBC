@@ -126,6 +126,72 @@ DATASETS = {
     # Law enforcement
     "hk_icac_wanted": ("Hong Kong ICAC wanted (corruption)", ListType.ADVERSE),
     "us_dea_fugitives": ("US DEA fugitives", ListType.ADVERSE),
+    # Politically exposed persons: national parliaments and governments (public lists)
+    "us_cia_world_leaders": ("PEP — World leaders and cabinet members (CIA)", ListType.PEP),
+    "un_ga_protocol": (
+        "PEP — Heads of State, Government and Foreign Ministers (UN protocol)",
+        ListType.PEP,
+    ),
+    "eu_meps": ("PEP — European Parliament members", ListType.PEP),
+    "eu_public_functions": ("PEP — EU prominent public functions", ListType.PEP),
+    "eu_cor_members": ("PEP — EU Committee of the Regions members", ListType.PEP),
+    "fr_assemblee": ("PEP — France — National Assembly members", ListType.PEP),
+    "fr_senat": ("PEP — France — Senators", ListType.PEP),
+    "mc_conseil_national": ("PEP — Monaco — National Council members", ListType.PEP),
+    "ch_parlament": ("PEP — Switzerland — Federal Assembly members", ListType.PEP),
+    "li_landtag": ("PEP — Liechtenstein — Landtag members", ListType.PEP),
+    "lu_chamber": ("PEP — Luxembourg — Chamber of Deputies members", ListType.PEP),
+    "lu_bourgmestres": ("PEP — Luxembourg — mayors and aldermen", ListType.PEP),
+    "be_chamber": ("PEP — Belgium — Chamber of Representatives members", ListType.PEP),
+    "be_senate": ("PEP — Belgium — Senators", ListType.PEP),
+    "nl_house_of_representatives": (
+        "PEP — Netherlands — House of Representatives members",
+        ListType.PEP,
+    ),
+    "nl_senate": ("PEP — Netherlands — Senators", ListType.PEP),
+    "de_bundestag": ("PEP — Germany — Bundestag members", ListType.PEP),
+    "de_bundesrat": ("PEP — Germany — Bundesrat members", ListType.PEP),
+    "at_parlament": ("PEP — Austria — Parliament members", ListType.PEP),
+    "it_deputies": ("PEP — Italy — Chamber of Deputies members", ListType.PEP),
+    "it_senate": ("PEP — Italy — Senators", ListType.PEP),
+    "es_parliament": ("PEP — Spain — Parliament members", ListType.PEP),
+    "pt_parliament": ("PEP — Portugal — Assembly members", ListType.PEP),
+    "gb_commons": ("PEP — UK — House of Commons members", ListType.PEP),
+    "gb_lords": ("PEP — UK — House of Lords members", ListType.PEP),
+    "ie_parliament": ("PEP — Ireland — Parliament members", ListType.PEP),
+    "mt_parlament": ("PEP — Malta — Parliament members", ListType.PEP),
+    "cy_parliament": ("PEP — Cyprus — House of Representatives members", ListType.PEP),
+    "gr_parliament": ("PEP — Greece — Parliament members", ListType.PEP),
+    "dk_pep": ("PEP — Denmark, Faroe Islands and Greenland PEPs", ListType.PEP),
+    "se_riksdag": ("PEP — Sweden — Riksdag members", ListType.PEP),
+    "no_storting": ("PEP — Norway — Storting members", ListType.PEP),
+    "fi_eduskunta": ("PEP — Finland — Parliament members", ListType.PEP),
+    "ee_riigikogu": ("PEP — Estonia — Riigikogu members", ListType.PEP),
+    "lv_saeima": ("PEP — Latvia — Saeima members", ListType.PEP),
+    "lt_seimas": ("PEP — Lithuania — Seimas members", ListType.PEP),
+    "pl_sejm": ("PEP — Poland — Sejm members", ListType.PEP),
+    "pl_senate": ("PEP — Poland — Senators", ListType.PEP),
+    "cz_pep_declarations": ("PEP — Czech Republic — declared PEPs", ListType.PEP),
+    "sk_nrsr_poslanci": ("PEP — Slovakia — National Council members", ListType.PEP),
+    "hu_national_assembly": ("PEP — Hungary — National Assembly members", ListType.PEP),
+    "si_dz_rs": ("PEP — Slovenia — National Assembly members", ListType.PEP),
+    "hr_sabor": ("PEP — Croatia — Parliament members", ListType.PEP),
+    "ro_cdep_deputies": ("PEP — Romania — Chamber of Deputies members", ListType.PEP),
+    "ro_senate": ("PEP — Romania — Senators", ListType.PEP),
+    "bg_parliament": ("PEP — Bulgaria — National Assembly members", ListType.PEP),
+    "rs_national_assembly": ("PEP — Serbia — National Assembly members", ListType.PEP),
+    "ua_rada": ("PEP — Ukraine — Verkhovna Rada members", ListType.PEP),
+    "ru_duma_deputies": ("PEP — Russia — State Duma deputies", ListType.PEP),
+    "ru_federation_council": ("PEP — Russia — Federation Council members", ListType.PEP),
+    "ge_parliament": ("PEP — Georgia — Parliament members", ListType.PEP),
+    "am_national_assembly": ("PEP — Armenia — National Assembly members", ListType.PEP),
+    "az_parliament": ("PEP — Azerbaijan — National Assembly members", ListType.PEP),
+    "kz_mazhilis": ("PEP — Kazakhstan — Mazhilis members", ListType.PEP),
+    "tr_parliament": ("PEP — Türkiye — Grand National Assembly members", ListType.PEP),
+    "il_knesset_members": ("PEP — Israel — Knesset members", ListType.PEP),
+    "us_congress": ("PEP — US — Congress members", ListType.PEP),
+    "us_state_dept": ("PEP — US — State Department senior officials", ListType.PEP),
+    "ca_commons": ("PEP — Canada — House of Commons members", ListType.PEP),
 }
 SKIPPED_SCHEMAS = {"Vessel", "Airplane", "CryptoWallet", "Address", "Security"}
 
@@ -196,7 +262,10 @@ def _load(dataset: str, index: _Index, timeout: float, text: str | None = None) 
 
 class OpenDatasetsConnector(BaseConnector):
     name = "open_watchlists"
-    label = "EU / UK / Swiss sanctions, debarments, wanted notices, investigative lists (ACF, War & Sanctions), FINMA warnings"
+    label = (
+        "Watchlists — national sanctions and asset freezes, PEPs of 50+ parliaments and "
+        "governments, regulators' enforcement and warnings, debarments, wanted notices"
+    )
     kind = "screening"
     homepage = "https://www.opensanctions.org/datasets/"
 

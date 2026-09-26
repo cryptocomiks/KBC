@@ -16,10 +16,10 @@ import contextlib
 import csv
 import io
 import re
+import sys
 import threading
 import time
 import xml.etree.ElementTree as ET
-from dataclasses import dataclass, field
 
 import httpx
 
@@ -58,14 +58,63 @@ _MONTHS = {
 }
 
 
-@dataclass
 class ListedEntry:
-    entity: Entity
-    dataset: str
-    url: str
-    program: str | None = None
-    details: dict = field(default_factory=dict)
-    list_type: ListType = ListType.SANCTION
+    """One listed person or company. Stored compactly (a tuple, not a model): the lists hold
+    a few hundred thousand entries per server; the Entity is rebuilt only for the candidates
+    actually compared with a name."""
+
+    __slots__ = ("_e", "dataset", "url", "program", "details", "list_type")
+
+    def __init__(
+        self,
+        entity: Entity,
+        dataset: str,
+        url: str,
+        program: str | None = None,
+        details: dict | None = None,
+        list_type: ListType = ListType.SANCTION,
+    ) -> None:
+        self._e = (
+            sys.intern(entity.id),
+            entity.type,
+            entity.name,
+            tuple(entity.aliases),
+            entity.birth_date,
+            tuple(entity.nationalities),
+            entity.jurisdiction,
+            entity.extra or None,
+        )
+        self.dataset = sys.intern(dataset)
+        self.url = url
+        self.program = program
+        details = {k: v for k, v in (details or {}).items() if v}
+        self.details = details or _NO_DETAILS
+        self.list_type = list_type
+
+    @property
+    def type(self) -> EntityType:
+        return self._e[1]
+
+    @property
+    def names(self) -> tuple[str, ...]:
+        return (self._e[2], *self._e[3])
+
+    @property
+    def entity(self) -> Entity:
+        eid, etype, name, aliases, dob, nats, jur, extra = self._e
+        return Entity(
+            id=eid,
+            type=etype,
+            name=name,
+            aliases=list(aliases),
+            birth_date=dob,
+            nationalities=list(nats),
+            jurisdiction=jur,
+            extra=dict(extra or {}),
+        )
+
+
+_NO_DETAILS: dict = {}
 
 
 def _keys(entity_type: EntityType, name: str) -> set[str]:
@@ -110,8 +159,8 @@ class _Index:
         for currency, address in addresses:
             chain = detect_chain(address) or OFAC_CURRENCY_CHAIN.get(currency)
             self.wallets[normalize_address(address, chain)] = (idx, currency, chain)
-        for name in [entry.entity.name, *entry.entity.aliases]:
-            for key in _keys(entry.entity.type, name):
+        for name in entry.names:
+            for key in _keys(entry.type, name):
                 self.by_key.setdefault(key, []).append(idx)
 
     def candidates(self, entity: Entity) -> list[ListedEntry]:
@@ -119,7 +168,7 @@ class _Index:
         for name in [entity.name, *entity.aliases]:
             for key in _keys(entity.type, name):
                 seen.update(self.by_key.get(key, [])[:500])
-        return [self.entries[i] for i in seen if self.entries[i].entity.type == entity.type]
+        return [self.entries[i] for i in seen if self.entries[i].type == entity.type]
 
 
 _INDEX = _Index()
@@ -246,9 +295,41 @@ def _load_un(index: _Index, timeout: float) -> None:
         )
 
 
+IL_CRYPTO = "https://data.opensanctions.org/datasets/latest/il_mod_crypto/targets.simple.csv"
+IL_CRYPTO_LABEL = "Israel NBCTF seized / sanctioned crypto wallets (terror financing)"
+
+
+def _load_il_crypto(index: _Index, timeout: float) -> None:
+    """Crypto addresses seized by Israel's counter-terror financing bureau (NBCTF): addresses
+    only (the owners are rarely named), matched verbatim like the OFAC addresses."""
+    added = 0
+    for row in csv.DictReader(io.StringIO(_download(IL_CRYPTO, timeout))):
+        address = (row.get("name") or "").strip()
+        chain = detect_chain(address)
+        if row.get("schema") != "CryptoWallet" or not chain:
+            continue
+        entry = ListedEntry(
+            entity=Entity(
+                id=f"il_mod_crypto:{row.get('id')}",
+                type=EntityType.COMPANY,
+                name="Wallet listed by Israel's NBCTF",
+            ),
+            dataset=IL_CRYPTO_LABEL,
+            url=f"https://www.opensanctions.org/entities/{row.get('id')}/",
+            program=(row.get("sanctions") or "").strip('"') or None,
+        )
+        index.entries.append(entry)  # addresses only: not in the name index
+        index.wallets[normalize_address(address, chain)] = (len(index.entries) - 1, "", chain)
+        added += 1
+    if not added:
+        raise ValueError("Israel crypto list downloaded but empty")
+
+
 class OfficialSanctionsConnector(BaseConnector):
     name = "official_sanctions"
-    label = "Official sanctions lists — OFAC SDN (US) & UN Security Council"
+    label = (
+        "Official sanctions lists — OFAC SDN (US), UN Security Council, Israel NBCTF crypto wallets"
+    )
     kind = "screening"
     homepage = "https://ofac.treasury.gov"
 
@@ -257,7 +338,7 @@ class OfficialSanctionsConnector(BaseConnector):
             if not _INDEX.entries or time.time() - _INDEX.loaded_at > REFRESH_SECONDS:
                 fresh = _Index()
                 timeout = max(self.settings.http_timeout_seconds, 30.0)
-                for loader in (_load_ofac, _load_un):
+                for loader in (_load_ofac, _load_un, _load_il_crypto):
                     try:
                         loader(fresh, timeout)
                     except (httpx.HTTPError, ET.ParseError, ValueError) as exc:
@@ -328,13 +409,15 @@ class OfficialSanctionsConnector(BaseConnector):
                 matched_name=f"{entity.name} ({entry.entity.name})",
                 score=100.0,
                 explanation=[
-                    f"address listed verbatim on the OFAC SDN list (Digital Currency Address - {currency})",
+                    f"address listed verbatim on the OFAC SDN list (Digital Currency Address - {currency})"
+                    if currency
+                    else f"address listed verbatim: {entry.dataset}",
                     f"attributed to {entry.entity.name}",
                 ],
                 details={
                     "program": entry.program or None,
                     "listed_owner": entry.entity.name,
-                    "currency": currency,
+                    "currency": currency or None,
                 },
                 provenance=self.provenance(self.record_id(entry.entity.id), entry.url),
             )

@@ -342,8 +342,25 @@ export interface KycQuestion {
 
 export type KycAnswers = Record<string, string | string[]>;
 
+export interface RiskAxis {
+  label: string;
+  score: number;
+  level: "low" | "medium" | "high";
+  items: string[];
+}
+
+export interface VigilanceOverride {
+  level: Vigilance | null;
+  justification: string;
+  by: string;
+  at: string;
+}
+
 export interface KycAssessment {
   level: Vigilance;
+  computed_level: Vigilance;
+  override: VigilanceOverride | null;
+  axes: Record<"geography" | "activity" | "client" | "transactions", RiskAxis>;
   points: number;
   reasons: { item: string; detail: string; points: number }[];
   triggers: string[];
@@ -359,6 +376,7 @@ export interface KycQuestionnaire {
   answers: KycAnswers;
   author: string;
   answered_at: string | null;
+  override_history?: VigilanceOverride[];
   suggested: KycAnswers;
   assessment: KycAssessment | null;
 }
@@ -434,4 +452,13 @@ export interface DocComparison {
     entity_id: string | null;
   }[];
   summary: Record<string, number>;
+}
+
+export interface Memo {
+  title: string;
+  draft: boolean;
+  text: string;
+  generated_at?: string;
+  updated_by?: string | null;
+  updated_at?: string | null;
 }

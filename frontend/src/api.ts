@@ -14,6 +14,7 @@ import type {
   WorkflowView,
   KycAnswers,
   KycQuestionnaire,
+  Memo,
   Investigation,
   InvestigationParams,
   Meta,
@@ -106,6 +107,17 @@ export const api = {
     request<Checklist>(`/cases/${id}/diligences`, { method: "POST", body: JSON.stringify({ label }) }),
   removeDiligence: (id: string, key: string) =>
     request<Checklist>(`/cases/${id}/diligences/${key}`, { method: "DELETE" }),
+  overrideVigilance: (id: string, level: string | null, justification: string, by: string) =>
+    request<KycQuestionnaire>(`/cases/${id}/vigilance`, { method: "PUT", body: JSON.stringify({ level, justification, by }) }),
+  getMemo: (id: string, regenerate = false) => request<Memo>(`/cases/${id}/memo${regenerate ? "?regenerate=true" : ""}`),
+  saveMemo: (id: string, text: string, by: string) =>
+    request<Memo>(`/cases/${id}/memo`, { method: "PUT", body: JSON.stringify({ text, by }) }),
+  async downloadMemo(id: string) {
+    const res = await fetch(`${BASE}/cases/${id}/memo.pdf`, { headers: authHeaders() });
+    if (!res.ok) throw new Error(`Memo PDF failed (${res.status})`);
+    const name = res.headers.get("Content-Disposition")?.match(/filename="([^"]+)"/)?.[1] ?? "decision_memo.pdf";
+    triggerDownload(await res.blob(), name);
+  },
   resolveCase: (id: string, record_ids: string[]) =>
     request<CaseRecord>(`/cases/${id}/resolve`, { method: "POST", body: JSON.stringify({ record_ids }) }),
   importStatus: () => request<ImportStatus>("/cases/import/status"),

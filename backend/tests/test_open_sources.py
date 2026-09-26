@@ -191,6 +191,7 @@ def test_official_sanctions_lists_download_index_and_match(monkeypatch):
     respx.get(osl.OFAC_SDN).mock(return_value=httpx.Response(200, text=SDN))
     respx.get(osl.OFAC_ALT).mock(return_value=httpx.Response(200, text=ALT))
     respx.get(osl.UN_XML).mock(return_value=httpx.Response(200, text=UN))
+    respx.get(osl.IL_CRYPTO).mock(return_value=httpx.Response(404))
     conn = osl.OfficialSanctionsConnector(LIVE)
 
     putin = Entity(id="p", type=EntityType.PERSON, name="Vladimir Putin", birth_date="1952-10-07")
