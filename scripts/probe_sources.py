@@ -1,64 +1,50 @@
 """Temporary probe of candidate sources (removed after use)."""
 
+import json
 import re
 
 import httpx
 
 H = {"User-Agent": "KYC1CLICK-probe/1.0 (compliance research)", "Accept": "*/*"}
 LW = "https://cms.lobbywatch.ch/de/data/interface/v1/json"
-GETS = [
-    ("lw org aggregated", f"{LW}/table/organisation/aggregated/id/8765"),
-    ("lw parl by name", f"{LW}/table/parlamentarier/flat/list/Pfister"),
-    ("lw zutrittsberechtigung", f"{LW}/table/zutrittsberechtigung/flat/list/Meier"),
-    ("lw person", f"{LW}/table/person/flat/list/Meier"),
-    ("lw parl aggregated", f"{LW}/table/parlamentarier/aggregated/id/1"),
-    ("six v3 json", "https://api.six-group.com/api/epcd/bankmaster/v3/bankmaster.json"),
-    ("six v3 csv", "https://api.six-group.com/api/epcd/bankmaster/v3/bankmaster.csv"),
-    ("six v2 json", "https://api.six-group.com/api/epcd/bankmaster/v2/bankmaster.json"),
-    ("asic banned pkg", "https://data.gov.au/data/api/3/action/package_search?q=ASIC%20banned%20disqualified%20persons&rows=5"),
-]
 
 
-def show(name, r, n=900):
-    print(f"\n### {name}: {r.status_code} {r.headers.get('content-type','')} {len(r.content)}B final={r.url}")
-    print(r.text[:n].replace("\n", " "))
+def keys(obj, depth=0, pre=""):
+    if isinstance(obj, dict):
+        for k, v in obj.items():
+            if isinstance(v, (dict, list)):
+                print(f"{pre}{k}: {type(v).__name__}{'['+str(len(v))+']' if isinstance(v, list) else ''}")
+                if depth < 2:
+                    keys(v if isinstance(v, dict) else (v[0] if v else {}), depth + 1, pre + "  ")
+            else:
+                print(f"{pre}{k} = {str(v)[:70]!r}")
 
 
 with httpx.Client(headers=H, timeout=60, follow_redirects=True) as c:
-    for name, url in GETS:
-        try:
-            r = c.get(url)
-            if name == "asic banned pkg" and r.status_code == 200:
-                for p in r.json()["result"]["results"]:
-                    print("\nPKG", p["name"], "|", p["title"])
-                    for res in p.get("resources", []):
-                        print("   RES", res.get("format"), res.get("url"))
-            else:
-                show(name, r)
-        except Exception as e:  # noqa: BLE001
-            print(f"\n### {name}: ERROR {type(e).__name__}: {e}")
-    # ESMA MiCA interim register: CSV links on the MiCA page
-    try:
-        page = c.get("https://www.esma.europa.eu/esmas-activities/digital-finance-and-innovation/markets-crypto-assets-regulation-mica").text
-        links = sorted(set(re.findall(r'href="([^"]+\.(?:csv|xlsx)[^"]*)"', page)))
-        print("\n### esma mica links:", links[:20])
-        for l in links:
-            if "casp" in l.lower():
-                u = l if l.startswith("http") else "https://www.esma.europa.eu" + l
-                show("esma casp csv", c.get(u), 1200)
-                break
-    except Exception as e:  # noqa: BLE001
-        print("esma ERROR", e)
-    # SPA apps: find the API base in the JS bundles
-    for name, base, page in (
-        ("eba", "https://euclid.eba.europa.eu/register/", "https://euclid.eba.europa.eu/register/pir/search"),
-        ("comp", "https://competition-cases.ec.europa.eu/", "https://competition-cases.ec.europa.eu/search"),
+    for url in (f"{LW}/table/organisation/aggregated/id/8765", f"{LW}/table/parlamentarier/aggregated/id/166"):
+        d = c.get(url).json()
+        print("\n#####", url)
+        keys(d.get("data"))
+    d = c.get("https://www.lobbyregister.bundestag.de/sucheJson?q=Siemens").json()
+    print("\n##### lobbyregister first result")
+    keys(d["results"][0])
+    for name, page, base, pats in (
+        ("eba", "https://euclid.eba.europa.eu/register/pir/search", "https://euclid.eba.europa.eu/register/", [r"/register/api"]),
+        ("comp", "https://competition-cases.ec.europa.eu/search", "https://competition-cases.ec.europa.eu/", [r"services", r"search", r"environment"]),
     ):
-        try:
-            html = c.get(page).text
-            for js in re.findall(r'src="([^"]*main[^"]*\.js)"', html):
-                src = c.get(base + js).text
-                hits = sorted(set(re.findall(r'["\'`]((?:https?://[^"\'`]*)?/?(?:api|rest|service|register/api)[^"\'`\s]{0,90})["\'`]', src)))
-                print(f"\n### {name} js {js} {len(src)}B api strings:", hits[:60])
-        except Exception as e:  # noqa: BLE001
-            print(name, "ERROR", e)
+        html = c.get(page).text
+        for js in re.findall(r'src="([^"]*main[^"]*\.js)"', html):
+            src = c.get(base + js).text
+            for pat in pats:
+                for m in list(re.finditer(pat, src))[:12]:
+                    print(f"\n{name} ctx[{pat}]:", src[max(0, m.start() - 160): m.end() + 160].replace("\n", " "))
+    pkg = c.get("https://data.gov.au/data/api/3/action/package_show?id=asic-banned-disqualified-per").json()
+    csv = next(r["url"] for r in pkg["result"]["resources"] if r["format"] == "CSV")
+    txt = c.get(csv).text
+    print("\n##### asic", csv, len(txt))
+    print("\n".join(txt.splitlines()[:4]))
+    soap = """<?xml version="1.0" encoding="utf-8"?><soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:uid="http://www.uid.admin.ch/xmlns/uid-wse"><soapenv:Body><uid:GetByUID><uid:uid><uidOrganisationIdCategorie xmlns="http://www.ech.ch/xmlns/eCH-0097-f/2">CHE</uidOrganisationIdCategorie><uidOrganisationId xmlns="http://www.ech.ch/xmlns/eCH-0097-f/2">116281710</uidOrganisationId></uid:uid></uid:GetByUID></soapenv:Body></soapenv:Envelope>"""
+    r = c.post("https://www.uid-wse.admin.ch/V3.0/PublicServices.svc", content=soap.encode(),
+               headers={"Content-Type": "text/xml; charset=utf-8", "SOAPAction": "http://www.uid.admin.ch/xmlns/uid-wse/IPublicServices/GetByUID"})
+    print("\n##### uid getbyuid", r.status_code)
+    print(r.text[:6000])
