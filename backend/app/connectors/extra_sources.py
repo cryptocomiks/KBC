@@ -28,6 +28,7 @@ import threading
 import time
 import xml.etree.ElementTree as ET
 from datetime import date, datetime
+from html import unescape
 from typing import Any
 from xml.sax.saxutils import escape
 
@@ -1005,3 +1006,94 @@ class LobbywatchConnector(BaseConnector):
                 )
             ]
         return []
+
+
+# ------------------------------------------------------------ AfricanLII case law
+AFRICANLII = "https://africanlii.org"
+# National legal information institutes of the AfricanLII network with an open search API
+LIIS = {
+    "UG": "https://ulii.org",
+    "ZM": "https://zambialii.org",
+    "GH": "https://ghalii.org",
+    "NG": "https://nigerialii.org",
+    "TZ": "https://tanzlii.org",
+    "NA": "https://namiblii.org",
+    "MW": "https://malawilii.org",
+    "ZW": "https://zimlii.org",
+}
+AKN_COUNTRY = {
+    "ke": "Kenya", "ug": "Uganda", "zm": "Zambia", "gh": "Ghana", "ng": "Nigeria",
+    "tz": "Tanzania", "na": "Namibia", "mw": "Malawi", "zw": "Zimbabwe", "za": "South Africa",
+    "ls": "Lesotho", "sz": "Eswatini", "sc": "Seychelles", "sl": "Sierra Leone", "aa": "African Union",
+}  # fmt: skip
+_LII_HIT = re.compile(
+    r'<a class="h5 text-primary"\s+href="(?P<href>[^"]+)"[^>]*>(?P<title>.*?)</a>', re.S
+)
+
+
+class AfricanLiiConnector(BaseConnector):
+    """Court judgments from the AfricanLII network (Laws.Africa): the regional portal plus the
+    national institute of the company's country. Companies and public figures only; a judgment
+    counts only when the entity is a party (named in the case name)."""
+
+    name = "africanlii"
+    label = "AfricanLII — court judgments (Uganda, Zambia, Ghana, Nigeria, Tanzania, Namibia, Malawi, Zimbabwe, Kenya…)"
+    kind = "documents"
+    homepage = AFRICANLII
+    document_types = {"company", "person"}
+    documents_max_depth = 1
+    max_retries = 1
+    timeout_seconds = 20.0
+
+    def _search(self, base: str, query: str) -> list[tuple[str, str]]:
+        data = self.http_get_json(
+            f"{base}/search/api/documents/", params={"search": f'"{query}"', "page_size": 10}
+        )
+        html = (data or {}).get("results_html") or "" if isinstance(data, dict) else ""
+        return [
+            (m.group("href"), " ".join(unescape(re.sub(r"<[^>]+>", "", m.group("title"))).split()))
+            for m in _LII_HIT.finditer(html)
+        ]
+
+    def get_documents(self, entity: Entity) -> list[Document]:
+        if not may_query(entity):
+            return []
+        from app.connectors.free_sources import core_name
+
+        query = core_name(entity.name) if entity.type == EntityType.COMPANY else entity.name
+        if len(query) < 3:
+            return []
+        bases = [AFRICANLII]
+        if (entity.jurisdiction or "").upper() in LIIS:
+            bases.insert(0, LIIS[entity.jurisdiction.upper()])
+        docs: list[Document] = []
+        seen: set[str] = set()
+        for base in bases:
+            try:
+                hits = self._search(base, query)
+            except ConnectorError as exc:
+                log.info("AfricanLII search failed on %s: %s", base, exc)
+                continue
+            for href, title in hits:
+                m = re.search(r"/akn/(?P<cc>[a-z]{2})/judgment/(?P<court>[a-z0-9-]+)/", href)
+                if not m:
+                    continue  # legislation, gazettes: not about the entity
+                key = href.split("@")[0]
+                if key in seen:
+                    continue
+                seen.add(key)
+                when = re.search(r"@(\d{4}-\d{2}-\d{2})", href)
+                country = AKN_COUNTRY.get(m.group("cc"), m.group("cc").upper())
+                doc = Document(
+                    title=title,
+                    kind="court",
+                    date=_day(when.group(1)) if when else None,
+                    url=(base if href.startswith("/") else "") + href,
+                    summary=f"{country} — court {m.group('court').upper()}",
+                    source=self.label,
+                    flags=["court"],
+                )
+                if not named_in(entity, title):
+                    set_aside(doc, "not a party to the case (named in the judgment text only)")
+                docs.append(doc)
+        return docs[:12]

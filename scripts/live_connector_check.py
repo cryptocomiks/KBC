@@ -581,6 +581,13 @@ def check_extra_sources() -> None:
         "E-mail check: MX found for nestle.com",
         any(c["label"].startswith("Mail server") and c["status"] == "ok" for c in mail["checks"]),
     )
+    lii = es.AfricanLiiConnector(settings).get_documents(company("Zambeef Products Plc", "ZM"))
+    kept = [d for d in lii if "set_aside" not in d.flags]
+    expect(
+        "AfricanLII: judgments with Zambeef as a party",
+        bool(kept),
+        kept[0].title[:100] if kept else "none",
+    )
     guardian = es.GuardianConnector(settings)
     if guardian.enabled:
         news = guardian.get_documents(company("Glencore"))

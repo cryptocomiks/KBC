@@ -26,6 +26,7 @@ def _connector_classes() -> list[type[BaseConnector]]:
         PrhConnector,
     )
     from app.connectors.extra_sources import (
+        AfricanLiiConnector,
         AsicBannedConnector,
         BundestagLobbyregisterConnector,
         GuardianConnector,
@@ -110,6 +111,7 @@ def _connector_classes() -> list[type[BaseConnector]]:
         CourtListenerConnector,
         CjeuConnector,
         UkCaseLawConnector,
+        AfricanLiiConnector,
         TedConnector,
         RegulatorsConnector,
         LittleSisConnector,

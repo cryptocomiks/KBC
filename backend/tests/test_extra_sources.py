@@ -518,3 +518,67 @@ def test_checks_endpoint_requires_something_to_check():
     assert client.post("/api/checks", json={}).status_code == 422
     res = client.post("/api/checks", json={"iban": "DE89370400440532013000"}).json()
     assert res["iban"]["valid"] and res["verdict"] in ("ok", "info", "warn")
+
+
+# --------------------------------------------------------------------------- AfricanLII
+def _lii_html(*hits):
+    items = "".join(
+        f'<li class="mb-4 hit"><div class="card"><h5 class="card-title">'
+        f'<a class="h5 text-primary"\n href="{href}" data-position="1">\n {title} </a></h5></div></li>'
+        for href, title in hits
+    )
+    return {"count": len(hits), "results_html": f'<ul class="search-result-list">{items}</ul>'}
+
+
+@respx.mock
+def test_africanlii_keeps_judgments_where_the_company_is_a_party():
+    national = respx.get(url__startswith="https://zambialii.org/search/api/documents/").mock(
+        return_value=httpx.Response(
+            200,
+            json=_lii_html(
+                (
+                    "/akn/zm/judgment/zmsc/2013/43/eng@2013-10-29",
+                    "Chinyama v <mark>Zambeef</mark> Products Plc (Appeal 12 of 2012)",
+                ),
+                ("/akn/zm/act/2019/3/eng@2019-01-01", "Food Safety Act (mentions Zambeef)"),
+                (
+                    "/akn/zm/judgment/zmhc/2020/5/eng@2020-02-03",
+                    "People v Banda (tender to a meat producer)",
+                ),
+            ),
+        )
+    )
+    regional = respx.get(url__startswith="https://africanlii.org/search/api/documents/").mock(
+        return_value=httpx.Response(
+            200,
+            json=_lii_html(
+                ("/akn/zm/judgment/zmsc/2013/43/eng@2013-10-29", "Chinyama v Zambeef Products Plc")
+            ),
+        )
+    )
+    docs = es.AfricanLiiConnector(LIVE).get_documents(
+        _company("Zambeef Products Plc", jurisdiction="ZM")
+    )
+    assert national.calls[0].request.url.params["search"] == '"Zambeef Products"'
+    assert regional.called
+    assert [d.title for d in docs] == [
+        "Chinyama v Zambeef Products Plc (Appeal 12 of 2012)",
+        "People v Banda (tender to a meat producer)",
+    ]  # the act is skipped, the duplicate from the regional portal too
+    assert docs[0].flags == ["court"] and docs[0].date.isoformat() == "2013-10-29"
+    assert docs[0].summary == "Zambia — court ZMSC"
+    assert docs[0].url == "https://zambialii.org/akn/zm/judgment/zmsc/2013/43/eng@2013-10-29"
+    assert docs[1].flags == ["court", "set_aside"]  # not a party
+    assert es.AfricanLiiConnector(LIVE).get_documents(_person("Jane Private")) == []
+
+
+def test_african_registers_are_linked_for_manual_search():
+    from app.graph.links import register_links
+
+    docs = register_links(_company("Dangote Cement Plc", jurisdiction="NG"))
+    titles = [d.title for d in docs]
+    assert "Corporate Affairs Commission, Nigeria (CAC) — company search" in titles
+    assert any(t.startswith("Court judgments (AfricanLII)") for t in titles)
+    assert not any(
+        "AfricanLII" in d.title for d in register_links(_company("Nestlé S.A.", jurisdiction="CH"))
+    )

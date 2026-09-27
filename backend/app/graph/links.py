@@ -14,6 +14,42 @@ from app.models import Document, Entity, EntityType
 
 SOURCE = "Official register (link)"
 
+# African company registers without an open API (checked 2026-09): official search pages.
+AFRICAN_REGISTERS = {
+    "NG": ("Corporate Affairs Commission, Nigeria (CAC)", "https://search.cac.gov.ng/"),
+    "ZA": (
+        "Companies and Intellectual Property Commission, South Africa (CIPC)",
+        "https://eservices.cipc.co.za/",
+    ),
+    "KE": ("Business Registration Service, Kenya (BRS)", "https://brs.go.ke/"),
+    "GH": ("Office of the Registrar of Companies, Ghana (ORC)", "https://orc.gov.gh/"),
+    "MA": ("Registre du commerce, Morocco (OMPIC — directinfo)", "https://www.directinfo.ma/"),
+    "TN": (
+        "Registre national des entreprises, Tunisia (RNE)",
+        "https://www.registre-entreprises.tn/rne-public/",
+    ),
+    "DZ": ("Centre national du registre du commerce, Algeria (CNRC)", "https://sidjilcom.cnrc.dz/"),
+    "MU": (
+        "Corporate and Business Registration Department, Mauritius (CBRD)",
+        "https://onlinesearch.mns.mu/",
+    ),
+    "RW": ("Rwanda Development Board — company registry", "https://org.rdb.rw/"),
+    "UG": ("Uganda Registration Services Bureau (URSB)", "https://ursb.go.ug/"),
+    "TZ": (
+        "Business Registrations and Licensing Agency, Tanzania (BRELA)",
+        "https://ors.brela.go.tz/",
+    ),
+    "ZM": (
+        "Patents and Companies Registration Agency, Zambia (PACRA)",
+        "https://www.pacra.org.zm/",
+    ),
+    "NA": ("Business and Intellectual Property Authority, Namibia (BIPA)", "https://www.bipa.na/"),
+    "BW": (
+        "Companies and Intellectual Property Authority, Botswana (CIPA)",
+        "https://www.cipa.co.bw/",
+    ),
+}
+
 
 def register_links(entity: Entity) -> list[Document]:
     if entity.type != EntityType.COMPANY or entity.demo:
@@ -81,6 +117,29 @@ def register_links(entity: Entity) -> list[Document]:
                 kind="register",
                 url=f"https://www.zefix.ch/en/search/entity/list?name={quote_plus(entity.name)}",
                 source=SOURCE,
+            )
+        )
+    if jur in AFRICAN_REGISTERS:
+        # No open API: the analyst opens the official search (paid extracts stay optional).
+        label, url = AFRICAN_REGISTERS[jur]
+        docs.append(
+            Document(
+                title=f"{label} — company search",
+                kind="register",
+                url=url,
+                source=SOURCE,
+                summary="Official register without an open API: search by name or number, "
+                "and ask the client for a certified extract",
+            )
+        )
+    if jur in AFRICAN_REGISTERS or jur in ("CI", "SN", "CM"):
+        docs.append(
+            Document(
+                title="Court judgments (AfricanLII) — search",
+                kind="court",
+                url="https://africanlii.org/search/?q=" + quote_plus(f'"{entity.name}"'),
+                source=SOURCE,
+                summary="Judgments from the AfricanLII network, including Kenya and South Africa portals",
             )
         )
     if jur == "GB":
