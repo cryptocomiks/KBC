@@ -28,7 +28,12 @@ def test_commercial_mode_switches_off_non_commercial_sources():
 
 def test_licensed_sources_are_kept_in_commercial_mode():
     reg = ConnectorRegistry(
-        Settings(live_sources=True, demo_mode=False, commercial_mode=True, licensed_sources="open_watchlists, Guardian")
+        Settings(
+            live_sources=True,
+            demo_mode=False,
+            commercial_mode=True,
+            licensed_sources="open_watchlists, Guardian",
+        )
     )
     assert reg.connectors["open_watchlists"].enabled
     assert not reg.connectors["open_watchlists_extended"].enabled

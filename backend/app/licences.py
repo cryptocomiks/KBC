@@ -40,7 +40,11 @@ LICENCES: dict[str, tuple[Category, str, str]] = {
     "annuaire_fr": ("open", "Licence Ouverte / Etalab 2.0", ""),
     "bodacc": ("open", "Licence Ouverte / Etalab 2.0", ""),
     "gleif": ("open", "CC0 1.0", ""),
-    "pappers": ("subscription", "Pappers API terms", "Commercial use covered by a paid Pappers plan"),
+    "pappers": (
+        "subscription",
+        "Pappers API terms",
+        "Commercial use covered by a paid Pappers plan",
+    ),
     "companies_house": ("open", "Open Government Licence v3.0", ""),
     "companies_house_web": (
         "terms",
@@ -76,7 +80,11 @@ LICENCES: dict[str, tuple[Category, str, str]] = {
         "Free keys are for public-benefit projects; commercial use needs a paid plan",
     ),
     # Sanctions, PEPs, watchlists
-    "opensanctions": ("subscription", "OpenSanctions API plans", "Commercial use needs a paid licence"),
+    "opensanctions": (
+        "subscription",
+        "OpenSanctions API plans",
+        "Commercial use needs a paid licence",
+    ),
     "official_sanctions": (
         "open",
         "US public domain (OFAC); UN public data",
@@ -103,7 +111,11 @@ LICENCES: dict[str, tuple[Category, str, str]] = {
         "Developer keys are for non-commercial use; a commercial agreement is available",
     ),
     "wayback": ("terms", "Internet Archive terms of use", ""),
-    "websites": ("terms", "crt.sh and HackerTarget terms", "HackerTarget's free API is rate-limited"),
+    "websites": (
+        "terms",
+        "crt.sh and HackerTarget terms",
+        "HackerTarget's free API is rate-limited",
+    ),
     "rdap": ("terms", "Registry RDAP terms (vary by registry)", ""),
     # Official gazettes, courts, public registers
     "ch_shab": ("terms", "SHAB / FOSC terms of use (SECO)", ""),
@@ -120,7 +132,11 @@ LICENCES: dict[str, tuple[Category, str, str]] = {
     "africanlii": ("terms", "AfricanLII / LII terms of use", ""),
     "ted": ("open", "EU open data (TED)", ""),
     "regulators": ("open", "ESMA registers and REGAFI, free reuse", ""),
-    "finra_brokercheck": ("terms", "FINRA BrokerCheck terms of use", "Check reuse limits with FINRA"),
+    "finra_brokercheck": (
+        "terms",
+        "FINRA BrokerCheck terms of use",
+        "Check reuse limits with FINRA",
+    ),
     "littlesis": ("open", "CC BY-SA 4.0", ""),
     "eu_transparency": ("open", "EU open data", ""),
     "de_lobbyregister": ("open", "Bundestag open data", ""),
@@ -128,7 +144,11 @@ LICENCES: dict[str, tuple[Category, str, str]] = {
     "icij_offshore_leaks": ("open", "ODbL 1.0 (database) and CC BY-SA (contents), ICIJ", ""),
     "icij_local": ("open", "ODbL 1.0 (database) and CC BY-SA (contents), ICIJ", ""),
     "casino_secrets": ("terms", "Leaked documents", "Legal review before any commercial use"),
-    "casino_secrets_screening": ("terms", "Leaked documents", "Legal review before any commercial use"),
+    "casino_secrets_screening": (
+        "terms",
+        "Leaked documents",
+        "Legal review before any commercial use",
+    ),
     "aleph": ("terms", "OCCRP Aleph terms of use", "Access is granted for investigative work"),
     # Blockchains
     "chain_btc": ("terms", "mempool.space API terms", ""),

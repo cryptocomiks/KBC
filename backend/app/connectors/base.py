@@ -142,7 +142,10 @@ class BaseConnector(ABC):
         if self.key_setting and not self.api_key:
             return False, f"Disabled: {self.key_setting.upper()} is not set"
         if self.blocked_by_licence:
-            return False, "Disabled in commercial mode: non-commercial licence (add it to LICENSED_SOURCES once licensed)"
+            return (
+                False,
+                "Disabled in commercial mode: non-commercial licence (add it to LICENSED_SOURCES once licensed)",
+            )
         return True, "Enabled" + ("" if self.key_setting else " (public API, no key required)")
 
     @property

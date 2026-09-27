@@ -29,7 +29,9 @@ csv.field_size_limit(10_000_000)
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     ap.add_argument("--zip", help="path to an already downloaded full-oldb zip")
     ap.add_argument("--out", default=os.environ.get("ICIJ_DB_PATH", "data/icij_offshore_leaks.db"))
     args = ap.parse_args()
@@ -64,9 +66,16 @@ def main() -> None:
             with zf.open(members[fname]) as fh:
                 reader = csv.DictReader(io.TextIOWrapper(fh, encoding="utf-8", errors="replace"))
                 rows = (
-                    (r.get("node_id"), kind, r.get("name"), r.get("sourceID"),
-                     r.get("jurisdiction_description") or r.get("jurisdiction"), r.get("countries"))
-                    for r in reader if r.get("name")
+                    (
+                        r.get("node_id"),
+                        kind,
+                        r.get("name"),
+                        r.get("sourceID"),
+                        r.get("jurisdiction_description") or r.get("jurisdiction"),
+                        r.get("countries"),
+                    )
+                    for r in reader
+                    if r.get("name")
                 )
                 db.executemany("INSERT OR IGNORE INTO nodes VALUES (?,?,?,?,?,?)", rows)
             print(f"imported {fname}", file=sys.stderr)
@@ -75,8 +84,16 @@ def main() -> None:
                 reader = csv.DictReader(io.TextIOWrapper(fh, encoding="utf-8", errors="replace"))
                 db.executemany(
                     "INSERT INTO relationships VALUES (?,?,?,?,?)",
-                    ((r.get("node_id_start"), r.get("node_id_end"), r.get("rel_type"), r.get("link"),
-                      r.get("sourceID")) for r in reader),
+                    (
+                        (
+                            r.get("node_id_start"),
+                            r.get("node_id_end"),
+                            r.get("rel_type"),
+                            r.get("link"),
+                            r.get("sourceID"),
+                        )
+                        for r in reader
+                    ),
                 )
     db.execute("INSERT INTO nodes_fts(nodes_fts) VALUES('rebuild')")
     db.execute("CREATE INDEX idx_rel_start ON relationships(start_id)")

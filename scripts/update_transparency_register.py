@@ -22,11 +22,7 @@ from pathlib import Path
 import httpx
 
 URL = "https://transparency-register.europa.eu/odplastorganisationxml_en"
-OUT = (
-    Path(__file__).resolve().parent.parent
-    / "config"
-    / "eu_transparency_register.json.gz"
-)
+OUT = Path(__file__).resolve().parent.parent / "config" / "eu_transparency_register.json.gz"
 NS = "{http://intragate.ec.europa.eu/transparencyregister/odp}"
 # The export is XML 1.1, which allows control characters as references (&#x1;): the
 # Python parser reads XML 1.0 only, so those references and raw control bytes are blanked.
@@ -96,9 +92,7 @@ def main() -> int:
                 "since": _text(el, "registrationDate")[:10],
                 "updated": _text(el, "lastUpdateDate")[:10],
                 "ep": int(float(_text(el, "EPAccreditedNumber") or 0)),
-                "fte": float(_text(members, "membersFTE") or 0)
-                if members is not None
-                else 0.0,
+                "fte": float(_text(members, "membersFTE") or 0) if members is not None else 0.0,
             }
             if row["id"] and row["name"]:
                 rows.append({k: v for k, v in row.items() if v not in ("", 0, 0.0)})
@@ -121,9 +115,7 @@ def main() -> int:
     # mtime=0: identical content gives an identical file (no commit when nothing changed)
     with gzip.GzipFile(OUT, "wb", mtime=0) as f:
         f.write(data)
-    print(
-        f"{len(rows)} organisations, export {export_date}, {OUT.stat().st_size / 1e6:.1f} MB"
-    )
+    print(f"{len(rows)} organisations, export {export_date}, {OUT.stat().st_size / 1e6:.1f} MB")
     return 0
 
 

@@ -207,14 +207,22 @@ def check_european_sanctions() -> None:
     hits = conn.screen(person("Vladimir Putin", "1952-10-07"))
     for h in hits[:4]:
         print(f"      hit: {h.matched_name} | {h.dataset} | {h.score} | {h.details.get('program')}")
-    for label, key in (("EU", "EU consolidated"), ("UK", "UK Sanctions List"), ("Swiss", "Swiss sanctions")):
+    for label, key in (
+        ("EU", "EU consolidated"),
+        ("UK", "UK Sanctions List"),
+        ("Swiss", "Swiss sanctions"),
+    ):
         expect(
             f"{label} list: sanctioned reference person found",
             any(h.score >= 85 and h.dataset.startswith(key) for h in hits),
         )
     from app.connectors.official_sanctions import _INDEX_EUROPE
 
-    expect("European lists: no download error", not _INDEX_EUROPE.errors, "; ".join(_INDEX_EUROPE.errors))
+    expect(
+        "European lists: no download error",
+        not _INDEX_EUROPE.errors,
+        "; ".join(_INDEX_EUROPE.errors),
+    )
 
 
 def check_official_sanctions() -> None:
