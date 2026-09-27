@@ -1,3 +1,4 @@
+import { BlockSkeleton } from "./Skeleton";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle, FileDown, FileSignature, Loader2, Plus, RotateCcw, Trash2 } from "lucide-react";
 import { useState } from "react";
@@ -104,7 +105,7 @@ export default function CdbForms({ caseId }: { caseId: string }) {
     onSuccess: (d: CdbData) => qc.setQueryData(["cdb", caseId], d),
   });
   const pdf = useMutation({ mutationFn: () => api.downloadCdb(caseId) });
-  if (q.isLoading || !q.data) return <div className="flex justify-center py-16"><Loader2 className="h-5 w-5 animate-spin text-slate-400" /></div>;
+  if (q.isLoading || !q.data) return <BlockSkeleton rows={5} />;
   const d = q.data;
   const edit = (e: Record<string, unknown>) => {
     if (name) analyst.set(name);

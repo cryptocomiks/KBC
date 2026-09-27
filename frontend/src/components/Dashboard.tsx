@@ -1,3 +1,4 @@
+import { DashboardSkeleton } from "./Skeleton";
 import { useQuery } from "@tanstack/react-query";
 import {
   AlertOctagon,
@@ -7,7 +8,6 @@ import {
   CheckCircle2,
   FolderOpen,
   Info,
-  Loader2,
   Lock,
   PencilLine,
   ShieldAlert,
@@ -76,11 +76,7 @@ export default function Dashboard({ status, onOpenCase }: Props) {
   }
   if (q.error instanceof AuthError) return <PasswordGate wrong={attempt > 0} onUnlock={() => setAttempt((a) => a + 1)} />;
   if (q.isLoading) {
-    return (
-      <div className="flex items-center justify-center gap-2 py-24 text-slate-500">
-        <Loader2 className="h-5 w-5 animate-spin" /> Loading cases…
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
   if (q.error) return <div className="card p-6 text-sm text-red-600">{(q.error as Error).message}</div>;
   const d = q.data!;
@@ -158,9 +154,21 @@ export default function Dashboard({ status, onOpenCase }: Props) {
       <ImportPanel status={d.imports} />
 
       {total === 0 ? (
-        <div className="card p-8 text-center text-sm text-slate-500">
-          <FolderOpen className="mx-auto mb-2 h-8 w-8 text-slate-300" />
-          No case yet. Open an investigation and click <b>Save as case</b>, or import a client list above.
+        <div className="card flex flex-col items-center px-6 py-16 text-center">
+          <div className="relative mb-6 h-20 w-20">
+            <span className="absolute inset-0 animate-ping rounded-full bg-brand-500/10 [animation-duration:2.4s]" />
+            <span className="relative flex h-20 w-20 items-center justify-center rounded-full bg-brand-50 dark:bg-white/[0.06]">
+              <FolderOpen className="h-9 w-9 text-brand-500 dark:text-[#2997ff]" strokeWidth={1.5} />
+            </span>
+          </div>
+          <h2 className="headline text-[28px]">No client yet.</h2>
+          <p className="mt-2 max-w-md text-[15px] text-slate-500">
+            Search a company or a person, then click <b className="font-semibold text-slate-700 dark:text-slate-200">Save as case</b> — or import your
+            client list above: each client is found, screened and monitored.
+          </p>
+          <a href="#/" className="link-more mt-5 text-[15px]">
+            Start a search ›
+          </a>
         </div>
       ) : (
         <>

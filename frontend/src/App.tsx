@@ -1,3 +1,5 @@
+import Toaster from "./components/Toaster";
+import { toast } from "./lib/toast";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -105,6 +107,7 @@ export default function App() {
     onSuccess: (c) => {
       setSaveError(null);
       qc.invalidateQueries({ queryKey: ["dashboard"] });
+      toast("Saved as a case — monitoring is on");
       openCase(c.id);
     },
     onError: (e, params) => {
@@ -141,6 +144,7 @@ export default function App() {
           }}
         />
       )}
+      <Toaster />
       <Disclaimer text={meta.data?.disclaimer} />
       <main className="mx-auto w-full max-w-[1600px] flex-1 space-y-5 px-4 py-5">
         {page === "cases" && !caseId && <Dashboard status={casesStatus} onOpenCase={openCase} />}

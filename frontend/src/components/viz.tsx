@@ -1,3 +1,4 @@
+import { useCountUp } from "../lib/motion";
 /* Small data-viz kit shared by the case file, the dashboard and the tabs.
    Rules (see the palette tokens in index.css): thin marks with 4px rounded data ends,
    2px surface gaps between touching fills, recessive hairline grid, values and labels
@@ -86,7 +87,9 @@ export function Tile({
         {icon}
         <span className="truncate">{label}</span>
       </span>
-      <span className={`mt-1 font-semibold tracking-tight text-slate-900 dark:text-white ${hero ? "text-4xl" : "text-2xl"}`}>{value}</span>
+      <span className={`mt-1 font-semibold tracking-tight text-slate-900 tabular-nums dark:text-white ${hero ? "text-4xl" : "text-2xl"}`}>
+        {typeof value === "number" && Number.isInteger(value) ? <CountUp value={value} /> : value}
+      </span>
       {sub && <span className="mt-0.5 truncate text-[11px] text-slate-500">{sub}</span>}
       {meter && <Meter className="mt-2" value={meter.value} max={meter.max} tone={meter.tone} />}
     </Tag>
@@ -395,4 +398,10 @@ export function Steps({ steps, current }: { steps: { key: string; label: string 
       ))}
     </ol>
   );
+}
+
+/** An integer that counts up to its value when it appears (static with reduced motion). */
+export function CountUp({ value }: { value: number }) {
+  const v = useCountUp(value, 800);
+  return <>{Math.round(v).toLocaleString("en-US")}</>;
 }

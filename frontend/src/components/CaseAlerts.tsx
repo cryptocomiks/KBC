@@ -1,3 +1,4 @@
+import { BlockSkeleton } from "./Skeleton";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { BellRing, BrainCircuit, CheckCheck, ChevronDown, ExternalLink, Loader2, Search, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -171,7 +172,7 @@ export default function CaseAlerts({ caseId }: { caseId: string }) {
     return { open, namesakes, decided, cleared };
   }, [q.data]);
 
-  if (q.isLoading || !q.data) return <div className="flex justify-center py-16"><Loader2 className="h-5 w-5 animate-spin text-slate-400" /></div>;
+  if (q.isLoading || !q.data) return <BlockSkeleton rows={5} />;
   const v = q.data;
   const perList = new Map<string, { n: number; open: number }>();
   for (const a of v.alerts) {

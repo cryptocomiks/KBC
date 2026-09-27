@@ -19,6 +19,7 @@ import { useRef, type ReactNode } from "react";
 import { useReveal } from "../lib/reveal";
 import type { ConnectorStatus } from "../types";
 import DemoVideos from "./DemoVideos";
+import Tour from "./Tour";
 
 interface Props {
   /** The search form, shown in the hero: the tool starts right here. */
@@ -129,6 +130,7 @@ export default function Landing({ search, connectors, onCases }: Props) {
 
   return (
     <div ref={root} className="-mt-5 -mb-5">
+      <Tour />
       {/* Hero */}
       <section className="bleed bg-white px-4 pt-20 pb-16 text-center sm:pt-28 dark:bg-black">
         <div className="reveal mx-auto max-w-4xl">
@@ -145,7 +147,7 @@ export default function Landing({ search, connectors, onCases }: Props) {
             <button className="btn-primary !px-6 !py-2.5 !text-[17px]" onClick={toSearch}>
               Start a search
             </button>
-            <button className="link-more" onClick={toFilm}>
+            <button className="link-more" onClick={toFilm} data-tour="film">
               Watch the film <ChevronRight className="h-4 w-4" />
             </button>
           </div>

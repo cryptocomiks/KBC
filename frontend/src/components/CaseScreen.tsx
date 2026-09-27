@@ -1,11 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { api, AuthError } from "../api";
 import type { Theme } from "../lib/theme";
 import type { Decision, DecisionValue, Entity, InvestigationParams } from "../types";
 import type { CaseTab } from "../lib/route";
 import CaseAlerts from "./CaseAlerts";
+import { CaseSkeleton } from "./Skeleton";
+import { toast } from "../lib/toast";
 import CaseChecklist from "./CaseChecklist";
 import CaseOverview from "./CaseOverview";
 import CdbForms from "./CdbForms";
@@ -39,7 +40,10 @@ export default function CaseScreen({ caseId, tab, onTab, theme, onBack, onInvest
   const decide = useMutation({
     mutationFn: (d: { item_key: string; item_label: string; decision: DecisionValue | "none"; comment: string }) =>
       api.decide(caseId, d),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["case", caseId] }),
+    onSuccess: (_d, v) => {
+      qc.invalidateQueries({ queryKey: ["case", caseId] });
+      toast(v.decision === "none" ? "Decision withdrawn" : "Decision recorded in the audit trail");
+    },
   });
   const decisions = useMemo(
     () => Object.fromEntries((q.data?.decisions ?? []).map((d: Decision) => [d.item_key, d])),
@@ -51,9 +55,7 @@ export default function CaseScreen({ caseId, tab, onTab, theme, onBack, onInvest
     return q.error ? (
       <div className="card p-6 text-sm text-red-600">{(q.error as Error).message}</div>
     ) : (
-      <div className="flex items-center justify-center gap-2 py-24 text-slate-500">
-        <Loader2 className="h-5 w-5 animate-spin" /> Opening the case…
-      </div>
+      <CaseSkeleton />
     );
   }
   const inv = q.data.investigation;

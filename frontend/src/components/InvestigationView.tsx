@@ -16,6 +16,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { api, downloadSar } from "../api";
 import { countryName, fmtDate } from "../lib/format";
+import { useTabIndicator } from "../lib/indicator";
 import type { Theme } from "../lib/theme";
 import type { Decision, DecisionValue, Entity, Investigation } from "../types";
 import EntityDrawer from "./EntityDrawer";
@@ -77,6 +78,8 @@ export default function InvestigationView({
   onTrail,
 }: Props) {
   const [tab, setTab] = useState<Tab>("overview");
+  const invTabsRef = useRef<HTMLDivElement>(null);
+  const invThumb = useTabIndicator(invTabsRef, tab);
   const [drawer, setDrawer] = useState<string | null>(null);
   useEffect(() => {
     setDrawer(null);
@@ -256,17 +259,18 @@ export default function InvestigationView({
 
       {/* Tabs */}
       <div className={`${caseId ? "" : "sticky top-14 z-20"} -mx-4 border-b border-slate-200 bg-slate-50/95 px-4 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-950/95`}>
-        <div className="flex gap-1 overflow-x-auto" role="tablist">
+        <div ref={invTabsRef} className="relative flex gap-1 overflow-x-auto" role="tablist">
+          {invThumb && (
+            <span aria-hidden className="tab-thumb absolute bottom-0 h-[2px] rounded-full bg-[#1d1d1f] dark:bg-white" style={{ left: invThumb.left, width: invThumb.width }} />
+          )}
           {TABS.map(([k, label, Icon]) => (
             <button
               key={k}
               role="tab"
               aria-selected={tab === k}
               onClick={() => openTab(k)}
-              className={`-mb-px inline-flex shrink-0 items-center gap-1.5 border-b-2 px-3 py-2.5 text-[13px] font-medium transition-colors ${
-                tab === k
-                  ? "border-brand-600 text-brand-700 dark:border-brand-300 dark:text-white"
-                  : "border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-800 dark:hover:text-slate-200"
+              className={`inline-flex shrink-0 items-center gap-1.5 px-3 py-2.5 text-[13px] font-medium transition-colors ${
+                tab === k ? "text-[#1d1d1f] dark:text-white" : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
               }`}
             >
               <Icon className="h-3.5 w-3.5" />

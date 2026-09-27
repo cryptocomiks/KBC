@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, FolderOpen, Moon, Plug, Search, Sun, Trash2, XCircle } from "lucide-react";
 import { useState } from "react";
 import { api } from "../api";
+import { toast } from "../lib/toast";
 import Logo from "./Logo";
 import type { Theme } from "../lib/theme";
 import type { Meta } from "../types";
@@ -19,7 +20,6 @@ interface Props {
 export default function Header({ meta, theme, onToggleTheme, onHome, onCases, casesActive, onQuickOpen }: Props) {
   const mac = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform);
   const [open, setOpen] = useState(false);
-  const [notice, setNotice] = useState<string | null>(null);
   const qc = useQueryClient();
   const connectors = useQuery({ queryKey: ["connectors"], queryFn: api.connectors });
   const clear = useMutation({
@@ -27,8 +27,7 @@ export default function Header({ meta, theme, onToggleTheme, onHome, onCases, ca
     onSuccess: (r) => {
       qc.removeQueries({ queryKey: ["search"] });
       qc.removeQueries({ queryKey: ["investigation"] });
-      setNotice(`Cache cleared (${r.deleted} entries deleted)`);
-      setTimeout(() => setNotice(null), 3500);
+      toast(`Cache cleared — ${r.deleted} entries deleted`);
     },
   });
   const enabled = connectors.data?.filter((c) => c.enabled).length ?? 0;
@@ -49,7 +48,7 @@ export default function Header({ meta, theme, onToggleTheme, onHome, onCases, ca
           </span>
         )}
         <nav className="ml-auto flex items-center gap-0.5">
-          <NavLink active={casesActive} onClick={onCases} Icon={FolderOpen} label="Cases" />
+          <NavLink active={casesActive} onClick={onCases} Icon={FolderOpen} label="Cases" tour="cases" />
           <div className="relative">
             <NavLink active={open} onClick={() => setOpen((o) => !o)} Icon={Plug} label="Sources" badge={`${enabled}/${connectors.data?.length ?? 0}`} />
             {open && (
@@ -83,18 +82,18 @@ export default function Header({ meta, theme, onToggleTheme, onHome, onCases, ca
             disabled={clear.isPending}
             Icon={Trash2}
           />
-          <NavIcon title="Search or open a case" onClick={onQuickOpen} Icon={Search} kbd={mac ? "⌘K" : "Ctrl K"} />
+          <NavIcon title="Search or open a case" onClick={onQuickOpen} Icon={Search} kbd={mac ? "⌘K" : "Ctrl K"} tour="palette" />
           <NavIcon title={theme === "dark" ? "Light appearance" : "Dark appearance"} onClick={onToggleTheme} Icon={theme === "dark" ? Sun : Moon} />
         </nav>
-        {notice && <span className="ml-2 hidden text-xs text-[#6e6e73] md:inline">{notice}</span>}
       </div>
     </header>
   );
 }
 
-function NavLink({ active, onClick, Icon, label, badge }: { active: boolean; onClick: () => void; Icon: typeof Search; label: string; badge?: string }) {
+function NavLink({ active, onClick, Icon, label, badge, tour }: { active: boolean; onClick: () => void; Icon: typeof Search; label: string; badge?: string; tour?: string }) {
   return (
     <button
+      data-tour={tour}
       onClick={onClick}
       aria-expanded={badge ? active : undefined}
       className={`flex h-8 items-center gap-1.5 rounded-full px-3 transition-colors ${
@@ -108,9 +107,10 @@ function NavLink({ active, onClick, Icon, label, badge }: { active: boolean; onC
   );
 }
 
-function NavIcon({ title, onClick, Icon, disabled, kbd }: { title: string; onClick: () => void; Icon: typeof Search; disabled?: boolean; kbd?: string }) {
+function NavIcon({ title, onClick, Icon, disabled, kbd, tour }: { title: string; onClick: () => void; Icon: typeof Search; disabled?: boolean; kbd?: string; tour?: string }) {
   return (
     <button
+      data-tour={tour}
       title={kbd ? `${title} (${kbd})` : title}
       aria-label={title}
       onClick={onClick}

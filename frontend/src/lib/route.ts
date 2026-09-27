@@ -1,3 +1,4 @@
+import { flushSync } from "react-dom";
 import { useCallback, useEffect, useState } from "react";
 
 /** Every screen has its own address (hash-based: works on any static host, no server rewrite):
@@ -63,14 +64,25 @@ export function formatRoute(r: Route): string {
   }
 }
 
+/** Cross-fade between screens with the View Transitions API (when supported and motion is allowed). */
+function withTransition(update: () => void): void {
+  const doc = document as Document & { startViewTransition?: (cb: () => void) => unknown };
+  if (!doc.startViewTransition || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    update();
+    return;
+  }
+  doc.startViewTransition(() => flushSync(update));
+}
+
 /** Current route + navigate(route, {replace}) — the browser's back / forward buttons just work. */
 export function useRoute(): [Route, (r: Route, opts?: { replace?: boolean }) => void] {
   const [route, setRoute] = useState<Route>(() => parseRoute(window.location.hash));
   useEffect(() => {
-    const onChange = () => {
-      setRoute(parseRoute(window.location.hash));
-      window.scrollTo({ top: 0 });
-    };
+    const onChange = () =>
+      withTransition(() => {
+        setRoute(parseRoute(window.location.hash));
+        window.scrollTo({ top: 0 });
+      });
     window.addEventListener("hashchange", onChange);
     return () => window.removeEventListener("hashchange", onChange);
   }, []);
@@ -79,7 +91,7 @@ export function useRoute(): [Route, (r: Route, opts?: { replace?: boolean }) => 
     if (hash === window.location.hash || (hash === "#/" && !window.location.hash)) return;
     if (opts?.replace) {
       window.history.replaceState(null, "", hash);
-      setRoute(parseRoute(hash));
+      withTransition(() => setRoute(parseRoute(hash)));
     } else {
       window.location.hash = hash;
     }

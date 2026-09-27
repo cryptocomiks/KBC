@@ -1,8 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, BellRing, Loader2, RefreshCw, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { api } from "../api";
 import { fmtDate } from "../lib/format";
+import { useTabIndicator } from "../lib/indicator";
 import type { CaseTab } from "../lib/route";
 import type { CaseView } from "../types";
 import { VigilanceBadge } from "./KycQuestionnaire";
@@ -38,6 +39,8 @@ interface Props {
 /** Case header: identity and actions, the file's key figures, then the (sticky) tab bar with
  *  what needs attention in each tab. */
 export default function CaseHeader({ view, tab, onTab, onBack }: Props) {
+  const tabsRef = useRef<HTMLElement>(null);
+  const thumb = useTabIndicator(tabsRef, tab);
   const { case: c, workflow, overview: o } = view;
   const qc = useQueryClient();
   const [last, setLast] = useState<string | null>(null);
@@ -160,7 +163,14 @@ export default function CaseHeader({ view, tab, onTab, onBack }: Props) {
       </div>
 
       {/* Tabs */}
-      <nav className="glass-bar sticky top-14 z-20 -mx-1 flex gap-1 overflow-x-auto rounded-[var(--radius-card)] border border-slate-200/70 px-3 py-0 dark:border-white/[0.07]" role="tablist">
+      <nav ref={tabsRef} className="glass-bar sticky top-14 z-20 -mx-1 flex gap-1 overflow-x-auto rounded-full border border-slate-200/70 p-1 dark:border-white/[0.07]" role="tablist">
+        {thumb && (
+          <span
+            aria-hidden
+            className="tab-thumb absolute top-1 bottom-1 rounded-full bg-white shadow-[0_1px_3px_rgb(0_0_0/0.12),0_0_0_0.5px_rgb(0_0_0/0.04)] dark:bg-white/[0.14] dark:shadow-none"
+            style={{ left: thumb.left, width: thumb.width }}
+          />
+        )}
         {TABS.map((t) => {
           const b = badge[t.id];
           return (
@@ -169,7 +179,7 @@ export default function CaseHeader({ view, tab, onTab, onBack }: Props) {
               role="tab"
               aria-selected={tab === t.id}
               onClick={() => onTab(t.id)}
-              className={`relative flex shrink-0 items-center gap-1.5 px-3 py-2.5 text-[13px] font-medium transition-colors ${
+              className={`relative z-[1] flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[13px] font-medium transition-colors ${
                 tab === t.id ? "text-slate-900 dark:text-white" : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
               }`}
             >
@@ -181,7 +191,6 @@ export default function CaseHeader({ view, tab, onTab, onBack }: Props) {
               ) : b?.dot ? (
                 <span title={b.title} className={`h-2 w-2 rounded-full ${DOT[b.dot]}`} />
               ) : null}
-              {tab === t.id && <span className="absolute inset-x-2 -bottom-px h-0.5 rounded-full bg-brand-500" />}
             </button>
           );
         })}
