@@ -1,5 +1,7 @@
 # KYC 1 CLICK — Due diligence & AML/KYC in one click
 
+**Showreel (15 s, 1080p60, sound on):** [docs/video/kyc1click_showreel.mp4](docs/video/kyc1click_showreel.mp4) — motion piece rendered frame by frame from [docs/video/showreel/](docs/video/showreel/) (canvas animation + synthesised soundtrack).
+
 **Demo video (1 min 30):** [docs/video/kyc1click_demo.mp4](docs/video/kyc1click_demo.mp4) — search, investigation, KYC case, decision memo and PDF report (fictitious demo data).
 
 [![CI](https://github.com/cryptocomiks/KBC/actions/workflows/ci.yml/badge.svg)](https://github.com/cryptocomiks/KBC/actions/workflows/ci.yml)
