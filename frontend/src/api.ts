@@ -19,6 +19,11 @@ import type {
   InvestigationParams,
   Meta,
   SearchResponse,
+  AlertsView,
+  MemoryItem,
+  CdbData,
+  SowData,
+  ReviewPack,
 } from "./types";
 
 const BASE = import.meta.env.VITE_API_BASE ?? "/api";
@@ -118,6 +123,25 @@ export const api = {
     const name = res.headers.get("Content-Disposition")?.match(/filename="([^"]+)"/)?.[1] ?? "decision_memo.pdf";
     triggerDownload(await res.blob(), name);
   },
+  alerts: (id: string) => request<AlertsView>(`/cases/${id}/alerts`),
+  batchDismiss: (id: string, by: string, keys?: string[]) =>
+    request<AlertsView>(`/cases/${id}/alerts/batch`, { method: "POST", body: JSON.stringify({ by, keys: keys ?? null }) }),
+  memory: () => request<{ items: MemoryItem[] }>("/cases/memory"),
+  forget: (key: string) => request<{ items: MemoryItem[] }>(`/cases/memory?key=${encodeURIComponent(key)}`, { method: "DELETE" }),
+  cdb: (id: string) => request<CdbData>(`/cases/${id}/cdb`),
+  editCdb: (id: string, edit: Record<string, unknown>) => request<CdbData>(`/cases/${id}/cdb`, { method: "PUT", body: JSON.stringify(edit) }),
+  async downloadCdb(id: string) {
+    const res = await fetch(`${BASE}/cases/${id}/cdb.pdf`, { headers: authHeaders() });
+    if (!res.ok) throw new Error(`Forms PDF failed (${res.status})`);
+    const name = res.headers.get("Content-Disposition")?.match(/filename="([^"]+)"/)?.[1] ?? "cdb20_forms.pdf";
+    triggerDownload(await res.blob(), name);
+  },
+  sow: (id: string) => request<SowData>(`/cases/${id}/sow`),
+  saveSow: (id: string, data: Record<string, unknown>, by: string) =>
+    request<SowData>(`/cases/${id}/sow`, { method: "PUT", body: JSON.stringify({ data, by }) }),
+  review: (id: string) => request<ReviewPack>(`/cases/${id}/review`),
+  startReview: (id: string, by: string) =>
+    request<ReviewPack>(`/cases/${id}/review/start`, { method: "POST", body: JSON.stringify({ by }) }),
   resolveCase: (id: string, record_ids: string[]) =>
     request<CaseRecord>(`/cases/${id}/resolve`, { method: "POST", body: JSON.stringify({ record_ids }) }),
   importStatus: () => request<ImportStatus>("/cases/import/status"),

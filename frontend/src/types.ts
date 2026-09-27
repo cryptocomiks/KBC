@@ -402,6 +402,8 @@ export interface Decision {
   comment: string;
   author: string;
   decided_at: string;
+  /** A "false positive" whose evidence changed since (the alert came back). */
+  stale?: boolean;
 }
 
 export interface CaseView {
@@ -461,4 +463,161 @@ export interface Memo {
   generated_at?: string;
   updated_by?: string | null;
   updated_at?: string | null;
+}
+
+/* ---------------- Alert memory & batch triage ---------------- */
+export interface AlertRow {
+  key: string;
+  label: string;
+  entity: string;
+  entity_type: string | null;
+  dataset: string;
+  list_type: string;
+  matched_name: string;
+  score: number;
+  triage: "likely" | "verify" | "namesake" | "dismissed";
+  reasons: string[];
+  realert: string[] | null;
+  decision: Decision | null;
+  memory: { decided_at: string; author: string; comment: string; case_id: string } | null;
+  proposed: string | null;
+  url: string | null;
+}
+export interface AlertsView {
+  alerts: AlertRow[];
+  counts: Record<string, number>;
+  cleared_by_memory: number;
+  batch_candidates: number;
+  minutes_per_alert: number;
+  minutes_saved: number;
+  memory_enabled: boolean;
+  dismissed?: number;
+}
+export interface MemoryItem {
+  item_key: string;
+  item_label: string;
+  comment: string;
+  author: string;
+  decided_at: string;
+  case_id: string;
+  case_title: string | null;
+  tracked: boolean;
+  evidence: { list?: Record<string, unknown>; ours?: Record<string, unknown> };
+}
+
+/* ---------------- CDB 20 forms ---------------- */
+export interface CdbPerson {
+  key: string;
+  entity_id: string | null;
+  role: string;
+  role_label: string;
+  basis: string;
+  pct: number | null;
+  path: string[];
+  flags: string[];
+  source: string;
+  is_company: boolean;
+  last_name: string;
+  first_name: string;
+  birth_date: string;
+  nationality: string;
+  address: string;
+  country: string;
+  missing: string[];
+  edited?: string[];
+}
+export interface CdbForm {
+  id: string;
+  code: "A" | "K" | "S" | "T";
+  title: string;
+  entity: string;
+  why: string;
+  structure: { key: string; label: string; value: string }[];
+  persons: CdbPerson[];
+  notes: string[];
+  missing_count: number;
+}
+export interface CdbData {
+  title: string;
+  contracting_party: Record<string, string>;
+  primary: string | null;
+  forms: CdbForm[];
+  exemption: string | null;
+  declaration: string;
+  draft_note: string;
+  missing_total: number;
+  edited_by: string | null;
+  edited_at: string | null;
+}
+
+/* ---------------- Source of wealth ---------------- */
+export interface SowSourceIn {
+  id: string;
+  type: string;
+  description: string;
+  amount: number;
+  annual: number;
+  year_from: number | null;
+  year_to: number | null;
+  rate: number | null;
+  country: string;
+  received: string[];
+}
+export interface SowSource extends SowSourceIn {
+  label: string;
+  explained: number;
+  how: string;
+  public: string[];
+  documents: { label: string; received: boolean }[];
+  corroborated: boolean;
+  risk: string;
+}
+export interface SowData {
+  person_id: string;
+  person: string | null;
+  people: { id: string; name: string; why: string }[];
+  types: Record<string, { label: string; mode: "annual" | "lump"; rate?: number }>;
+  currency: string;
+  declared_total: number;
+  sources: SowSource[];
+  notes: string;
+  explained_total: number;
+  gap: number | null;
+  coverage: number | null;
+  verdict: "plausible" | "partial" | "gap" | "incomplete";
+  verdict_text: string;
+  roles: { company: string; kind: string; role: string; share_pct: number | null; start: string | null; end: string | null; company_status: string | null; dissolved: string | null; source: string }[];
+  flags: { severity: string; text: string }[];
+  to_request: string[];
+  narrative: string;
+  by?: string;
+  at?: string;
+}
+
+/* ---------------- Periodic review ---------------- */
+export interface ReviewDoc {
+  label: string;
+  received_on: string | null;
+  required: boolean;
+  status: "ok" | "missing" | "not_received" | "expired" | "expiring" | "stale";
+  why: string;
+}
+export interface ReviewPack {
+  title: string;
+  last_review: string | null;
+  last_review_basis: "validation" | "opening";
+  next_review: string | null;
+  days_left: number | null;
+  status: "not_set" | "overdue" | "due" | "not_due";
+  changes: CaseChange[];
+  changes_count: Record<string, number>;
+  open_alerts: { label: string; triage: string; score: number }[];
+  documents: ReviewDoc[];
+  to_renew: ReviewDoc[];
+  vigilance: { saved: string | null; now: string | null };
+  actions: { severity: string; tab: string; text: string }[];
+  email: { subject: string; body: string };
+  reviews: { started_at: string; by: string; previous_validation: string | null; due: string | null; changes: number; actions: number }[];
+  workflow_state: string | null;
+  warning?: string | null;
 }

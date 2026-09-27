@@ -42,7 +42,10 @@ SCHEMA = [
         import_info TEXT NOT NULL DEFAULT '{}',
         workflow TEXT NOT NULL DEFAULT '{}',
         checklist TEXT NOT NULL DEFAULT '{}',
-        memo TEXT NOT NULL DEFAULT '{}'
+        memo TEXT NOT NULL DEFAULT '{}',
+        cdb TEXT NOT NULL DEFAULT '{}',
+        sow TEXT NOT NULL DEFAULT '{}',
+        reviews TEXT NOT NULL DEFAULT '[]'
     )""",
     """CREATE TABLE IF NOT EXISTS decisions (
         case_id TEXT NOT NULL,
@@ -60,7 +63,9 @@ SCHEMA = [
         comment TEXT NOT NULL DEFAULT '',
         author TEXT NOT NULL DEFAULT '',
         case_id TEXT NOT NULL DEFAULT '',
-        decided_at TEXT NOT NULL
+        decided_at TEXT NOT NULL,
+        fingerprint TEXT NOT NULL DEFAULT '',
+        evidence TEXT NOT NULL DEFAULT '{}'
     )""",
     """CREATE TABLE IF NOT EXISTS changes (
         id TEXT PRIMARY KEY,
@@ -76,10 +81,11 @@ CASE_FIELDS = (
     "id", "title", "subject_name", "subject_type", "record_ids", "depth", "max_nodes", "demo",
     "status", "monitor", "notes", "risk_score", "risk_level", "countries", "snapshot",
     "created_at", "updated_at", "last_run_at", "questionnaire", "import_state", "import_info",
-    "workflow", "checklist", "memo",
+    "workflow", "checklist", "memo", "cdb", "sow", "reviews",
 )  # fmt: skip
 JSON_FIELDS = (
     "record_ids", "countries", "snapshot", "questionnaire", "import_info", "workflow", "checklist", "memo",
+    "cdb", "sow", "reviews",
 )  # fmt: skip
 # Columns added after the first release: created on existing databases at start-up.
 MIGRATIONS = {
@@ -89,6 +95,13 @@ MIGRATIONS = {
     "workflow": "TEXT NOT NULL DEFAULT '{}'",
     "checklist": "TEXT NOT NULL DEFAULT '{}'",
     "memo": "TEXT NOT NULL DEFAULT '{}'",
+    "cdb": "TEXT NOT NULL DEFAULT '{}'",
+    "sow": "TEXT NOT NULL DEFAULT '{}'",
+    "reviews": "TEXT NOT NULL DEFAULT '[]'",
+}
+DISMISSAL_MIGRATIONS = {
+    "fingerprint": "TEXT NOT NULL DEFAULT ''",
+    "evidence": "TEXT NOT NULL DEFAULT '{}'",
 }
 # import_state: '' = analysed case; pending (company to find) -> resolved (to investigate);
 # ambiguous (several candidates: the analyst picks one) or not_found / error (to fix).
@@ -119,13 +132,15 @@ class Store:
 
     def _migrate(self) -> None:
         if self.kind == "postgres":
-            for col, decl in MIGRATIONS.items():
-                self._exec(f"ALTER TABLE cases ADD COLUMN IF NOT EXISTS {col} {decl}")
+            for table, cols in (("cases", MIGRATIONS), ("dismissals", DISMISSAL_MIGRATIONS)):
+                for col, decl in cols.items():
+                    self._exec(f"ALTER TABLE {table} ADD COLUMN IF NOT EXISTS {col} {decl}")
             return
-        present = {r["name"] for r in self._exec("PRAGMA table_info(cases)")}
-        for col, decl in MIGRATIONS.items():
-            if col not in present:
-                self._exec(f"ALTER TABLE cases ADD COLUMN {col} {decl}")
+        for table, cols in (("cases", MIGRATIONS), ("dismissals", DISMISSAL_MIGRATIONS)):
+            present = {r["name"] for r in self._exec(f"PRAGMA table_info({table})")}
+            for col, decl in cols.items():
+                if col not in present:
+                    self._exec(f"ALTER TABLE {table} ADD COLUMN {col} {decl}")
 
     # ------------------------------------------------------------ low level
     def _sql(self, sql: str) -> str:
@@ -180,6 +195,9 @@ class Store:
             "workflow": {},
             "checklist": {},
             "memo": {},
+            "cdb": {},
+            "sow": {},
+            "reviews": [],
             **fields,
         }
         values = tuple(
@@ -210,7 +228,8 @@ class Store:
         for r in rows:
             r = self._decode(r)
             r["factors"] = (r.pop("snapshot", None) or {}).get("factors") or []
-            r.pop("memo", None)
+            for heavy in ("memo", "cdb", "sow"):
+                r.pop(heavy, None)
             r["unseen_changes"] = int(unseen.get(r["id"], 0))
             out.append(r)
         return out
@@ -262,7 +281,14 @@ class Store:
         )
 
     def set_decision(
-        self, case_id: str, item_key: str, item_label: str, decision: str, comment: str, author: str
+        self,
+        case_id: str,
+        item_key: str,
+        item_label: str,
+        decision: str,
+        comment: str,
+        author: str,
+        evidence: dict[str, Any] | None = None,
     ) -> None:
         self._exec("DELETE FROM decisions WHERE case_id = ? AND item_key = ?", (case_id, item_key))
         if decision != "none":
@@ -273,24 +299,46 @@ class Store:
             )
         # Memory of decisions: a hit ruled out once is ruled out everywhere (until changed).
         if decision == "false_positive":
-            self.set_dismissal(item_key, item_label, comment, author, case_id)
+            self.set_dismissal(item_key, item_label, comment, author, case_id, evidence)
         else:
             self.remove_dismissal(item_key)
         self.update_case(case_id)  # bump updated_at
 
     # ------------------------------------------------------------ dismissals
     def dismissals(self) -> dict[str, dict[str, Any]]:
-        """Hits ruled out as namesakes, remembered across cases and investigations."""
-        return {r["item_key"]: r for r in self._exec("SELECT * FROM dismissals")}
+        """Hits ruled out as namesakes, remembered across cases and investigations, with the
+        evidence they were ruled out on (a change of that evidence brings the alert back)."""
+        out = {}
+        for r in self._exec("SELECT * FROM dismissals"):
+            if isinstance(r.get("evidence"), str):
+                r["evidence"] = json.loads(r["evidence"] or "{}")
+            out[r["item_key"]] = r
+        return out
 
     def set_dismissal(
-        self, item_key: str, item_label: str, comment: str, author: str, case_id: str
+        self,
+        item_key: str,
+        item_label: str,
+        comment: str,
+        author: str,
+        case_id: str,
+        evidence: dict[str, Any] | None = None,
     ) -> None:
+        evidence = evidence or {}
         self._exec("DELETE FROM dismissals WHERE item_key = ?", (item_key.lower(),))
         self._exec(
-            "INSERT INTO dismissals (item_key, item_label, comment, author, case_id, decided_at) "
-            "VALUES (?, ?, ?, ?, ?, ?)",
-            (item_key.lower(), item_label, comment, author, case_id, now()),
+            "INSERT INTO dismissals (item_key, item_label, comment, author, case_id, decided_at, "
+            "fingerprint, evidence) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                item_key.lower(),
+                item_label,
+                comment,
+                author,
+                case_id,
+                now(),
+                evidence.get("fingerprint", ""),
+                json.dumps(evidence),
+            ),
         )
 
     def remove_dismissal(self, item_key: str) -> None:

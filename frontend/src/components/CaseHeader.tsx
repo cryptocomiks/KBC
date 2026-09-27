@@ -15,6 +15,10 @@ const STATE_STYLE: Record<string, string> = {
 };
 const TABS: { id: CaseTab; label: string }[] = [
   { id: "kyc", label: "KYC file" },
+  { id: "alerts", label: "Alerts" },
+  { id: "cdb", label: "UBO forms (CDB 20)" },
+  { id: "sow", label: "Source of wealth" },
+  { id: "review", label: "Periodic review" },
   { id: "investigation", label: "Investigation" },
   { id: "memo", label: "Decision memo" },
   { id: "history", label: "History & notes" },

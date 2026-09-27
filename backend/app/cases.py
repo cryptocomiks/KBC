@@ -16,7 +16,11 @@ import uuid
 from datetime import date, timedelta
 from typing import Any
 
+from app import alerts
+from app import cdb as cdb_forms
 from app import questionnaire as kyc
+from app import review as review_pack
+from app import sow as sow_mod
 from app import workflow as wf
 from app.brief import build_brief
 from app.cache import get_cache
@@ -210,19 +214,48 @@ def apply_dismissals(inv: Investigation) -> Investigation:
         return inv
     if not memory:
         return inv
+    ents = {e.id: e for e in inv.entities}
     decisions = []
     for h in inv.hits:
         key = hit_key(inv, h.entity_id, h.dataset, h.matched_name).lower()
         m = memory.get(key)
-        if m:
-            h.triage = "dismissed"
-            h.triage_reasons = [
-                f"ruled out on {str(m['decided_at'])[:10]}"
-                + (f" by {m['author']}" if m.get("author") else ""),
-                *([m["comment"]] if m.get("comment") else []),
-            ]
-            decisions.append({"item_key": key, "decision": "false_positive"})
+        if not m:
+            continue
+        who = f"ruled out on {str(m['decided_at'])[:10]}" + (
+            f" by {m['author']}" if m.get("author") else ""
+        )
+        if m.get("fingerprint"):
+            now_ev = alerts.evidence(h, ents.get(h.entity_id))
+            if now_ev["fingerprint"] != m["fingerprint"]:
+                # The evidence the decision rested on changed: the alert comes back.
+                diffs = alerts.changed(m.get("evidence") or {}, now_ev) or ["the record changed"]
+                h.triage = "verify"
+                h.triage_reasons = [f"re-alert: {who}, but " + "; ".join(diffs)]
+                h.details = {**(h.details or {}), "realert": diffs}
+                continue
+        h.triage = "dismissed"
+        h.triage_reasons = [who, *([m["comment"]] if m.get("comment") else [])]
+        decisions.append({"item_key": key, "decision": "false_positive"})
     return apply_decisions(inv, decisions) if decisions else inv
+
+
+def mark_stale(inv: Investigation, decisions: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """A "false positive" whose evidence changed since (re-alert) no longer holds: flag it."""
+    realert = {
+        hit_key(inv, h.entity_id, h.dataset, h.matched_name).lower()
+        for h in inv.hits
+        if (h.details or {}).get("realert")
+    }
+    return [
+        {**d, "stale": True}
+        if d["decision"] == "false_positive" and d["item_key"].lower() in realert
+        else d
+        for d in decisions
+    ]
+
+
+def active(decisions: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    return [d for d in decisions if not d.get("stale")]
 
 
 class CaseService:
@@ -313,8 +346,9 @@ class CaseService:
                 "changes": [],
                 "questionnaire": kyc_view,
             }
-        decisions = self.store.decisions(case_id)
-        inv = apply_decisions(self.service.investigate(self._params(case)), decisions)
+        raw = self.service.investigate(self._params(case))
+        decisions = mark_stale(raw, self.store.decisions(case_id))
+        inv = apply_decisions(raw, active(decisions))
         checklist = wf.checklist_view(
             case, [r.model_dump() for r in inv.requests], kyc_view["assessment"]
         )
@@ -329,6 +363,230 @@ class CaseService:
             "checklist": checklist,
             "workflow": workflow,
         }
+
+    # ------------------------------------------------------ alerts & memory
+    def _hit_index(self, inv: Investigation) -> dict[str, tuple[Any, Any]]:
+        ents = {e.id: e for e in inv.entities}
+        return {
+            hit_key(inv, h.entity_id, h.dataset, h.matched_name).lower(): (h, ents.get(h.entity_id))
+            for h in inv.hits
+        }
+
+    def decide(
+        self, case_id: str, item_key: str, item_label: str, decision: str, comment: str, author: str
+    ) -> list[dict[str, Any]]:
+        """Record a decision; a false positive keeps the evidence it rests on (for re-alerts)."""
+        case = self._get(case_id)
+        ev = None
+        if decision == "false_positive":
+            raw = self.service.investigate(self._params(case), memory=False)
+            found = self._hit_index(raw).get(item_key.lower())
+            if found:
+                ev = alerts.evidence(*found)
+        self.store.set_decision(case_id, item_key, item_label, decision, comment, author, ev)
+        return self.store.decisions(case_id)
+
+    def alerts_view(self, case_id: str) -> dict[str, Any]:
+        case = self._get(case_id)
+        inv = self.service.investigate(self._params(case))
+        raw = self._hit_index(self.service.investigate(self._params(case), memory=False))
+        decisions = {
+            d["item_key"].lower(): d for d in mark_stale(inv, self.store.decisions(case_id))
+        }
+        memory = self.store.dismissals() if memory_enabled() else {}
+        ents = {e.id: e for e in inv.entities}
+        rows = []
+        counts: dict[str, int] = {}
+        for h in inv.hits:
+            key = hit_key(inv, h.entity_id, h.dataset, h.matched_name)
+            e = ents.get(h.entity_id)
+            m = memory.get(key.lower())
+            triage = h.triage or "verify"
+            counts[triage] = counts.get(triage, 0) + 1
+            raw_hit = raw.get(key.lower(), (h, e))[0]
+            rows.append(
+                {
+                    "key": key,
+                    "label": f"{e.name if e else h.entity_id} ≈ {h.matched_name} ({h.dataset})",
+                    "entity": e.name if e else h.entity_id,
+                    "entity_type": e.type.value if e else None,
+                    "dataset": h.dataset,
+                    "list_type": h.list_type.value,
+                    "matched_name": h.matched_name,
+                    "score": round(h.score, 1),
+                    "triage": triage,
+                    "reasons": h.triage_reasons,
+                    "realert": (h.details or {}).get("realert"),
+                    "decision": decisions.get(key.lower()),
+                    "memory": {k: m.get(k) for k in ("decided_at", "author", "comment", "case_id")}
+                    if m
+                    else None,
+                    "proposed": alerts.justification(raw_hit, e)
+                    if triage in ("namesake", "verify")
+                    else None,
+                    "url": h.provenance.url,
+                }
+            )
+        cleared = counts.get("dismissed", 0)
+        return {
+            "alerts": rows,
+            "counts": counts,
+            "cleared_by_memory": cleared,
+            "batch_candidates": sum(
+                1 for r in rows if r["triage"] == "namesake" and not r["decision"]
+            ),
+            "minutes_per_alert": alerts.MINUTES_PER_ALERT,
+            "minutes_saved": cleared * alerts.MINUTES_PER_ALERT,
+            "memory_enabled": memory_enabled(),
+        }
+
+    def batch_dismiss(self, case_id: str, by: str, keys: list[str] | None) -> dict[str, Any]:
+        """Rule out, in one go, the hits the triage labels as namesakes (or the ones given),
+        each with a justification written from the evidence."""
+        if not by.strip():
+            raise wf.WorkflowError("Give your name: each ruling is signed.")
+        case = self._get(case_id)
+        view = self.alerts_view(case_id)
+        wanted = {k.lower() for k in keys} if keys else None
+        raw = self._hit_index(self.service.investigate(self._params(case), memory=False))
+        done = 0
+        for row in view["alerts"]:
+            k = row["key"].lower()
+            if row["decision"] and not row["decision"].get("stale"):
+                continue
+            if wanted is not None:
+                if k not in wanted:
+                    continue
+            elif row["triage"] != "namesake":
+                continue
+            hit, ent = raw.get(k, (None, None))
+            if hit is None:
+                continue
+            self.store.set_decision(
+                case_id,
+                row["key"],
+                row["label"],
+                "false_positive",
+                alerts.justification(hit, ent) + f" [batch triage by {by.strip()}]",
+                by.strip(),
+                alerts.evidence(hit, ent),
+            )
+            done += 1
+        return {"dismissed": done, **self.alerts_view(case_id)}
+
+    def memory(self) -> list[dict[str, Any]]:
+        titles = {c["id"]: c["title"] for c in self.store.list_cases()}
+        rows = sorted(
+            self.store.dismissals().values(), key=lambda r: str(r["decided_at"]), reverse=True
+        )
+        return [
+            {
+                "item_key": r["item_key"],
+                "item_label": r["item_label"],
+                "comment": r["comment"],
+                "author": r["author"],
+                "decided_at": r["decided_at"],
+                "case_id": r["case_id"],
+                "case_title": titles.get(r["case_id"]),
+                "tracked": bool(r.get("fingerprint")),
+                "evidence": r.get("evidence") or {},
+            }
+            for r in rows
+        ]
+
+    # ----------------------------------------------------- CDB 20 forms
+    def cdb(self, case_id: str) -> dict[str, Any]:
+        case = self._get(case_id)
+        inv = self.service.investigate(self._params(case))
+        return {"title": case["title"], **cdb_forms.build(inv, case.get("cdb") or {})}
+
+    def edit_cdb(self, case_id: str, edit: dict[str, Any], by: str) -> dict[str, Any]:
+        case = self._get(case_id)
+        if not by.strip():
+            raise wf.WorkflowError("Give your name: edits are signed.")
+        saved = (
+            {}
+            if edit.get("reset")
+            else cdb_forms.merge_edit(case.get("cdb") or {}, edit, by.strip(), now())
+        )
+        self.store.update_case(case_id, cdb=saved)
+        return self.cdb(case_id)
+
+    # --------------------------------------------------- source of wealth
+    def sow(self, case_id: str) -> dict[str, Any]:
+        case = self._get(case_id)
+        inv = self.service.investigate(self._params(case))
+        return sow_mod.assess(inv, case.get("sow") or {})
+
+    def save_sow(self, case_id: str, data: dict[str, Any], by: str) -> dict[str, Any]:
+        self._get(case_id)
+        if not by.strip():
+            raise wf.WorkflowError("Give your name: the assessment is signed.")
+        self.store.update_case(case_id, sow={**sow_mod.clean(data), "by": by.strip(), "at": now()})
+        return self.sow(case_id)
+
+    # --------------------------------------------------- periodic review
+    def review(self, case_id: str) -> dict[str, Any]:
+        case = self._get(case_id)
+        raw = self.service.investigate(self._params(case))
+        decisions = mark_stale(raw, self.store.decisions(case_id))
+        inv = apply_decisions(raw, active(decisions))
+        kyc_view = self.questionnaire(case)
+        checklist = wf.checklist_view(
+            case, [r.model_dump() for r in inv.requests], kyc_view["assessment"]
+        )
+        workflow = self.workflow_view(case, checklist, kyc_view["assessment"])
+        decided = {d["item_key"].lower() for d in active(decisions)}
+        names = {e.id: e.name for e in raw.entities}
+        open_alerts = [
+            {
+                "label": f"{names.get(h.entity_id, h.entity_id)} ≈ {h.matched_name} ({h.dataset})",
+                "triage": h.triage,
+                "score": round(h.score, 1),
+            }
+            for h in raw.hits
+            if h.triage in ("likely", "verify")
+            and hit_key(raw, h.entity_id, h.dataset, h.matched_name).lower() not in decided
+        ]
+        sow_a = sow_mod.assess(inv, case["sow"]) if (case.get("sow") or {}).get("sources") else None
+        pack = review_pack.build_pack(
+            case, self.store.changes(case_id), checklist, kyc_view, workflow, open_alerts, sow_a
+        )
+        return {"title": case["title"], **pack}
+
+    def start_review(self, case_id: str, by: str) -> dict[str, Any]:
+        """Start a periodic review: re-check with today's data, record it, reopen the case."""
+        if not by.strip():
+            raise wf.WorkflowError("Give your name: the review is signed.")
+        case = self._get(case_id)
+        warning = None
+        try:
+            self.refresh(case_id)
+        except Exception as exc:  # noqa: BLE001 - the pack is still useful on the last data
+            warning = f"Re-check failed, pack built on the last data: {str(exc)[:200]}"
+        case = self.store.get_case(case_id) or case
+        pack = self.review(case_id)
+        saved_wf = case.get("workflow") or {}
+        entry = {
+            "started_at": now(),
+            "by": by.strip(),
+            "previous_validation": saved_wf.get("validated_at"),
+            "due": pack["next_review"],
+            "changes": sum(pack["changes_count"].values()),
+            "actions": len(pack["actions"]),
+        }
+        fields: dict[str, Any] = {"reviews": [*(case.get("reviews") or []), entry][-50:]}
+        if wf.state_of(case) == "validated":
+            fields["workflow"] = wf.transition(
+                case,
+                "reopen",
+                by,
+                f"Periodic review started (due {pack['next_review'] or 'not set'}).",
+                now(),
+                [],
+            )
+        self.store.update_case(case_id, **fields)
+        return {**self.review(case_id), "warning": warning}
 
     # ------------------------------------------------- workflow & checklist
     @staticmethod
@@ -421,14 +679,17 @@ class CaseService:
         saved = case.get("memo") or {}
         if saved.get("text") and not regenerate:
             return {"title": case["title"], "draft": False, **saved}
-        decisions = self.store.decisions(case_id)
-        inv = apply_decisions(self.service.investigate(self._params(case)), decisions)
+        raw = self.service.investigate(self._params(case))
+        decisions = mark_stale(raw, self.store.decisions(case_id))
+        inv = apply_decisions(raw, active(decisions))
         kyc_view = self.questionnaire(case)
         checklist = wf.checklist_view(
             case, [r.model_dump() for r in inv.requests], kyc_view["assessment"]
         )
         workflow = self.workflow_view(case, checklist, kyc_view["assessment"])
         text = build_memo(case, inv, kyc_view, checklist, workflow, decisions)
+        if (case.get("sow") or {}).get("sources"):
+            text += "\n\n## Source of wealth\n" + sow_mod.assess(inv, case["sow"])["narrative"]
         return {
             "title": case["title"],
             "draft": True,

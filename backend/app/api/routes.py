@@ -89,9 +89,11 @@ def report_pdf(req: ReportRequest, x_kbc_password: str | None = Header(default=N
         from app.cases import CaseService
 
         require_access(x_kbc_password)
-        decisions = get_store().decisions(req.case_id)
+        from app.cases import active, mark_stale
+
+        decisions = mark_stale(inv, get_store().decisions(req.case_id))
         changes = get_store().changes(req.case_id)
-        inv = apply_decisions(inv, decisions)
+        inv = apply_decisions(inv, active(decisions))
         case = get_store().get_case(req.case_id)
         if case:
             from app.workflow import checklist_view

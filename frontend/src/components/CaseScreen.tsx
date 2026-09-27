@@ -5,7 +5,9 @@ import { api, AuthError } from "../api";
 import type { Theme } from "../lib/theme";
 import type { Decision, DecisionValue, Entity, InvestigationParams } from "../types";
 import type { CaseTab } from "../lib/route";
+import CaseAlerts from "./CaseAlerts";
 import CaseChecklist from "./CaseChecklist";
+import CdbForms from "./CdbForms";
 import CaseHeader from "./CaseHeader";
 import CaseHistory from "./CaseHistory";
 import CaseWorkflow from "./CaseWorkflow";
@@ -15,6 +17,8 @@ import ImportPending from "./ImportPending";
 import InvestigationView from "./InvestigationView";
 import KycQuestionnaire from "./KycQuestionnaire";
 import PasswordGate from "./PasswordGate";
+import PeriodicReview from "./PeriodicReview";
+import SourceOfWealth from "./SourceOfWealth";
 
 interface Props {
   caseId: string;
@@ -70,6 +74,10 @@ export default function CaseScreen({ caseId, tab, onTab, theme, onBack, onInvest
           </p>
         </div>
       )}
+      {tab === "alerts" && <CaseAlerts caseId={caseId} />}
+      {tab === "cdb" && <CdbForms caseId={caseId} />}
+      {tab === "sow" && <SourceOfWealth caseId={caseId} subjectName={q.data.case.subject_name as string} />}
+      {tab === "review" && <PeriodicReview caseId={caseId} onTab={onTab} />}
       {tab === "memo" && <DecisionMemo caseId={caseId} />}
       {tab === "history" && <CaseHistory key={q.data.case.updated_at} view={q.data} />}
       {tab === "investigation" && (

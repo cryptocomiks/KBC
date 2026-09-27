@@ -200,6 +200,46 @@ def create(req: CaseCreate) -> dict:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
 
 
+class BatchIn(BaseModel):
+    by: str = Field(max_length=120)
+    keys: list[str] | None = Field(default=None, max_length=500)
+
+
+class CdbEditIn(BaseModel):
+    by: str = Field(max_length=120)
+    form: str = Field(default="", max_length=400)
+    person: str | None = Field(default=None, max_length=400)
+    fields: dict[str, str] | None = None
+    header: dict[str, str] | None = None
+    structure: dict[str, str] | None = None
+    add: bool = False
+    role: str | None = Field(default=None, max_length=40)
+    remove: str | None = Field(default=None, max_length=400)
+    reset: bool = False
+
+
+class SowIn(BaseModel):
+    by: str = Field(max_length=120)
+    data: dict[str, Any]
+
+
+class ReviewIn(BaseModel):
+    by: str = Field(max_length=120)
+
+
+@router.get("/memory", dependencies=[Depends(require_access)])
+def memory() -> dict:
+    """Alerts ruled out as namesakes, remembered across cases (with the evidence kept)."""
+    return {"items": cases().memory()}
+
+
+@router.delete("/memory", dependencies=[Depends(require_access)])
+def forget(key: str) -> dict:
+    """Revoke a remembered ruling: the alert comes back everywhere at the next check."""
+    get_store().remove_dismissal(key[:600])
+    return {"items": cases().memory()}
+
+
 @router.get("/{case_id}", dependencies=[Depends(require_access)])
 def view(case_id: str) -> dict:
     try:
@@ -328,8 +368,71 @@ def decide(case_id: str, d: DecisionIn) -> dict:
         raise HTTPException(status_code=404, detail="Case not found")
     if d.decision != "none" and d.decision not in DECISIONS:
         raise HTTPException(status_code=422, detail="Unknown decision")
-    get_store().set_decision(case_id, d.item_key, d.item_label, d.decision, d.comment, d.author)
-    return {"decisions": get_store().decisions(case_id)}
+    return {
+        "decisions": _run(
+            cases().decide, case_id, d.item_key, d.item_label, d.decision, d.comment, d.author
+        )
+    }
+
+
+@router.get("/{case_id}/alerts", dependencies=[Depends(require_access)])
+def case_alerts(case_id: str) -> dict:
+    """Screening alerts of the case with triage, memory, re-alerts and proposed justifications."""
+    return _run(cases().alerts_view, case_id)
+
+
+@router.post("/{case_id}/alerts/batch", dependencies=[Depends(require_access)])
+def batch_dismiss(case_id: str, b: BatchIn) -> dict:
+    """Rule out the probable namesakes (or the alerts given) in one go, each justified."""
+    return _run(cases().batch_dismiss, case_id, b.by, b.keys)
+
+
+@router.get("/{case_id}/cdb", dependencies=[Depends(require_access)])
+def cdb_forms(case_id: str) -> dict:
+    """CDB 20 beneficial-ownership forms (A / K / S / T) pre-filled from the registers."""
+    return _run(cases().cdb, case_id)
+
+
+@router.put("/{case_id}/cdb", dependencies=[Depends(require_access)])
+def edit_cdb(case_id: str, e: CdbEditIn) -> dict:
+    return _run(cases().edit_cdb, case_id, e.model_dump(exclude={"by"}), e.by)
+
+
+@router.get("/{case_id}/cdb.pdf", dependencies=[Depends(require_access)])
+def cdb_pdf(case_id: str):
+    from fastapi.responses import Response
+
+    from app.report.cdb_pdf import build_cdb_pdf
+
+    data = _run(cases().cdb, case_id)
+    pdf = build_cdb_pdf(data, data["title"])
+    safe = "".join(ch if ch.isascii() and ch.isalnum() else "_" for ch in data["title"])[:60]
+    return Response(
+        content=pdf,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="cdb20_forms_{safe}.pdf"'},
+    )
+
+
+@router.get("/{case_id}/sow", dependencies=[Depends(require_access)])
+def source_of_wealth(case_id: str) -> dict:
+    return _run(cases().sow, case_id)
+
+
+@router.put("/{case_id}/sow", dependencies=[Depends(require_access)])
+def save_sow(case_id: str, s: SowIn) -> dict:
+    return _run(cases().save_sow, case_id, s.data, s.by)
+
+
+@router.get("/{case_id}/review", dependencies=[Depends(require_access)])
+def review(case_id: str) -> dict:
+    """Periodic review pack: changes since the last validation, documents to renew, actions."""
+    return _run(cases().review, case_id)
+
+
+@router.post("/{case_id}/review/start", dependencies=[Depends(require_access)])
+def start_review(case_id: str, r: ReviewIn) -> dict:
+    return _run(cases().start_review, case_id, r.by)
 
 
 monitor_router = APIRouter(tags=["cases"])
