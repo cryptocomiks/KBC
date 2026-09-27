@@ -998,6 +998,9 @@ guarded("SHAB, VIES, Irish CRO, UK case law, RDAP, EU Transparency Register", ch
 guarded(
     "UID register, Lobbywatch, Bundestag, MiCA, ASIC, scam lists, quick checks", check_extra_sources
 )
+guarded(
+    "Slovak RPO, Russian EGRUL, Brazil CNPJ, FINRA BrokerCheck, RECAP dockets", check_more_registries
+)
 for key, title, fn in [
     ("OPENSANCTIONS_API_KEY", "OpenSanctions", check_opensanctions),
     ("COMPANIES_HOUSE_API_KEY", "Companies House", check_companies_house),
