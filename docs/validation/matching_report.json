@@ -1,6 +1,6 @@
 {
  "limits": "Test set written by the development team: a regression guard, not a guarantee on real data. Extend it with an independent sample of real alerts before production use.",
- "generated_at": "2026-09-27T15:22:35+00:00",
+ "generated_at": "2026-09-27T15:31:47+00:00",
  "engine_version": "0.1.0",
  "testset_version": 2,
  "thresholds": {
@@ -13,7 +13,7 @@
   "no_match_pairs": 38,
   "detected": 53,
   "detection_rate": 100.0,
-  "strong_detection_rate": 90.6,
+  "strong_detection_rate": 92.5,
   "false_positives": 0,
   "false_positive_rate": 0.0,
   "accuracy": 100.0
@@ -79,7 +79,7 @@
    "no_match_pairs": 0,
    "detected": 14,
    "detection_rate": 100.0,
-   "strong_detection_rate": 92.9,
+   "strong_detection_rate": 100.0,
    "false_positives": 0,
    "false_positive_rate": null,
    "accuracy": 100.0

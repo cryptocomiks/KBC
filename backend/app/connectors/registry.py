@@ -47,6 +47,13 @@ def _connector_classes() -> list[type[BaseConnector]]:
     from app.connectors.gleif import GleifConnector
     from app.connectors.icij import IcijLocalConnector, IcijReconcileConnector
     from app.connectors.littlesis import LittleSisConnector
+    from app.connectors.more_registries import (
+        BrasilApiConnector,
+        BrokerCheckConnector,
+        EgrulConnector,
+        RecapDocketsConnector,
+        RpoConnector,
+    )
     from app.connectors.official_sanctions import OfficialSanctionsConnector
     from app.connectors.open_datasets import OpenDatasetsConnector, OpenDatasetsExtendedConnector
     from app.connectors.opencorporates import OpenCorporatesConnector
@@ -87,6 +94,9 @@ def _connector_classes() -> list[type[BaseConnector]]:
         AriregisterConnector,
         LatviaRegisterConnector,
         KrsConnector,
+        RpoConnector,
+        EgrulConnector,
+        BrasilApiConnector,
         AcraConnector,
         IsraelRegistrarConnector,
         CanadaRegistriesConnector,
@@ -109,11 +119,13 @@ def _connector_classes() -> list[type[BaseConnector]]:
         ViesConnector,
         SwissCourtsConnector,
         CourtListenerConnector,
+        RecapDocketsConnector,
         CjeuConnector,
         UkCaseLawConnector,
         AfricanLiiConnector,
         TedConnector,
         RegulatorsConnector,
+        BrokerCheckConnector,
         LittleSisConnector,
         EuTransparencyRegisterConnector,
         BundestagLobbyregisterConnector,

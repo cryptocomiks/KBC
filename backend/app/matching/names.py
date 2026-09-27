@@ -133,7 +133,11 @@ _LEGAL_FORMS = {
     "fzc",
     "pte",
     "pty",
-}
+    # Russian / CIS legal forms (Latin and transliterated)
+    "pjsc", "ojsc", "cjsc", "jsc", "pao", "oao", "zao", "ooo", "ao", "tov", "too",
+    # Brazilian and Portuguese / Spanish forms
+    "ltda", "eireli", "sa de cv",
+}  # fmt: skip
 # Words shared by thousands of unrelated companies: a match on them alone proves nothing.
 GENERIC_COMPANY_WORDS = {
     "holding", "holdings", "group", "groupe", "gruppe", "international", "intl", "global",
@@ -176,6 +180,10 @@ _LEGAL_FORM_PATTERNS = [
     # dotted legal forms: "N.V.", "B.V.", "S.p.A.", "S.r.l.", "A.G.", "L.L.C.", "P.L.C."
     r"\bn v\b", r"\bb v\b", r"\bs p a\b", r"\bs r l\b", r"\ba g\b", r"\bl l c\b",
     r"\bp l c\b", r"\bl t d\b", r"\bg m b h\b", r"\bs l\b", r"\bs e\b",
+    # Russian legal forms written out (transliterated from the register)
+    r"\bpublichnoe aktsionernoe obshchestvo\b", r"\bnepublichnoe aktsionernoe obshchestvo\b",
+    r"\baktsionernoe obshchestvo\b", r"\bobshchestvo s ogranichennoi otvetstvennostiu\b",
+    r"\bpublic joint stock company\b", r"\bjoint stock company\b",
 ]  # fmt: skip
 
 _PHONETIC_RULES: list[tuple[str, str]] = [

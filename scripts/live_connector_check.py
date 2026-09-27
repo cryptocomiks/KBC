@@ -602,6 +602,48 @@ def check_extra_sources() -> None:
     expect("FR address search (domiciliation)", bool(fr), f"{len(fr)} companies at that address")
 
 
+def check_more_registries() -> None:
+    from app.connectors import more_registries as mr
+    from app.identifiers import detect
+
+    rpo = mr.RpoConnector(settings)
+    found = rpo.search_company("Slovnaft, a.s.")
+    expect(
+        "RPO (SK): Slovnaft found",
+        bool(found),
+        "; ".join(f"{c.name} ({c.registration_number})" for c in found[:3]),
+    )
+    if found:
+        links = rpo.get_officers(found[0].id)
+        expect("RPO (SK): statutory bodies / partners", bool(links), f"{len(links)} links")
+    eg = mr.EgrulConnector(settings)
+    ru = eg.search_company("Gazprom Neft")
+    expect(
+        "EGRUL (RU): Gazprom Neft found",
+        bool(ru),
+        "; ".join(f"{c.name} [{c.identifiers.get('INN')}]" for c in ru[:2]),
+    )
+    if ru:
+        d = eg.get_officers(ru[0].id)
+        expect(
+            "EGRUL (RU): director",
+            bool(d),
+            d[0].relationship.role + " " + d[0].entity.name if d else "none",
+        )
+    ident = next(i for i in detect("33.000.167/0001-01") if i.kind == "br_cnpj")
+    br = mr.BrasilApiConnector(settings).get_by_identifier(ident)
+    expect("BrasilAPI (BR): Petrobras by CNPJ", br is not None, br.name if br else "none")
+    bc = mr.BrokerCheckConnector(settings).get_documents(company("Robinhood Securities LLC", "US"))
+    expect(
+        "FINRA BrokerCheck: Robinhood Securities", bool(bc), bc[0].summary[:120] if bc else "none"
+    )
+    dockets = mr.RecapDocketsConnector(settings).get_documents(company("Glencore Ltd"))
+    if dockets:
+        expect("RECAP: federal dockets naming Glencore", True, dockets[0].title[:100])
+    else:
+        print("WARN  RECAP dockets: none returned (CourtListener rate limit or no result)")
+
+
 def check_extended_watchlists() -> None:
     from app.connectors import open_datasets
 

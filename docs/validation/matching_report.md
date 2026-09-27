@@ -1,6 +1,6 @@
 # Matching validation report
 
-Generated 2026-09-27T15:22:35+00:00 · engine 0.1.0 · test set v2 (91 labelled pairs)
+Generated 2026-09-27T15:31:47+00:00 · engine 0.1.0 · test set v2 (91 labelled pairs)
 
 Thresholds: possible match ≥ 70, strong match ≥ 85 (config/risk.yaml).
 
@@ -9,7 +9,7 @@ Thresholds: possible match ≥ 70, strong match ≥ 85 (config/risk.yaml).
 | Measure | Value |
 |---|---|
 | Detection rate (same entity flagged) | **100.0 %** (53/53) |
-| Strong detection (≥ 85) | 90.6 % |
+| Strong detection (≥ 85) | 92.5 % |
 | False-positive rate (different entity flagged) | **0.0 %** (0/38) |
 | Accuracy | 100.0 % |
 
