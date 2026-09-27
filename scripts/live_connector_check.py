@@ -346,11 +346,16 @@ def check_gdelt() -> None:
     docs = GdeltConnector(settings).get_documents(company("TotalEnergies"))
     for d in docs[:3]:
         print(f"      {d.date} | {d.title[:90]} | {d.url}")
-    # GDELT rate-limits shared cloud IPs (HTTP 429): the connector falls back to Google News.
+    # GDELT rate-limits shared cloud IPs (HTTP 429). There is no Google News fallback any
+    # more (link-out only), so a 429 is a warning, not a code failure.
+    if not docs and raw.status_code == 429:
+        print("WARN  adverse media (GDELT): rate limited by the source (shared cloud IP)")
+        return
     expect(
-        "adverse media returned (GDELT or Google News fallback)",
+        "adverse media returned (GDELT)",
         bool(docs),
-        f"{len(docs)} articles via {docs[0].source.split(' — ')[0] if docs else '-'}",
+        f"{len(docs)} articles, "
+        f"{sum('set_aside' in d.flags for d in docs)} set aside (headline without the name)",
     )
 
 
