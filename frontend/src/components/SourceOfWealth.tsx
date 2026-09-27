@@ -6,6 +6,7 @@ import { analyst } from "../lib/analyst";
 import { documentRequest, openEmail } from "../lib/email";
 import { fmtDate } from "../lib/format";
 import type { SowData, SowSourceIn } from "../types";
+import { ChartCard, StackedBar, Tile, compact, series } from "./viz";
 
 const VERDICT = {
   plausible: { label: "Plausible", bar: "bg-brand-500", text: "text-brand-700 dark:text-brand-400" },
@@ -20,6 +21,7 @@ const pick = (s: SowSourceIn): SowSourceIn => ({
   id: s.id, type: s.type, description: s.description, amount: s.amount, annual: s.annual, year_from: s.year_from,
   year_to: s.year_to, rate: s.rate, country: s.country, received: s.received,
 }); // fmt: skip
+const compactMoney = (v: number | null | undefined) => compact(Math.round(v ?? 0));
 const num = (v: string) => (v === "" ? 0 : Number(v.replace(/['\s,]/g, "")) || 0);
 const yr = (v: string) => (v ? Number(v) || null : null);
 
@@ -150,33 +152,45 @@ export default function SourceOfWealth({ caseId, subjectName }: { caseId: string
 
       {/* Assessment */}
       <div className="space-y-4">
-        <div className="card p-4">
-          <div className="flex items-center gap-2">
-            <span className="tag">Plausibility</span>
-            <span className={`ml-auto text-sm font-semibold ${v.text}`}>{v.label}</span>
+        <ChartCard
+          title="Plausibility"
+          sub={a.verdict_text}
+          action={<span className={`text-sm font-semibold ${v.text}`}>{v.label}</span>}
+          table={{
+            head: ["Source", "Explained", "Share of declared"],
+            rows: [
+              ...a.sources.map((x) => [x.label, money(x.explained, a.currency), a.declared_total ? `${Math.round((100 * x.explained) / a.declared_total)} %` : "—"]),
+              ["Unexplained gap", a.gap == null ? "—" : money(a.gap, a.currency), a.declared_total && a.gap != null ? `${Math.round((100 * a.gap) / a.declared_total)} %` : "—"],
+            ],
+          }}
+        >
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            <Tile label="Declared" value={compactMoney(a.declared_total)} sub={a.currency} />
+            <Tile label="Explained" tone="accent" value={compactMoney(a.explained_total)} sub={a.coverage != null ? `${pct}% of declared` : a.currency} />
+            <Tile label="Unexplained" tone={a.gap ? (a.verdict === "gap" ? "critical" : "warning") : "good"} value={a.gap == null ? "—" : compactMoney(a.gap)} sub={a.currency} />
+            <Tile
+              label="Corroborated"
+              tone={a.sources.every((x) => x.corroborated) ? "good" : "warning"}
+              value={`${a.sources.filter((x) => x.corroborated).length}/${a.sources.length}`}
+              sub="sources with evidence"
+            />
           </div>
-          <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-slate-200 dark:bg-white/10">
-            <div className={`bar-x h-full rounded-full ${v.bar}`} style={{ width: `${pct}%` }} />
-          </div>
-          <div className="mt-2 grid grid-cols-3 gap-2 text-center">
-            {[
-              ["Declared", money(a.declared_total, a.currency)],
-              ["Explained", money(a.explained_total, a.currency)],
-              ["Gap", a.gap == null ? "—" : money(a.gap, a.currency)],
-            ].map(([l, x]) => (
-              <div key={l}>
-                <div className="text-[10px] text-slate-500 uppercase">{l}</div>
-                <div className="font-mono text-[13px] font-semibold">{x}</div>
-              </div>
-            ))}
-          </div>
-          <p className="mt-2 text-[12px] text-slate-500">{a.verdict_text}</p>
+          {a.sources.length > 0 && (
+            <div className="mt-4">
+              <StackedBar
+                height={14}
+                format={(n) => money(n, a.currency)}
+                segments={a.sources.map((x, i) => ({ key: x.id, label: x.label, value: x.explained, color: series(i) }))}
+                rest={a.gap ? { label: "Unexplained gap", value: a.gap } : undefined}
+              />
+            </div>
+          )}
           {a.flags.map((f) => (
-            <p key={f.text} className={`mt-1.5 flex gap-2 text-[12px] ${SEV[f.severity] ?? ""}`}>
+            <p key={f.text} className={`mt-2 flex gap-2 text-[12px] ${SEV[f.severity] ?? ""}`}>
               <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" /> {f.text}
             </p>
           ))}
-        </div>
+        </ChartCard>
 
         {a.sources.length > 0 && (
           <div className="card p-4">

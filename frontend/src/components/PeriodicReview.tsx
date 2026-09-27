@@ -7,6 +7,7 @@ import { openEmail } from "../lib/email";
 import { fmtDate } from "../lib/format";
 import type { CaseTab } from "../lib/route";
 import type { ReviewPack } from "../types";
+import { ChartCard, StackedBar, Tile, TONE } from "./viz";
 
 const STATUS: Record<ReviewPack["status"], { label: string; cls: string }> = {
   overdue: { label: "Overdue", cls: "bg-red-500/12 text-red-700 ring-red-500/30 dark:text-red-300" },
@@ -22,6 +23,46 @@ const DOC: Record<string, string> = {
   stale: "text-amber-700 dark:text-amber-300",
   not_received: "text-slate-500",
 };
+const DOC_SEGMENTS = (docs: ReviewPack["documents"]) => {
+  const n = (st: string[]) => docs.filter((d) => st.includes(d.status)).length;
+  return [
+    { key: "ok", label: "Valid", value: n(["ok"]), color: TONE.good },
+    { key: "stale", label: "Too old / expiring", value: n(["stale", "expiring"]), color: TONE.warning },
+    { key: "expired", label: "Expired or missing", value: n(["expired", "missing"]), color: TONE.critical },
+    { key: "not_received", label: "Optional, not received", value: n(["not_received"]), color: TONE.neutral },
+  ];
+};
+
+/** Last validation → next review, with today on the line. */
+function Timeline({ from, to, basis }: { from: string | null; to: string | null; basis: string }) {
+  if (!from || !to) return <p className="text-xs text-slate-500">Set the next review date by answering the questionnaire.</p>;
+  const a = new Date(from).getTime();
+  const b = new Date(to).getTime();
+  const now = Date.now();
+  const span = Math.max(1, b - a);
+  const pos = Math.max(0, Math.min(100, (100 * (now - a)) / span));
+  const late = now > b;
+  return (
+    <div className="pt-6 pb-1">
+      <div className="relative h-2.5 rounded-full" style={{ background: "var(--viz-track)" }}>
+        <div className="bar-x absolute inset-y-0 left-0 rounded-full" style={{ width: `${pos}%`, background: late ? TONE.critical : pos > 90 ? TONE.warning : TONE.accent }} />
+        <div className="absolute -top-6 -translate-x-1/2 text-[10.5px] font-semibold whitespace-nowrap" style={{ left: `${pos}%` }}>
+          today
+        </div>
+        <div className="absolute -top-1.5 h-5.5 w-0.5 -translate-x-1/2 rounded bg-slate-900 dark:bg-white" style={{ left: `${pos}%` }} />
+      </div>
+      <div className="mt-2 flex justify-between text-[11px] text-slate-500">
+        <span>
+          {basis === "validation" ? "last validation" : "file opened"} <b className="text-slate-800 dark:text-slate-200">{fmtDate(from)}</b>
+        </span>
+        <span>
+          next review <b className="text-slate-800 dark:text-slate-200">{fmtDate(to)}</b>
+        </span>
+      </div>
+    </div>
+  );
+}
+
 const SEV: Record<string, string> = {
   critical: "border-red-500/40 bg-red-500/8",
   warning: "border-amber-500/40 bg-amber-500/8",
@@ -77,6 +118,43 @@ export default function PeriodicReview({ caseId, onTab }: { caseId: string; onTa
         {start.error && <p className="mt-2 text-xs text-red-600">{(start.error as Error).message}</p>}
       </div>
 
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
+        <Tile
+          hero
+          label={r.status === "overdue" ? "Review overdue by" : "Next review in"}
+          tone={r.status === "overdue" ? "critical" : r.status === "due" ? "warning" : r.status === "not_due" ? "good" : "neutral"}
+          value={r.days_left == null ? "—" : `${Math.abs(r.days_left)} days`}
+          sub={s.label}
+        />
+        <ChartCard title="Review cycle" sub={`the bar fills from the ${r.last_review_basis === "validation" ? "last validation" : "opening of the file"} to the review date`}>
+          <Timeline from={r.last_review} to={r.next_review} basis={r.last_review_basis} />
+        </ChartCard>
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        <ChartCard
+          title="Documents on file"
+          sub={`${r.documents.length} document(s) checked against their validity rules`}
+          table={{ head: ["Document", "Status", "Why"], rows: r.documents.map((d) => [d.label, d.status.replace("_", " "), d.why]) }}
+        >
+          <StackedBar segments={DOC_SEGMENTS(r.documents)} height={12} />
+        </ChartCard>
+        <ChartCard
+          title="Changes since the last validation"
+          sub="from the daily monitoring"
+          table={{ head: ["Severity", "Changes"], rows: (["critical", "warning", "info"] as const).map((k) => [k, r.changes_count[k] ?? 0]) }}
+        >
+          <StackedBar
+            height={12}
+            segments={[
+              { key: "critical", label: "Critical", value: r.changes_count.critical ?? 0, color: TONE.critical },
+              { key: "warning", label: "Warning", value: r.changes_count.warning ?? 0, color: TONE.warning },
+              { key: "info", label: "Information", value: r.changes_count.info ?? 0, color: TONE.neutral },
+            ]}
+          />
+        </ChartCard>
+      </div>
+
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="card p-4">
           <span className="tag">What to do</span>
@@ -90,14 +168,6 @@ export default function PeriodicReview({ caseId, onTab }: { caseId: string; onTa
               </li>
             ))}
           </ul>
-          <div className="mt-4 grid grid-cols-3 gap-2 text-center">
-            {(["critical", "warning", "info"] as const).map((k) => (
-              <div key={k} className="rounded-lg border border-slate-200 py-2 dark:border-white/10">
-                <div className="text-lg font-semibold">{r.changes_count[k] ?? 0}</div>
-                <div className="text-[10px] text-slate-500 uppercase">{k} changes</div>
-              </div>
-            ))}
-          </div>
           {r.vigilance.saved && (
             <p className="mt-3 text-[12px] text-slate-500">
               Vigilance: {r.vigilance.saved} at the last assessment, {r.vigilance.now ?? "—"} with today's answers.

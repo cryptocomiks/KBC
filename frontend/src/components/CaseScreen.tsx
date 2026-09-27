@@ -7,6 +7,7 @@ import type { Decision, DecisionValue, Entity, InvestigationParams } from "../ty
 import type { CaseTab } from "../lib/route";
 import CaseAlerts from "./CaseAlerts";
 import CaseChecklist from "./CaseChecklist";
+import CaseOverview from "./CaseOverview";
 import CdbForms from "./CdbForms";
 import CaseHeader from "./CaseHeader";
 import CaseHistory from "./CaseHistory";
@@ -61,6 +62,7 @@ export default function CaseScreen({ caseId, tab, onTab, theme, onBack, onInvest
       <CaseHeader view={q.data} tab={tab} onTab={onTab} onBack={onBack} />
       {tab === "kyc" && (
         <div className="panel-enter space-y-4">
+          {q.data.overview && <CaseOverview o={q.data.overview} onTab={onTab} />}
           {q.data.workflow && <CaseWorkflow caseId={caseId} view={q.data.workflow} />}
           <KycQuestionnaire key={`${caseId}-${q.data.questionnaire.answered_at ?? ""}`} caseId={caseId} data={q.data.questionnaire} />
           <RiskMap caseId={caseId} data={q.data.questionnaire} />

@@ -91,6 +91,7 @@ def report_pdf(req: ReportRequest, x_kbc_password: str | None = Header(default=N
         require_access(x_kbc_password)
         from app.cases import active, mark_stale
 
+        raw = inv
         decisions = mark_stale(inv, get_store().decisions(req.case_id))
         changes = get_store().changes(req.case_id)
         inv = apply_decisions(inv, active(decisions))
@@ -102,9 +103,20 @@ def report_pdf(req: ReportRequest, x_kbc_password: str | None = Header(default=N
             checklist = checklist_view(
                 case, [r.model_dump() for r in inv.requests], questionnaire["assessment"]
             )
+            from app import cdb as cdb_forms
+            from app import sow as sow_mod
+
+            workflow = CaseService.workflow_view(case, checklist, questionnaire["assessment"])
             case_file = {
                 "checklist": checklist,
-                "workflow": CaseService.workflow_view(case, checklist, questionnaire["assessment"]),
+                "workflow": workflow,
+                "overview": CaseService.overview(
+                    case, raw, inv, decisions, questionnaire, checklist, workflow
+                ),
+                "cdb": cdb_forms.build(inv, case.get("cdb") or {}),
+                "sow": sow_mod.assess(inv, case["sow"])
+                if (case.get("sow") or {}).get("sources")
+                else None,
             }
     pdf = build_pdf(
         inv,

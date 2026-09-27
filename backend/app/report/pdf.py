@@ -944,6 +944,92 @@ def build_pdf(
                 "No change recorded since the case was opened.",
             )
         )
+    overview = (case_file or {}).get("overview")
+    if overview:
+        from app.report import charts
+
+        story.append(CondPageBreak(60 * mm))
+        story.append(Paragraph("Case file at a glance", st["h2"]))
+        o = overview
+        docs = o["documents"]
+        sow_o = o.get("sow")
+        story.append(
+            charts.kpi_row(
+                [
+                    {
+                        "label": "Risk score",
+                        "value": f"{o['risk']['score']:.0f} / 100",
+                        "sub": o["risk"]["level"],
+                        "tone": charts.LEVEL_TONE.get(o["risk"]["level"], "neutral"),
+                        "meter": (o["risk"]["score"], 100),
+                    },
+                    {
+                        "label": "Vigilance",
+                        "value": (o.get("vigilance") or "to assess").capitalize(),
+                        "sub": "questionnaire",
+                        "tone": {
+                            "enhanced": "critical",
+                            "standard": "warning",
+                            "simplified": "good",
+                        }.get(o.get("vigilance") or "", "neutral"),
+                    },
+                    {
+                        "label": "Open alerts",
+                        "value": o["alerts"]["open"],
+                        "sub": f"{o['alerts']['total']} hit(s)",
+                        "tone": "critical" if o["alerts"]["open"] else "good",
+                    },
+                    {
+                        "label": "Documents",
+                        "value": f"{docs['received']}/{docs['total']}",
+                        "sub": f"{docs['required_missing']} required missing",
+                        "tone": "warning" if docs["required_missing"] else "good",
+                        "meter": (docs["received"], max(1, docs["total"])),
+                    },
+                    {
+                        "label": "UBO form",
+                        "value": " + ".join(o["cdb"]["forms"]) or "—",
+                        "sub": f"{o['cdb']['missing']} field(s) to complete"
+                        if o["cdb"]["missing"]
+                        else "ready to sign",
+                        "tone": "warning" if o["cdb"]["missing"] else "good",
+                    },
+                    {
+                        "label": "Source of wealth",
+                        "value": f"{round((sow_o['coverage'] or 0) * 100)} %"
+                        if sow_o and sow_o.get("coverage") is not None
+                        else "—",
+                        "sub": sow_o["verdict"] if sow_o else "not documented",
+                        "tone": {"plausible": "good", "partial": "warning", "gap": "critical"}.get(
+                            (sow_o or {}).get("verdict", ""), "neutral"
+                        ),
+                    },
+                    {
+                        "label": "Ready for validation",
+                        "value": f"{o['ready']}/{len(o['readiness'])}",
+                        "sub": "conditions met",
+                        "tone": "good" if o["ready"] == len(o["readiness"]) else "accent",
+                        "meter": (o["ready"], len(o["readiness"])),
+                    },
+                ],
+                WIDTH,
+            )
+        )
+        story.append(Spacer(1, 8))
+        t = o["alerts"]["triage"]
+        story.append(Paragraph("Screening alerts by triage", st["h3"]))
+        story.append(
+            charts.stacked_bar(
+                [
+                    ("Likely match", t.get("likely", 0), charts.TONES["critical"]),
+                    ("To check", t.get("verify", 0), charts.TONES["warning"]),
+                    ("Probable namesake", t.get("namesake", 0), colors.HexColor(charts.SERIES[0])),
+                    ("Silenced by memory", t.get("dismissed", 0), charts.TONES["neutral"]),
+                ],
+                WIDTH,
+                fmt=lambda v: f"{v:.0f}",
+            )
+        )
     kyc = questionnaire or {}
     assessment = kyc.get("assessment")
     if assessment:
@@ -1102,6 +1188,166 @@ def build_pdf(
                 "Not sent for validation yet.",
             )
         )
+    cdb_data = (case_file or {}).get("cdb")
+    if cdb_data and cdb_data.get("forms"):
+        from app.report import charts
+
+        story.append(CondPageBreak(50 * mm))
+        story.append(Paragraph("Beneficial ownership forms (CDB 20)", st["h2"]))
+        for f in cdb_data["forms"]:
+            story.append(Paragraph(f"<b>{_esc(f['title'])}</b> — {_esc(f['entity'])}", st["body"]))
+            story.append(Paragraph(_esc(f["why"]), st["muted"]))
+            owners = [p for p in f["persons"] if p.get("pct") is not None]
+            if owners:
+                story.append(Spacer(1, 4))
+                story.append(
+                    charts.bar_list(
+                        [
+                            (
+                                f"{p['first_name']} {p['last_name']}".strip(),
+                                p["pct"],
+                                f"{p['pct']:.1f} %",
+                                charts.TONES["critical"]
+                                if p.get("flags")
+                                else charts.TONES["accent"],
+                            )
+                            for p in sorted(owners, key=lambda p: -p["pct"])
+                        ],
+                        WIDTH * 0.7,
+                        100,
+                        marker=25,
+                        marker_label="25 % threshold",
+                    )
+                )
+            story.append(Spacer(1, 4))
+            story.append(
+                _table(
+                    [
+                        {
+                            "role": p["role_label"],
+                            "name": f"{p['last_name']}, {p['first_name']}".strip(", "),
+                            "birth": p.get("birth_date"),
+                            "nat": p.get("nationality"),
+                            "addr": ", ".join(x for x in (p.get("address"), p.get("country")) if x),
+                            "basis": p["basis"],
+                            "missing": ", ".join(p.get("missing") or []) or "complete",
+                        }
+                        for p in f["persons"]
+                    ],
+                    [
+                        ("role", "Role", 1.4),
+                        ("name", "Name", 2),
+                        ("birth", "Born", 1),
+                        ("nat", "Nationality", 1.4),
+                        ("addr", "Domicile", 2.4),
+                        ("basis", "Basis", 3),
+                        ("missing", "To complete", 2),
+                    ],
+                    st,
+                    "",
+                )
+            )
+            for n in f.get("notes") or []:
+                story.append(Paragraph("• " + _esc(n), st["muted"]))
+            story.append(Spacer(1, 6))
+    sow_data = (case_file or {}).get("sow")
+    if sow_data and sow_data.get("sources"):
+        from app.report import charts
+
+        cur = sow_data["currency"]
+        money = lambda v: f"{cur} {v:,.0f}".replace(",", "'")  # noqa: E731
+        story.append(CondPageBreak(60 * mm))
+        story.append(
+            Paragraph(f"Source of wealth — {_esc(sow_data.get('person') or '')}", st["h2"])
+        )
+        story.append(
+            charts.kpi_row(
+                [
+                    {"label": "Declared", "value": money(sow_data["declared_total"])},
+                    {
+                        "label": "Explained",
+                        "value": money(sow_data["explained_total"]),
+                        "tone": "accent",
+                        "sub": f"{round((sow_data['coverage'] or 0) * 100)} % of declared"
+                        if sow_data.get("coverage") is not None
+                        else "",
+                    },
+                    {
+                        "label": "Unexplained",
+                        "value": money(sow_data["gap"] or 0),
+                        "tone": "critical"
+                        if sow_data["verdict"] == "gap"
+                        else "warning"
+                        if sow_data.get("gap")
+                        else "good",
+                    },
+                    {
+                        "label": "Corroborated",
+                        "value": f"{sum(1 for x in sow_data['sources'] if x['corroborated'])}/{len(sow_data['sources'])}",
+                        "sub": "sources with evidence",
+                        "tone": "good"
+                        if all(x["corroborated"] for x in sow_data["sources"])
+                        else "warning",
+                    },
+                    {
+                        "label": "Assessment",
+                        "value": {
+                            "plausible": "Plausible",
+                            "partial": "Partial",
+                            "gap": "Gap",
+                            "incomplete": "Incomplete",
+                        }[sow_data["verdict"]],
+                        "tone": {"plausible": "good", "partial": "warning", "gap": "critical"}.get(
+                            sow_data["verdict"], "neutral"
+                        ),
+                    },
+                ],
+                WIDTH,
+            )
+        )
+        story.append(Spacer(1, 8))
+        story.append(
+            charts.stacked_bar(
+                [
+                    (x["label"], x["explained"], colors.HexColor(charts.SERIES[i % 8]))
+                    for i, x in enumerate(sow_data["sources"])
+                ],
+                WIDTH,
+                fmt=money,
+                rest=("Unexplained gap", sow_data["gap"]) if sow_data.get("gap") else None,
+                height=11,
+            )
+        )
+        story.append(Spacer(1, 4))
+        story.append(
+            _table(
+                [
+                    {
+                        "src": x["label"]
+                        + (f" — {x['description']}" if x.get("description") else ""),
+                        "amount": money(x["explained"]),
+                        "how": x["how"],
+                        "public": "; ".join(x["public"][:2]) or "no public record",
+                        "docs": ", ".join(d["label"] for d in x["documents"] if d["received"])
+                        or "none yet",
+                    }
+                    for x in sow_data["sources"]
+                ],
+                [
+                    ("src", "Source", 3),
+                    ("amount", "Explained", 1.4),
+                    ("how", "Computation", 2),
+                    ("public", "Public corroboration", 4),
+                    ("docs", "Documents received", 2.4),
+                ],
+                st,
+                "",
+            )
+        )
+        for f in sow_data.get("flags") or []:
+            story.append(Paragraph("• " + _esc(f["text"]), st["muted"]))
+        story.append(Spacer(1, 4))
+        story.append(Paragraph(_esc(sow_data["narrative"]), st["body"]))
     if inv.requests:
         story.append(Paragraph("Documents to request from the client", st["h2"]))
         story.append(
@@ -1119,7 +1365,7 @@ def build_pdf(
                 "",
             )
         )
-    if template == "edd":
+    if template == "edd" and not (sow_data and sow_data.get("sources")):
         story.append(Paragraph("Source of wealth and source of funds assessment", st["h2"]))
         story.append(
             _table(

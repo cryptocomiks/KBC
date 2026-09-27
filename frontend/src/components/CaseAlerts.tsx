@@ -1,10 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { BellRing, BrainCircuit, CheckCheck, ChevronDown, ExternalLink, History, Loader2, Search, Timer, Trash2 } from "lucide-react";
+import { BellRing, BrainCircuit, CheckCheck, ChevronDown, ExternalLink, Loader2, Search, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { api } from "../api";
 import { analyst } from "../lib/analyst";
 import { fmtDate } from "../lib/format";
 import type { AlertRow, DecisionValue } from "../types";
+import { TRIAGE_SEGMENTS } from "./CaseOverview";
+import { BarList, ChartCard, Meter, StackedBar, Tile, TONE } from "./viz";
 
 const TRIAGE: Record<string, { label: string; cls: string }> = {
   likely: { label: "Likely match", cls: "bg-red-500/12 text-red-700 ring-red-500/30 dark:text-red-300" },
@@ -13,17 +15,6 @@ const TRIAGE: Record<string, { label: string; cls: string }> = {
   dismissed: { label: "Ruled out (memory)", cls: "bg-slate-500/12 text-slate-600 ring-slate-500/25 dark:text-slate-300" },
 };
 const DECISION_LABEL: Record<string, string> = { confirmed: "Confirmed match", false_positive: "False positive", to_review: "To review" };
-
-function Stat({ icon, label, value, hint }: { icon: React.ReactNode; label: string; value: string | number; hint?: string }) {
-  return (
-    <div className="rounded-xl border border-slate-200 p-3 dark:border-white/10" title={hint}>
-      <div className="flex items-center gap-1.5 text-[11px] text-slate-500">
-        {icon} {label}
-      </div>
-      <div className="mt-1 text-2xl font-semibold tracking-tight">{value}</div>
-    </div>
-  );
-}
 
 function AlertItem({ a, onDecide, busy }: { a: AlertRow; onDecide: (a: AlertRow, d: DecisionValue | "none") => void; busy: boolean }) {
   const [open, setOpen] = useState(false);
@@ -37,14 +28,16 @@ function AlertItem({ a, onDecide, busy }: { a: AlertRow; onDecide: (a: AlertRow,
         </span>
         <span className="min-w-0 flex-1 text-[13px] font-medium">
           {a.entity} <span className="text-slate-400">≈</span> {a.matched_name}
-          <span className="ml-1.5 text-[11px] font-normal text-slate-500">
-            {a.dataset} · {a.score.toFixed(0)}%
-          </span>
+          <span className="ml-1.5 text-[11px] font-normal text-slate-500">{a.dataset}</span>
           {a.url && (
             <a href={a.url} target="_blank" rel="noreferrer" className="ml-1 inline-flex text-slate-400 hover:text-brand-600" aria-label="Open the listing">
               <ExternalLink className="h-3 w-3" />
             </a>
           )}
+        </span>
+        <span className="flex w-24 items-center gap-1.5" title="Match confidence">
+          <Meter className="flex-1" value={a.score} max={100} tone={a.score >= 90 ? "critical" : a.score >= 75 ? "warning" : "neutral"} label="Match confidence" />
+          <span className="w-8 text-right font-mono text-[11px] font-semibold">{a.score.toFixed(0)}%</span>
         </span>
         <select
           className="input w-auto py-1 text-xs"
@@ -179,6 +172,16 @@ export default function CaseAlerts({ caseId }: { caseId: string }) {
 
   if (q.isLoading || !q.data) return <div className="flex justify-center py-16"><Loader2 className="h-5 w-5 animate-spin text-slate-400" /></div>;
   const v = q.data;
+  const perList = new Map<string, { n: number; open: number }>();
+  for (const a of v.alerts) {
+    const r = perList.get(a.dataset) ?? { n: 0, open: 0 };
+    r.n += 1;
+    if (a.triage === "likely" || a.triage === "verify") r.open += 1;
+    perList.set(a.dataset, r);
+  }
+  const byDataset = [...perList.entries()]
+    .sort((x, y) => y[1].n - x[1].n)
+    .map(([k, r]) => ({ key: k, label: k, value: r.n, sub: r.open ? `${r.open} to decide` : "no open alert", color: r.open ? TONE.warning : TONE.accent }));
   const onDecide = (a: AlertRow, d: DecisionValue | "none") => {
     if (!name.trim()) {
       window.alert("Enter your name first: every ruling is signed.");
@@ -200,16 +203,11 @@ export default function CaseAlerts({ caseId }: { caseId: string }) {
             <input className="input w-40 py-1 text-xs" placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)} />
           </label>
         </div>
-        <div className="grid gap-3 sm:grid-cols-4">
-          <Stat icon={<BellRing className="h-3.5 w-3.5" />} label="Open alerts" value={groups.open.length} />
-          <Stat icon={<CheckCheck className="h-3.5 w-3.5" />} label="Probable namesakes" value={groups.namesakes.length} hint="Contradicted by a date of birth, a nationality, a country or a weak name match" />
-          <Stat icon={<History className="h-3.5 w-3.5" />} label="Silenced by memory" value={v.cleared_by_memory} hint="Already ruled out in this or another case, evidence unchanged" />
-          <Stat
-            icon={<Timer className="h-3.5 w-3.5" />}
-            label="Time saved (est.)"
-            value={`${v.minutes_saved} min`}
-            hint={`Estimate at ~${v.minutes_per_alert} minutes per alert reviewed by hand`}
-          />
+        <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
+          <Tile label="Open alerts" tone={groups.open.length ? "critical" : "good"} value={groups.open.length} sub="likely matches and hits to check" />
+          <Tile label="Probable namesakes" tone={groups.namesakes.length ? "warning" : "good"} value={groups.namesakes.length} sub="contradicted by the evidence" />
+          <Tile label="Silenced by memory" tone="neutral" value={v.cleared_by_memory} sub="ruled out before, evidence unchanged" />
+          <Tile label="Time saved (est.)" tone="accent" value={`${v.minutes_saved} min`} sub={`~${v.minutes_per_alert} min per alert by hand`} />
         </div>
         {groups.namesakes.length > 0 && (
           <div className="mt-4 flex flex-wrap items-center gap-3 rounded-xl bg-brand-500/8 px-4 py-3 ring-1 ring-brand-500/25">
@@ -231,6 +229,24 @@ export default function CaseAlerts({ caseId }: { caseId: string }) {
         {!v.memory_enabled && <p className="mt-2 text-xs text-amber-700">The memory is off on this server (no password configured).</p>}
       </div>
 
+      {v.alerts.length > 0 && (
+        <div className="grid gap-4 lg:grid-cols-2">
+          <ChartCard
+            title="Triage of the alerts"
+            sub={`${v.alerts.length} hit(s) on the network`}
+            table={{ head: ["Triage", "Alerts"], rows: TRIAGE_SEGMENTS(v.counts).map((x) => [x.label, x.value]) }}
+          >
+            <StackedBar segments={TRIAGE_SEGMENTS(v.counts)} height={12} />
+          </ChartCard>
+          <ChartCard
+            title="By list"
+            sub="where the hits come from"
+            table={{ head: ["List", "Hits"], rows: byDataset.map((r) => [r.key, r.value]) }}
+          >
+            <BarList rows={byDataset.slice(0, 6)} />
+          </ChartCard>
+        </div>
+      )}
       {[
         { title: "To decide", rows: groups.open, empty: "No open alert." },
         { title: "Probable namesakes", rows: groups.namesakes, empty: "" },

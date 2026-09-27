@@ -353,6 +353,7 @@ class CaseService:
             case, [r.model_dump() for r in inv.requests], kyc_view["assessment"]
         )
         workflow = self.workflow_view(case, checklist, kyc_view["assessment"])
+        overview = self.overview(case, raw, inv, decisions, kyc_view, checklist, workflow)
         case.pop("snapshot", None)
         return {
             "case": case,
@@ -362,6 +363,134 @@ class CaseService:
             "questionnaire": kyc_view,
             "checklist": checklist,
             "workflow": workflow,
+            "overview": overview,
+        }
+
+    @staticmethod
+    def overview(
+        case: dict[str, Any],
+        raw: Investigation,
+        inv: Investigation,
+        decisions: list[dict[str, Any]],
+        kyc_view: dict[str, Any],
+        checklist: dict[str, Any],
+        workflow: dict[str, Any],
+    ) -> dict[str, Any]:
+        """The file at a glance: alerts, documents, UBO forms, source of wealth, review and
+        what is still missing before validation (header badges and the KYC overview)."""
+        decided = {d["item_key"].lower() for d in active(decisions)}
+        triage: dict[str, int] = {}
+        by_list: dict[str, dict[str, int]] = {}
+        open_alerts = 0
+        for h in raw.hits:
+            t = h.triage or "verify"
+            triage[t] = triage.get(t, 0) + 1
+            row = by_list.setdefault(h.list_type.value, {"total": 0, "open": 0})
+            row["total"] += 1
+            key = hit_key(raw, h.entity_id, h.dataset, h.matched_name).lower()
+            if t in ("likely", "verify") and key not in decided:
+                open_alerts += 1
+                row["open"] += 1
+        docs = checklist.get("documents") or []
+        a = kyc_view.get("assessment")
+        forms = cdb_forms.build(inv, case.get("cdb") or {})
+        sow_saved = case.get("sow") or {}
+        sow_a = sow_mod.assess(inv, sow_saved) if sow_saved.get("sources") else None
+        due = (case.get("questionnaire") or {}).get("next_review") or (a or {}).get("next_review")
+        days_left = None
+        if due:
+            try:
+                days_left = (date.fromisoformat(str(due)[:10]) - date.today()).days
+            except ValueError:
+                days_left = None
+        review_status = (
+            "not_set"
+            if days_left is None
+            else "overdue"
+            if days_left < 0
+            else "due"
+            if days_left <= 30
+            else "not_due"
+        )
+        level = (a or {}).get("level")
+        readiness = [
+            {
+                "key": "questionnaire",
+                "label": "Questionnaire answered",
+                "done": bool(a) and not (a or {}).get("missing"),
+                "detail": "done"
+                if a and not a.get("missing")
+                else f"{len((a or {}).get('missing') or [])} question(s) open"
+                if a
+                else "not started",
+                "tab": "kyc",
+            },
+            {
+                "key": "alerts",
+                "label": "Alerts resolved",
+                "done": open_alerts == 0,
+                "detail": f"{open_alerts} open" if open_alerts else "none open",
+                "tab": "alerts",
+            },
+            {
+                "key": "documents",
+                "label": "Required documents",
+                "done": not checklist.get("missing_required"),
+                "detail": f"{sum(1 for d in docs if d['done'])}/{len(docs)} received",
+                "tab": "kyc",
+            },
+            {
+                "key": "cdb",
+                "label": "UBO form complete",
+                "done": forms["missing_total"] == 0,
+                "detail": f"{forms['missing_total']} field(s) to complete"
+                if forms["missing_total"]
+                else "ready to sign",
+                "tab": "cdb",
+            },
+        ]
+        if level == "enhanced" or sow_a:
+            readiness.append(
+                {
+                    "key": "sow",
+                    "label": "Source of wealth",
+                    "done": bool(sow_a and sow_a["verdict"] == "plausible"),
+                    "detail": f"{round((sow_a['coverage'] or 0) * 100)} % explained"
+                    if sow_a and sow_a.get("coverage") is not None
+                    else "to document",
+                    "tab": "sow",
+                }
+            )
+        return {
+            "risk": {"score": inv.risk.score, "level": inv.risk.level},
+            "alerts": {
+                "total": len(raw.hits),
+                "open": open_alerts,
+                "triage": triage,
+                "by_list": by_list,
+            },
+            "documents": {
+                "received": sum(1 for d in docs if d["done"]),
+                "total": len(docs),
+                "required_missing": len(checklist.get("missing_required") or []),
+            },
+            "cdb": {
+                "forms": [f["code"] for f in forms["forms"]],
+                "missing": forms["missing_total"],
+                "persons": sum(len(f["persons"]) for f in forms["forms"]),
+            },
+            "sow": {
+                "verdict": sow_a["verdict"],
+                "coverage": sow_a["coverage"],
+                "sources": len(sow_a["sources"]),
+            }
+            if sow_a
+            else None,
+            "review": {"status": review_status, "days_left": days_left, "next_review": due},
+            "vigilance": level,
+            "workflow": workflow.get("state"),
+            "readiness": readiness,
+            "ready": sum(1 for r in readiness if r["done"]),
         }
 
     # ------------------------------------------------------ alerts & memory
@@ -677,8 +806,6 @@ class CaseService:
         """The saved memo, or a draft written from the current state of the case."""
         case = self._get(case_id)
         saved = case.get("memo") or {}
-        if saved.get("text") and not regenerate:
-            return {"title": case["title"], "draft": False, **saved}
         raw = self.service.investigate(self._params(case))
         decisions = mark_stale(raw, self.store.decisions(case_id))
         inv = apply_decisions(raw, active(decisions))
@@ -687,6 +814,9 @@ class CaseService:
             case, [r.model_dump() for r in inv.requests], kyc_view["assessment"]
         )
         workflow = self.workflow_view(case, checklist, kyc_view["assessment"])
+        kpis = self.overview(case, raw, inv, decisions, kyc_view, checklist, workflow)
+        if saved.get("text") and not regenerate:
+            return {"title": case["title"], "draft": False, **saved, "kpis": kpis}
         text = build_memo(case, inv, kyc_view, checklist, workflow, decisions)
         if (case.get("sow") or {}).get("sources"):
             text += "\n\n## Source of wealth\n" + sow_mod.assess(inv, case["sow"])["narrative"]
@@ -697,6 +827,7 @@ class CaseService:
             "generated_at": now(),
             "updated_by": saved.get("updated_by"),
             "updated_at": saved.get("updated_at"),
+            "kpis": kpis,
         }
 
     def save_memo(self, case_id: str, text: str, by: str) -> dict[str, Any]:
@@ -919,7 +1050,35 @@ class CaseService:
             if c["queue"]:
                 queues[c["queue"]] += 1
         jur = get_jurisdictions()
+        # Changes per day over the last 30 days, by severity (monitoring activity).
+        start = date.today() - timedelta(days=29)
+        days = {
+            (start + timedelta(days=i)).isoformat(): {"critical": 0, "warning": 0, "info": 0}
+            for i in range(30)
+        }
+        for ch in self.store.changes(limit=5000):
+            day = str(ch.get("run_at") or "")[:10]
+            if day in days and ch.get("severity") in days[day]:
+                days[day][ch["severity"]] += 1
+        vigilance: dict[str, int] = {}
+        states: dict[str, int] = {}
+        upcoming = []
+        for c in cases:
+            if c.get("import_state"):
+                continue
+            v = (c.get("questionnaire") or {}).get("vigilance") or "to_assess"
+            vigilance[v] = vigilance.get(v, 0) + 1
+            states[c["workflow_state"]] = states.get(c["workflow_state"], 0) + 1
+            nxt = (c.get("questionnaire") or {}).get("next_review")
+            if nxt:
+                upcoming.append({"id": c["id"], "title": c["title"], "date": str(nxt)[:10]})
+        upcoming.sort(key=lambda r: r["date"])
         return {
+            "changes_by_day": [{"day": k, **v} for k, v in days.items()],
+            "vigilance": vigilance,
+            "workflow": states,
+            "upcoming_reviews": upcoming[:12],
+            "memory": len(self.store.dismissals()) if memory_enabled() else 0,
             "cases": cases,
             "queues": queues,
             "by_level": by_level,

@@ -414,6 +414,20 @@ export interface CaseView {
   questionnaire: KycQuestionnaire;
   checklist?: Checklist;
   workflow?: WorkflowView;
+  overview?: CaseOverview;
+}
+
+export interface CaseOverview {
+  risk: { score: number; level: RiskLevel };
+  alerts: { total: number; open: number; triage: Record<string, number>; by_list: Record<string, { total: number; open: number }> };
+  documents: { received: number; total: number; required_missing: number };
+  cdb: { forms: string[]; missing: number; persons: number };
+  sow: { verdict: "plausible" | "partial" | "gap" | "incomplete"; coverage: number | null; sources: number } | null;
+  review: { status: "not_set" | "overdue" | "due" | "not_due"; days_left: number | null; next_review: string | null };
+  vigilance: Vigilance | null;
+  workflow: WorkflowState | null;
+  readiness: { key: string; label: string; done: boolean; detail: string; tab: string }[];
+  ready: number;
 }
 
 export interface Dashboard {
@@ -424,6 +438,11 @@ export interface Dashboard {
   to_review: number;
   imports?: ImportStatus;
   queues?: Record<Queue, number>;
+  changes_by_day?: { day: string; critical: number; warning: number; info: number }[];
+  vigilance?: Record<string, number>;
+  workflow?: Record<string, number>;
+  upcoming_reviews?: { id: string; title: string; date: string }[];
+  memory?: number;
 }
 
 export interface DeclaredPerson {

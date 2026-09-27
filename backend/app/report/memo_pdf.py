@@ -22,6 +22,52 @@ def _inline(text: str) -> str:
     return re.sub(r"\[([^\]]*)\]", r"<font color='#b54708'>[\1]</font>", _esc(text))
 
 
+def _kpis(o: dict[str, Any], width: float):
+    from app.report import charts
+
+    docs = o["documents"]
+    sow = o.get("sow")
+    return charts.kpi_row(
+        [
+            {
+                "label": "Risk score",
+                "value": f"{o['risk']['score']:.0f}",
+                "sub": o["risk"]["level"],
+                "tone": charts.LEVEL_TONE.get(o["risk"]["level"], "neutral"),
+                "meter": (o["risk"]["score"], 100),
+            },
+            {
+                "label": "Vigilance",
+                "value": (o.get("vigilance") or "—").capitalize(),
+                "tone": {"enhanced": "critical", "standard": "warning", "simplified": "good"}.get(
+                    o.get("vigilance") or "", "neutral"
+                ),
+            },
+            {
+                "label": "Open alerts",
+                "value": o["alerts"]["open"],
+                "tone": "critical" if o["alerts"]["open"] else "good",
+            },
+            {
+                "label": "Documents",
+                "value": f"{docs['received']}/{docs['total']}",
+                "tone": "warning" if docs["required_missing"] else "good",
+                "meter": (docs["received"], max(1, docs["total"])),
+            },
+            {
+                "label": "Source of wealth",
+                "value": f"{round((sow['coverage'] or 0) * 100)} %"
+                if sow and sow.get("coverage") is not None
+                else "—",
+                "tone": {"plausible": "good", "partial": "warning", "gap": "critical"}.get(
+                    (sow or {}).get("verdict", ""), "neutral"
+                ),
+            },
+        ],
+        width,
+    )
+
+
 def build_memo_pdf(memo: dict[str, Any]) -> bytes:
     buf = io.BytesIO()
     body = ParagraphStyle("b", fontName="DejaVu", fontSize=9.5, leading=13.5, textColor=INK)
@@ -55,7 +101,15 @@ def build_memo_pdf(memo: dict[str, Any]) -> bytes:
         canvas.restoreState()
 
     story: list[Any] = []
+    kpis = memo.get("kpis")
+    head_done = False
     for raw in memo["text"].splitlines():
+        if kpis and not head_done and raw.startswith("## "):
+            # Key figures of the file, between the title block and the first section.
+            story.append(Spacer(1, 4))
+            story.append(_kpis(kpis, A4[0] - 2 * MARGIN))
+            story.append(Spacer(1, 4))
+            head_done = True
         line = raw.rstrip()
         if not line.strip():
             story.append(Spacer(1, 3))

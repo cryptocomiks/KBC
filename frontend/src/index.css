@@ -291,3 +291,43 @@ details[open] > summary ~ * {
     border-color: rgb(255 255 255 / 0.4);
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Data-viz roles (validated palette: CVD-safe adjacent order, both modes).
+   Categorical = identity (series), status = meaning (always with a label),
+   grid / track = recessive chrome. Light values are the default, dark values
+   are their own steps chosen for the dark surface (#0e1115), not a flip.
+   --------------------------------------------------------------------------- */
+:root {
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --series-3: #1baf7a;
+  --series-4: #eda100;
+  --series-5: #e87ba4;
+  --series-6: #008300;
+  --series-7: #4a3aa7;
+  --series-8: #e34948;
+  --status-good: #17b26a;
+  --status-warning: #f79009;
+  --status-serious: #ea580c;
+  --status-critical: #e5484d;
+  --status-neutral: #8f99a4;
+  --viz-grid: #e6e9ec;
+  --viz-axis: #c3cad2;
+  --viz-track: #eceff2;
+  --viz-accent: #1f9467;
+}
+html.dark {
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --series-3: #199e70;
+  --series-4: #c98500;
+  --series-5: #d55181;
+  --series-6: #008300;
+  --series-7: #9085e9;
+  --series-8: #e66767;
+  --viz-grid: #1d2229;
+  --viz-axis: #2b3139;
+  --viz-track: #1a1f25;
+  --viz-accent: #2fb67f;
+}

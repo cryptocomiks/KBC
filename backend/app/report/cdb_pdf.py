@@ -70,7 +70,7 @@ def build_cdb_pdf(data: dict[str, Any], title: str) -> bytes:
 
     width = A4[0] - 2 * MARGIN
     party = data["contracting_party"]
-    story: list[Any] = []
+    story: list[Any] = [*_summary(data, st, width), PageBreak()]
     for i, form in enumerate(data["forms"]):
         if i:
             story.append(PageBreak())
@@ -146,6 +146,96 @@ def build_cdb_pdf(data: dict[str, Any], title: str) -> bytes:
     )
     doc.build(story, onFirstPage=chrome, onLaterPages=chrome)
     return buf.getvalue()
+
+
+def _summary(data: dict[str, Any], st: dict[str, ParagraphStyle], width: float) -> list[Any]:
+    """First page: which forms, who, how complete, and the ownership chart."""
+    from app.report import charts
+
+    required = {"K": 4, "A": 6, "T": 6, "S": 6}
+    people = [(f, p) for f in data["forms"] for p in f["persons"]]
+    need = sum(required[f["code"]] * len(f["persons"]) + len(f["structure"]) for f in data["forms"])
+    done = need - data["missing_total"]
+    party = data["contracting_party"]
+    out: list[Any] = [
+        Paragraph("Beneficial ownership — summary", st["title"]),
+        Paragraph(
+            f"{_esc(party.get('name'))} · {_esc(party.get('legal_form'))} · {_esc(party.get('country'))}",
+            st["small"],
+        ),
+        Spacer(1, 10),
+        charts.kpi_row(
+            [
+                {"label": "Forms to sign", "value": " + ".join(f["code"] for f in data["forms"])},
+                {
+                    "label": "Persons identified",
+                    "value": len(people),
+                    "sub": f"{sum(1 for _, p in people if p.get('source'))} from the registers",
+                },
+                {
+                    "label": "Completeness",
+                    "value": f"{round(100 * done / max(1, need))} %",
+                    "sub": f"{data['missing_total']} field(s) to complete",
+                    "tone": "warning" if data["missing_total"] else "good",
+                    "meter": (done, max(1, need)),
+                },
+                {
+                    "label": "Flags on persons",
+                    "value": sum(1 for _, p in people if p.get("flags")),
+                    "sub": "sanctioned / PEP / leaks",
+                    "tone": "critical" if any(p.get("flags") for _, p in people) else "good",
+                },
+            ],
+            width,
+        ),
+        Spacer(1, 12),
+    ]
+    owners = sorted(
+        [(f, p) for f, p in people if p.get("pct") is not None], key=lambda fp: -fp[1]["pct"]
+    )
+    if owners:
+        out += [
+            Paragraph("Effective ownership of the persons declared", st["h2"]),
+            charts.bar_list(
+                [
+                    (
+                        f"{p['first_name']} {p['last_name']} ({f['code']})".replace(
+                            "  ", " "
+                        ).strip(),
+                        p["pct"],
+                        f"{p['pct']:.1f} %",
+                        charts.TONES["critical"] if p.get("flags") else charts.TONES["accent"],
+                    )
+                    for f, p in owners
+                ],
+                width,
+                100,
+                marker=25,
+                marker_label="25 % — controlling person / beneficial owner threshold",
+            ),
+            Spacer(1, 10),
+        ]
+    out.append(Paragraph("Forms", st["h2"]))
+    for f in data["forms"]:
+        filled = required[f["code"]] * len(f["persons"]) + len(f["structure"]) - f["missing_count"]
+        total = required[f["code"]] * len(f["persons"]) + len(f["structure"])
+        out.append(Paragraph(f"<b>{_esc(f['title'])}</b> — {_esc(f['entity'])}", st["cell"]))
+        out.append(Paragraph(_esc(f["why"]), st["small"]))
+        out.append(Spacer(1, 3))
+        out.append(
+            charts.meter(
+                filled,
+                max(1, total),
+                charts.TONES["good" if not f["missing_count"] else "warning"],
+                width * 0.6,
+                5,
+            )
+        )
+        out.append(Paragraph(f"{filled}/{total} required fields filled", st["small"]))
+        out.append(Spacer(1, 8))
+    if data.get("exemption"):
+        out.append(Paragraph(f"<b>Exemption:</b> {_esc(data['exemption'])}", st["cell"]))
+    return out
 
 
 def _grid(rows: list[tuple[str, Any]], st: dict[str, ParagraphStyle], width: float) -> Table:

@@ -5,6 +5,7 @@ import { api } from "../api";
 import { analyst } from "../lib/analyst";
 import { fmtDate } from "../lib/format";
 import type { CdbData, CdbForm, CdbPerson } from "../types";
+import { BarList, ChartCard, Meter, Tile, TONE } from "./viz";
 
 const FIELDS: { key: keyof CdbPerson; label: string }[] = [
   { key: "last_name", label: "Last name" },
@@ -14,6 +15,7 @@ const FIELDS: { key: keyof CdbPerson; label: string }[] = [
   { key: "address", label: "Actual address of domicile" },
   { key: "country", label: "Country of domicile" },
 ];
+const REQUIRED: Record<string, number> = { K: 4, A: 6, T: 6, S: 6 };
 const PARTY: [string, string][] = [
   ["name", "Name / company"],
   ["legal_form", "Legal form"],
@@ -49,6 +51,8 @@ function Field({ label, value, missing, onSave }: { label: string; value: string
 }
 
 function Person({ p, form, edit }: { p: CdbPerson; form: CdbForm; edit: (e: Record<string, unknown>) => void }) {
+  const need = REQUIRED[form.code];
+  const filled = need - p.missing.length;
   return (
     <div className="rounded-xl border border-slate-200 p-3 dark:border-white/10">
       <div className="flex flex-wrap items-center gap-2">
@@ -56,6 +60,10 @@ function Person({ p, form, edit }: { p: CdbPerson; form: CdbForm; edit: (e: Reco
           {p.role_label}
         </span>
         <span className="min-w-0 flex-1 text-[12px] text-slate-600 dark:text-slate-400">{p.basis}</span>
+        <span className="flex w-28 items-center gap-1.5 text-[10.5px] text-slate-500" title="Required fields filled">
+          <Meter className="flex-1" value={filled} max={need} tone={filled === need ? "good" : "warning"} label="Completeness" />
+          {filled}/{need}
+        </span>
         {p.flags.map((f) => (
           <span key={f} className="rounded-full bg-red-500/12 px-2 py-0.5 text-[10px] font-semibold text-red-700 uppercase dark:text-red-300">
             {f}
@@ -145,6 +153,51 @@ export default function CdbForms({ caseId }: { caseId: string }) {
           ))}
         </div>
       </div>
+
+      {(() => {
+        const people = d.forms.flatMap((f) => f.persons.map((p) => ({ f, p })));
+        const need = d.forms.reduce((n, f) => n + REQUIRED[f.code] * f.persons.length + f.structure.length, 0);
+        const owners = people.filter(({ p }) => p.pct != null).sort((a, b) => (b.p.pct ?? 0) - (a.p.pct ?? 0));
+        return (
+          <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+            <div className="grid grid-cols-2 gap-2">
+              <Tile label="Forms to sign" value={d.forms.map((f) => f.code).join(" + ")} sub={d.forms.length > 1 ? "incl. structures in the chain" : d.forms[0]?.title.split(" — ")[1]} />
+              <Tile label="Persons identified" value={people.length} sub={`${people.filter(({ p }) => p.source).length} from the registers`} />
+              <Tile
+                label="Completeness"
+                tone={d.missing_total ? "warning" : "good"}
+                value={`${Math.round((100 * (need - d.missing_total)) / Math.max(1, need))}%`}
+                sub={d.missing_total ? `${d.missing_total} field(s) to complete` : "ready to sign"}
+                meter={{ value: need - d.missing_total, max: need, tone: d.missing_total ? "warning" : "good" }}
+              />
+              <Tile label="Flags on persons" tone={people.some(({ p }) => p.flags.length) ? "critical" : "good"} value={people.filter(({ p }) => p.flags.length).length} sub="sanctioned / PEP / in leaks" />
+            </div>
+            <ChartCard
+              title="Ownership of the persons declared"
+              sub="effective % through every layer · CDB 20 threshold at 25 %"
+              table={{ head: ["Person", "Form", "Effective %"], rows: owners.map(({ f, p }) => [`${p.last_name} ${p.first_name}`.trim(), f.code, `${p.pct?.toFixed(1)} %`]) }}
+            >
+              {owners.length ? (
+                <BarList
+                  max={100}
+                  marker={25}
+                  markerLabel="25 % — controlling person / beneficial owner threshold"
+                  rows={owners.map(({ f, p }) => ({
+                    key: `${f.id}-${p.key}`,
+                    label: `${p.first_name} ${p.last_name}`.trim(),
+                    sub: p.path.length > 2 ? p.path.join(" → ") : p.role_label,
+                    value: p.pct ?? 0,
+                    display: `${(p.pct ?? 0).toFixed(1)}%`,
+                    color: p.flags.length ? TONE.critical : TONE.accent,
+                  }))}
+                />
+              ) : (
+                <p className="text-xs text-slate-500">No shareholding in the registers: persons are retained by control or management.</p>
+              )}
+            </ChartCard>
+          </div>
+        );
+      })()}
 
       {d.forms.map((f) => (
         <section key={f.id} className="card p-4">
