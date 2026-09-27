@@ -263,9 +263,11 @@ class BaseConnector(ABC):
         params: dict[str, Any] | None = None,
         headers: dict[str, str] | None = None,
         auth: tuple[str, str] | None = None,
+        cache: bool = True,
     ) -> Any:
-        """GET with SQLite caching, so the same query never hits the API twice."""
-        return self._request("GET", url, params=params, headers=headers, auth=auth)
+        """GET with SQLite caching, so the same query never hits the API twice (cache=False for
+        ephemeral answers: session tokens, results still being prepared)."""
+        return self._request("GET", url, params=params, headers=headers, auth=auth, use_cache=cache)
 
     def http_get_text(
         self, url: str, params: dict[str, Any] | None = None, headers: dict[str, str] | None = None
@@ -280,10 +282,17 @@ class BaseConnector(ABC):
         form: dict[str, str] | None = None,
         params: dict[str, Any] | None = None,
         headers: dict[str, str] | None = None,
+        cache: bool = True,
     ) -> Any:
         """POST (JSON or form body) with the same caching and retry policy."""
         return self._request(
-            "POST", url, params=params, headers=headers, json_body=json_body, form=form
+            "POST",
+            url,
+            params=params,
+            headers=headers,
+            json_body=json_body,
+            form=form,
+            use_cache=cache,
         )
 
     def http_post_text(
@@ -304,6 +313,7 @@ class BaseConnector(ABC):
         form: dict[str, str] | None = None,
         content: str | None = None,
         as_text: bool = False,
+        use_cache: bool = True,
     ) -> Any:
         cache = get_cache()
         key_material = json.dumps(
@@ -311,7 +321,7 @@ class BaseConnector(ABC):
             default=str,
         )
         key = hashlib.sha256(key_material.encode()).hexdigest()
-        cached = cache.get(f"http:{self.name}", key)
+        cached = cache.get(f"http:{self.name}", key) if use_cache else None
         if cached is not None:
             return cached
         headers = {
@@ -381,5 +391,6 @@ class BaseConnector(ABC):
                 data = resp.json()
             except ValueError as exc:
                 raise ConnectorError(f"{self.label}: invalid JSON response") from exc
-        cache.set(f"http:{self.name}", key, data)
+        if use_cache:
+            cache.set(f"http:{self.name}", key, data)
         return data

@@ -4,9 +4,11 @@ and the identifiers they answer to. Answers mirror the real services (probed liv
 import json
 
 import httpx
+import pytest
 import respx
 
 from app.connectors import more_registries as mr
+from app.connectors.base import ConnectorError
 from app.identifiers import detect
 from app.models import CompanyStatus, Entity, EntityType, RelationType
 from app.settings import Settings
@@ -277,3 +279,29 @@ def test_connect_timeout_skips_the_source_for_the_rest_of_the_investigation():
     with pytest.raises(ConnectorError, match="skipped for a few minutes"):
         conn.search_company("Lukoil")
     assert route.call_count == 1  # the second lookup does not wait for another timeout
+
+
+@respx.mock
+def test_egrul_waits_for_the_asynchronous_search_result(monkeypatch):
+    monkeypatch.setattr(mr, "EGRUL_POLL_SECONDS", 0)
+    respx.post(f"{mr.EGRUL}/").mock(return_value=httpx.Response(200, json={"t": "T2"}))
+    row = {"c": 'ПАО "ГАЗПРОМ НЕФТЬ"', "k": "ul", "o": "1025501701686", "i": "5504036333"}
+    result = respx.get(f"{mr.EGRUL}/search-result/T2").mock(
+        side_effect=[
+            httpx.Response(200, json={"status": "wait"}),
+            httpx.Response(200, json={"rows": [row]}),
+        ]
+    )
+    found = mr.EgrulConnector(LIVE).search_company("Gazprom Neft")
+    assert result.call_count == 2 and found[0].registration_number == "1025501701686"
+
+
+@respx.mock
+def test_egrul_result_never_ready_is_reported(monkeypatch):
+    monkeypatch.setattr(mr, "EGRUL_POLL_SECONDS", 0)
+    respx.post(f"{mr.EGRUL}/").mock(return_value=httpx.Response(200, json={"t": "T3"}))
+    respx.get(f"{mr.EGRUL}/search-result/T3").mock(
+        return_value=httpx.Response(200, json={"status": "wait"})
+    )
+    with pytest.raises(ConnectorError, match="not ready"):
+        mr.EgrulConnector(LIVE).search_company("Gazprom Neft")

@@ -18,6 +18,7 @@ from __future__ import annotations
 import json
 import logging
 import re
+import time
 from datetime import date, datetime
 from typing import Any
 
@@ -191,6 +192,8 @@ class RpoConnector(BaseConnector):
 
 # ------------------------------------------------------------------ EGRUL (Russia)
 EGRUL = "https://egrul.nalog.ru"
+EGRUL_POLLS = 4  # the search result is prepared asynchronously
+EGRUL_POLL_SECONDS = 0.8
 _LAT_CYR = [
     ("shch", "щ"), ("sch", "щ"), ("zh", "ж"), ("kh", "х"), ("ts", "ц"), ("ch", "ч"),
     ("sh", "ш"), ("yu", "ю"), ("ya", "я"), ("yo", "ё"), ("ye", "е"), ("a", "а"), ("b", "б"),
@@ -244,14 +247,26 @@ class EgrulConnector(BaseConnector):
     timeout_seconds = 10.0
 
     def _search(self, query: str) -> list[dict[str, Any]]:
+        # The token and the result it points to expire: never cached.
         token = self.http_post_json(
-            f"{EGRUL}/", form={"query": query, "region": "", "PreventChromeAutocomplete": ""}
+            f"{EGRUL}/",
+            form={"query": query, "region": "", "PreventChromeAutocomplete": ""},
+            cache=False,
         )
         if not isinstance(token, dict) or not token.get("t"):
             if isinstance(token, dict) and token.get("captchaRequired"):
                 raise ConnectorError(f"{self.label}: captcha requested, try later")
             return []
-        data = self.http_get_json(f"{EGRUL}/search-result/{token['t']}")
+        # The result is prepared asynchronously: {"status": "wait"} until it is ready.
+        data: Any = None
+        for attempt in range(EGRUL_POLLS):
+            data = self.http_get_json(f"{EGRUL}/search-result/{token['t']}", cache=False)
+            if not (isinstance(data, dict) and data.get("status") == "wait"):
+                break
+            if attempt < EGRUL_POLLS - 1:
+                time.sleep(EGRUL_POLL_SECONDS)
+        else:
+            raise ConnectorError(f"{self.label}: search result not ready, try later")
         rows = (data or {}).get("rows") if isinstance(data, dict) else None
         # legal entities only: "fl" rows are individual entrepreneurs (private persons)
         return [r for r in rows or [] if isinstance(r, dict) and r.get("k") == "ul"]

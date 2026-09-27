@@ -51,9 +51,9 @@ class GdeltConnector(BaseConnector):
     document_types = {"person", "company"}
     documents_max_depth = 0
     max_retries = 0
-    timeout_seconds = (
-        4.0  # GDELT is often slow to refuse cloud clients: fail fast, use the fallback
-    )
+    # GDELT often takes several seconds to answer; there is no fallback source any more
+    # (Google News is a link-out), so a short timeout would silently drop the adverse media.
+    timeout_seconds = 15.0
 
     def get_documents(self, entity: Entity) -> list[Document]:
         if entity.type not in (EntityType.PERSON, EntityType.COMPANY) or len(entity.name) < 4:

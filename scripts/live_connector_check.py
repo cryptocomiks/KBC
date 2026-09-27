@@ -310,13 +310,10 @@ def check_open_watchlists() -> None:
     hits = conn.screen(person("Vladimir Putin", "1952-10-07"))
     for h in hits[:4]:
         print(f"      hit: {h.matched_name} | {h.dataset} | {h.score}")
+    # EU, UK and Swiss sanctions come from the authorities (official_sanctions_europe).
     expect(
-        "EU list: sanctioned reference person found",
-        any("EU" in h.dataset and h.score >= 85 for h in hits),
-    )
-    expect(
-        "UK list: sanctioned reference person found",
-        any("UK" in h.dataset and h.score >= 85 for h in hits),
+        "national sanctions list (Australia / Canada): reference person found",
+        any(("Australia" in h.dataset or "Canada" in h.dataset) and h.score >= 85 for h in hits),
     )
 
 
