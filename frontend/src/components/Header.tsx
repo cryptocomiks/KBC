@@ -1,6 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CheckCircle2, FolderOpen, Moon, Plug, Search, Sun, Trash2, XCircle } from "lucide-react";
-import { useState } from "react";
+import { FolderOpen, Moon, Plug, Search, Sun, Trash2 } from "lucide-react";
 import { api } from "../api";
 import { toast } from "../lib/toast";
 import Logo from "./Logo";
@@ -14,12 +13,13 @@ interface Props {
   onHome: () => void;
   onCases: () => void;
   casesActive: boolean;
+  onSources: () => void;
+  sourcesActive: boolean;
   onQuickOpen: () => void;
 }
 
-export default function Header({ meta, theme, onToggleTheme, onHome, onCases, casesActive, onQuickOpen }: Props) {
+export default function Header({ meta, theme, onToggleTheme, onHome, onCases, casesActive, onSources, sourcesActive, onQuickOpen }: Props) {
   const mac = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform);
-  const [open, setOpen] = useState(false);
   const qc = useQueryClient();
   const connectors = useQuery({ queryKey: ["connectors"], queryFn: api.connectors });
   const clear = useMutation({
@@ -49,31 +49,7 @@ export default function Header({ meta, theme, onToggleTheme, onHome, onCases, ca
         )}
         <nav className="ml-auto flex items-center gap-0.5">
           <NavLink active={casesActive} onClick={onCases} Icon={FolderOpen} label="Cases" tour="cases" />
-          <div className="relative">
-            <NavLink active={open} onClick={() => setOpen((o) => !o)} Icon={Plug} label="Sources" badge={`${enabled}/${connectors.data?.length ?? 0}`} />
-            {open && (
-              <div className="glass-panel absolute right-0 mt-3 rounded-2xl text-slate-800 dark:text-slate-100 max-h-[70vh] w-[min(420px,calc(100vw-2rem))] overflow-y-auto p-3 shadow-lg" onMouseLeave={() => setOpen(false)}>
-                <div className="label mb-2">Data sources (connectors)</div>
-                <ul className="space-y-2">
-                  {[...(connectors.data ?? [])].sort((a, b) => Number(b.enabled) - Number(a.enabled)).map((c) => (
-                    <li key={c.name} className="flex items-start gap-2 text-sm">
-                      {c.enabled ? (
-                        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-green-600" />
-                      ) : (
-                        <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
-                      )}
-                      <div>
-                        <div className="font-medium">{c.label}</div>
-                        <div className="text-xs text-slate-500">
-                          {c.kind} · {c.message}
-                        </div>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
+          <NavLink active={sourcesActive} onClick={onSources} Icon={Plug} label="Sources" badge={`${enabled}/${connectors.data?.length ?? 0}`} />
           <NavIcon
             title="Clear the local cache (API responses and investigations)"
             onClick={() => {
@@ -95,7 +71,7 @@ function NavLink({ active, onClick, Icon, label, badge, tour }: { active: boolea
     <button
       data-tour={tour}
       onClick={onClick}
-      aria-expanded={badge ? active : undefined}
+      aria-current={active ? "page" : undefined}
       className={`flex h-8 items-center gap-1.5 rounded-full px-3 transition-colors ${
         active ? "bg-black/[0.06] text-[#1d1d1f] dark:bg-white/[0.12] dark:text-white" : "text-[#1d1d1f]/80 hover:text-[#1d1d1f] dark:text-[#f5f5f7]/80 dark:hover:text-white"
       }`}

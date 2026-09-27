@@ -35,7 +35,10 @@ from app.connectors.gdelt import API as GDELT_API  # noqa: E402
 from app.connectors.gdelt import GdeltConnector  # noqa: E402
 from app.connectors.gleif import GleifConnector  # noqa: E402
 from app.connectors.icij import RECONCILE, IcijReconcileConnector  # noqa: E402
-from app.connectors.official_sanctions import OfficialSanctionsConnector  # noqa: E402
+from app.connectors.official_sanctions import (  # noqa: E402
+    EuropeanSanctionsConnector,
+    OfficialSanctionsConnector,
+)
 from app.connectors.open_datasets import OpenDatasetsConnector  # noqa: E402
 from app.connectors.opencorporates import OpenCorporatesConnector  # noqa: E402
 from app.connectors.opensanctions import OpenSanctionsConnector  # noqa: E402
@@ -196,6 +199,22 @@ def check_bodacc() -> None:
         any(d.kind == "accounts" for d in docs),
         ", ".join(sorted({d.kind for d in docs})),
     )
+
+
+def check_european_sanctions() -> None:
+    conn = EuropeanSanctionsConnector(settings)
+    conn.wait_seconds = 150  # a cold download of the three lists (~90 MB)
+    hits = conn.screen(person("Vladimir Putin", "1952-10-07"))
+    for h in hits[:4]:
+        print(f"      hit: {h.matched_name} | {h.dataset} | {h.score} | {h.details.get('program')}")
+    for label, key in (("EU", "EU consolidated"), ("UK", "UK Sanctions List"), ("Swiss", "Swiss sanctions")):
+        expect(
+            f"{label} list: sanctioned reference person found",
+            any(h.score >= 85 and h.dataset.startswith(key) for h in hits),
+        )
+    from app.connectors.official_sanctions import _INDEX_EUROPE
+
+    expect("European lists: no download error", not _INDEX_EUROPE.errors, "; ".join(_INDEX_EUROPE.errors))
 
 
 def check_official_sanctions() -> None:
@@ -985,6 +1004,7 @@ guarded("ICIJ Offshore Leaks reconcile API", check_icij)
 guarded("GLEIF (LEI + parent companies)", check_gleif)
 guarded("BODACC legal announcements", check_bodacc)
 guarded("Official sanctions lists (OFAC SDN + UN)", check_official_sanctions)
+guarded("Official sanctions lists (EU, UK, Switzerland)", check_european_sanctions)
 guarded("Crypto: OFAC addresses + BTC/ETH/TRON explorers", check_crypto)
 guarded("Open watchlists (EU / UK / CH / World Bank / Interpol)", check_open_watchlists)
 guarded("Wikidata (PEP, relatives, contacts)", check_wikidata)

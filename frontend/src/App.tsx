@@ -1,4 +1,5 @@
 import Toaster from "./components/Toaster";
+import SourcesPage from "./components/SourcesPage";
 import ValidationPage from "./components/ValidationPage";
 import { toast } from "./lib/toast";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -28,7 +29,7 @@ export default function App() {
     route.name === "search" ? { q: route.q, type: route.type, depth: route.depth, maxNodes: route.maxNodes } : null;
   const target: InvestigationParams | null =
     route.name === "investigate" ? { record_ids: route.ids, depth: route.depth, max_nodes: route.maxNodes } : null;
-  const page = route.name === "cases" || route.name === "case" ? "cases" : route.name === "validation" ? "validation" : "main";
+  const page = route.name === "cases" || route.name === "case" ? "cases" : route.name === "validation" ? "validation" : route.name === "sources" ? "sources" : "main";
   const caseId = route.name === "case" ? route.id : null;
   const [saveError, setSaveError] = useState<string | null>(null);
   const [palette, setPalette] = useState(false);
@@ -133,6 +134,8 @@ export default function App() {
         onHome={home}
         onCases={() => navigate({ name: "cases" })}
         casesActive={page === "cases"}
+        onSources={() => navigate({ name: "sources" })}
+        sourcesActive={page === "sources"}
         onQuickOpen={() => setPalette(true)}
       />
       {palette && (
@@ -150,6 +153,7 @@ export default function App() {
       <main className="mx-auto w-full max-w-[1600px] flex-1 space-y-5 px-4 py-5">
         {page === "cases" && !caseId && <Dashboard status={casesStatus} onOpenCase={openCase} />}
         {page === "validation" && <ValidationPage />}
+        {page === "sources" && <SourcesPage meta={meta.data} />}
         {route.name === "case" && (
           <CaseScreen
             key={route.id}

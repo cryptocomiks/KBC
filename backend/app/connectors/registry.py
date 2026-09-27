@@ -54,7 +54,10 @@ def _connector_classes() -> list[type[BaseConnector]]:
         RecapDocketsConnector,
         RpoConnector,
     )
-    from app.connectors.official_sanctions import OfficialSanctionsConnector
+    from app.connectors.official_sanctions import (
+        EuropeanSanctionsConnector,
+        OfficialSanctionsConnector,
+    )
     from app.connectors.open_datasets import OpenDatasetsConnector, OpenDatasetsExtendedConnector
     from app.connectors.opencorporates import OpenCorporatesConnector
     from app.connectors.opensanctions import OpenSanctionsConnector
@@ -106,6 +109,7 @@ def _connector_classes() -> list[type[BaseConnector]]:
         OpenCorporatesConnector,
         OpenSanctionsConnector,
         OfficialSanctionsConnector,
+        EuropeanSanctionsConnector,
         OpenDatasetsConnector,
         OpenDatasetsExtendedConnector,
         WikidataConnector,
@@ -167,9 +171,13 @@ class ConnectorRegistry:
         return conn if conn and conn.enabled else None
 
     def statuses(self) -> list[dict]:
+        from app.licences import CATEGORY_LABELS, licensed_names
+
+        licensed = licensed_names(self.settings.licensed_sources)
         out = []
         for c in self.connectors.values():
             enabled, message = c.status()
+            category, licence, note = c.licence
             out.append(
                 {
                     "name": c.name,
@@ -180,6 +188,13 @@ class ConnectorRegistry:
                     "demo": c.is_demo,
                     "homepage": c.homepage,
                     "jurisdictions": sorted(c.jurisdictions) if c.jurisdictions else None,
+                    "licence": {
+                        "category": category,
+                        "label": CATEGORY_LABELS[category],
+                        "name": licence,
+                        "note": note,
+                        "commercial_licence_held": c.name in licensed,
+                    },
                 }
             )
         return out

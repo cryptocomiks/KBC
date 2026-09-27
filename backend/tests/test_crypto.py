@@ -186,6 +186,8 @@ def test_ofac_crypto_addresses_are_indexed_and_linked(monkeypatch):
     respx.get(osl.OFAC_SDN).mock(return_value=httpx.Response(200, text=SDN))
     respx.get(osl.OFAC_ALT).mock(return_value=httpx.Response(200, text=""))
     respx.get(osl.UN_XML).mock(return_value=httpx.Response(200, text="<CONSOLIDATED_LIST/>"))
+    for url in (osl.EU_XML, osl.UK_XML, osl.CH_XML):
+        respx.get(url).mock(return_value=httpx.Response(404))
     respx.get(url__startswith="https://data.opensanctions.org/").mock(
         return_value=httpx.Response(404)
     )

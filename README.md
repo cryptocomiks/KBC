@@ -355,6 +355,7 @@ Screening hits below 70% are displayed as *"weak — likely false positive"* and
 | File | Purpose |
 |---|---|
 | `.env` (copy `.env.example`) | `DEMO_MODE`, API keys, cache path/TTL. `LIVE_SOURCES`. A missing key simply disables its connector, with a clear message in the UI (*"Disabled: PAPPERS_API_KEY is not set"*). Empty values are treated as unset. |
+| `COMMERCIAL_MODE`, `LICENSED_SOURCES` | Commercial use: `COMMERCIAL_MODE=true` switches off the sources whose licence forbids commercial use (OpenSanctions bulk watchlists, CC BY-NC; Guardian developer key), except those listed in `LICENSED_SOURCES`. Sanctions screening then relies on the official lists (OFAC, UN, EU, UK, Switzerland), downloaded from the authorities. The **Sources** page (`#/sources`) shows every source's status and reuse terms (`app/licences.py`). |
 | `config/risk.yaml` | Factor weights, match thresholds, proximity multipliers, level boundaries. |
 | `config/jurisdictions.yaml` | FATF black and grey lists, EU tax blacklist and offshore centres (ISO-2). **Review them against the latest FATF/EU publications before real use.** The file shows its `as_of` date. |
 
@@ -379,6 +380,7 @@ a *Demo · fictitious* or *Real public data* badge.
 | **Country risk** | Basel AML Index (Basel Institute on Governance), Corruption Perceptions Index (Transparency International, via Our World in Data), World Bank WGI control of corruption | none, refreshed monthly by the *Country risk data* workflow | — |
 | **BODACC** (DILA) | French legal announcements: registrations, changes, **filed accounts**, **insolvency proceedings**, deregistrations. Each notice is a linked document | none, open data | — |
 | **Official sanctions lists** | **OFAC SDN** (US Treasury) and **UN Security Council** consolidated list, downloaded from the issuers and indexed in memory | none | — |
+| **Official sanctions lists — Europe** | **EU** consolidated financial sanctions (European Commission), **UK Sanctions List** (FCDO) and **Swiss sanctions list** (SECO, de-listed targets skipped), downloaded from the authorities in the background (~90 MB, refreshed every 12 h); freely reusable, so they stay on in commercial mode | none | — |
 | **Open watchlists** (32 lists) | Sanctions: **EU**, **UK**, **Swiss (SECO)**, **Canada**, **Australia**, **Japan**, **Belgium**, **New Zealand**, Latvia Magnitsky. Debarments: **World Bank**, **African / Asian / Inter-American development banks**, **EBRD**, **EU EDES**. Financial regulators: **Luxembourg CSSF** sanctions, **FINMA** rulings and warning list, **AMF** sanctions and blacklist, **ESMA**, US SEC PAUSE, Norway NBIM exclusions. Public officials: **French HATVP declarations**. Law enforcement: **Interpol** red notices, Europol, UK NCA, FBI, BKA. Investigative lists: **ACF War Enablers**, **Ukraine War & Sanctions (NAZK)**, Navalny 35, Russian oligarchs, UK disqualified directors. From the normalised OpenSanctions bulk exports (CC BY-NC), downloaded in parallel | none | `OPEN_DATASETS` |
 | **Companies House, public website** | UK register **without a key**: companies, officers, every appointment of a person, persons with significant control, and the **Register of Overseas Entities** (foreign companies owning UK land) with their registrable beneficial owners. Switches off when `COMPANIES_HOUSE_API_KEY` is set | none | — |
 | **European registers** | **Norway** (Brønnøysund: companies and roles with dates of birth), **Czech Republic** (ARES: statutory bodies, supervisory boards, shareholders, with history), **Belgium** (CBE/KBO: directors), **Finland** (PRH), **Estonia** (e-Business Register) | none | — |
@@ -444,6 +446,9 @@ the unit tests never call external APIs. The live behaviour is checked after eac
   investigation. No person address nodes are created, only company registered offices.
 - **Explainability.** Every score can be broken down into factors, weights, distances and evidence.
 - **Demo data is fictitious** and watermarked as such in the PDF.
+- **Licences are explicit.** Each source is classed as open licence, publisher's terms, subscription
+  or non-commercial, with its licence and caveats, on the Sources page. Commercial mode switches off
+  the non-commercial ones. This table summarises the publishers' terms; it is not legal advice.
 
 ## Known limitations
 

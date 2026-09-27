@@ -6,6 +6,8 @@ import { useCallback, useEffect, useState } from "react";
  *  #/search?q=…&type=…&depth=…&n=…     search results
  *  #/investigate?ids=a,b&depth=…&n=…   investigation
  *  #/cases                             cases dashboard
+ *  #/sources                           data sources and their reuse terms
+ *  #/validation                        matching validation report
  *  #/cases/<id>[/<tab>]                a case (tab: kyc | alerts | cdb | sow | review | investigation | memo | history)
  */
 export type SearchType = "any" | "person" | "company";
@@ -16,6 +18,7 @@ export type Route =
   | { name: "investigate"; ids: string[]; depth: number; maxNodes: number }
   | { name: "cases" }
   | { name: "validation" }
+  | { name: "sources" }
   | { name: "case"; id: string; tab: CaseTab };
 
 const TABS: CaseTab[] = ["kyc", "alerts", "cdb", "sow", "checks", "review", "investigation", "memo", "history"];
@@ -44,6 +47,7 @@ export function parseRoute(hash: string): Route {
     if (ids.length) return { name: "investigate", ids, depth: int(qs.get("depth"), 2, 1, 3), maxNodes: int(qs.get("n"), 60, 5, 250) };
   }
   if (parts[0] === "validation") return { name: "validation" };
+  if (parts[0] === "sources") return { name: "sources" };
   if (parts[0] === "cases") {
     if (parts[1]) return { name: "case", id: parts[1], tab: TABS.includes(parts[2] as CaseTab) ? (parts[2] as CaseTab) : "kyc" };
     return { name: "cases" };
@@ -61,6 +65,8 @@ export function formatRoute(r: Route): string {
       return "#/cases";
     case "validation":
       return "#/validation";
+    case "sources":
+      return "#/sources";
     case "case":
       return `#/cases/${encodeURIComponent(r.id)}${r.tab === "kyc" ? "" : `/${r.tab}`}`;
     default:

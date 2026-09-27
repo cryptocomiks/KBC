@@ -141,7 +141,26 @@ class BaseConnector(ABC):
             return False, "Disabled (LIVE_SOURCES=false)"
         if self.key_setting and not self.api_key:
             return False, f"Disabled: {self.key_setting.upper()} is not set"
+        if self.blocked_by_licence:
+            return False, "Disabled in commercial mode: non-commercial licence (add it to LICENSED_SOURCES once licensed)"
         return True, "Enabled" + ("" if self.key_setting else " (public API, no key required)")
+
+    @property
+    def licence(self) -> tuple[str, str, str]:
+        """(category, licence, note) — see app.licences."""
+        from app.licences import licence_of
+
+        return licence_of(self.name, self.is_demo)
+
+    @property
+    def blocked_by_licence(self) -> bool:
+        from app.licences import licensed_names
+
+        return (
+            self.settings.commercial_mode
+            and self.licence[0] == "non_commercial"
+            and self.name not in licensed_names(self.settings.licensed_sources)
+        )
 
     @property
     def enabled(self) -> bool:

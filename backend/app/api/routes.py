@@ -41,6 +41,7 @@ def meta() -> dict:
     return {
         "version": __version__,
         "demo_mode": s.demo_mode,
+        "commercial_mode": s.commercial_mode,
         "disclaimer": DISCLAIMER,
         "max_depth": s.max_depth,
         "max_nodes_limit": s.max_nodes_limit,

@@ -191,6 +191,8 @@ def test_official_sanctions_lists_download_index_and_match(monkeypatch):
     respx.get(osl.OFAC_SDN).mock(return_value=httpx.Response(200, text=SDN))
     respx.get(osl.OFAC_ALT).mock(return_value=httpx.Response(200, text=ALT))
     respx.get(osl.UN_XML).mock(return_value=httpx.Response(200, text=UN))
+    for url in (osl.EU_XML, osl.UK_XML, osl.CH_XML):
+        respx.get(url).mock(return_value=httpx.Response(404))
     respx.get(url__startswith="https://data.opensanctions.org/").mock(
         return_value=httpx.Response(404)
     )
@@ -221,3 +223,91 @@ def test_demo_documents_and_insolvency_flag(registry):
         "insolvency_proceedings" in factors
         and "liquidation" in factors["insolvency_proceedings"].evidence[0]
     )
+
+
+EU_FSF = """<?xml version="1.0" encoding="UTF-8"?>
+<export xmlns="http://eu.europa.ec/fpi/fsd/export">
+<sanctionEntity euReferenceNumber="EU.27.28" logicalId="13">
+  <remark>UNSC RESOLUTION 1483</remark>
+  <regulation programme="IRQ" logicalId="348"><publicationUrl>http://eur-lex.europa.eu/act.pdf</publicationUrl></regulation>
+  <subjectType code="person" classificationCode="P"/>
+  <nameAlias wholeName="Saddam Hussein Al-Tikriti" strong="true"/>
+  <nameAlias wholeName="Abu Ali" strong="true"/>
+  <citizenship countryIso2Code="IQ"/>
+  <birthdate birthdate="1937-04-28" year="1937"/>
+</sanctionEntity>
+<sanctionEntity euReferenceNumber="EU.1.1" logicalId="99">
+  <regulation programme="RUS"/>
+  <subjectType code="enterprise" classificationCode="E"/>
+  <nameAlias wholeName="Example Defence Plant JSC"/>
+</sanctionEntity>
+</export>"""
+
+UK_LIST = """<?xml version="1.0" encoding="utf-8"?>
+<Designations><DateGenerated>21/09/2026</DateGenerated>
+<Designation><UniqueID>AFG0006</UniqueID><DateDesignated>25/01/2001</DateDesignated>
+  <Names><Name><Name1>MOHAMMAD</Name1><Name2>HASSAN</Name2><Name6>AKHUND</Name6><NameType>Primary Name</NameType></Name>
+  <Name><Name6>Mullah Mohammad Hassan</Name6><NameType>Alias</NameType></Name></Names>
+  <RegimeName>The Afghanistan (Sanctions) (EU Exit) Regulations 2020</RegimeName>
+  <IndividualEntityShip>Individual</IndividualEntityShip><SanctionsImposed>Asset freeze|Travel Ban</SanctionsImposed>
+  <IndividualDetails><Individual><DOBs><DOB>dd/mm/1945</DOB></DOBs>
+  <Nationalities><Nationality>Afghanistan</Nationality></Nationalities></Individual></IndividualDetails>
+</Designation>
+<Designation><UniqueID>RUS9999</UniqueID><Names><Name><Name6>SOME TANKER</Name6><NameType>Primary Name</NameType></Name></Names>
+  <IndividualEntityShip>Ship</IndividualEntityShip></Designation>
+</Designations>"""
+
+CH_LIST = """<?xml version="1.0" encoding="UTF-8"?><swiss-sanctions-list list-type="whole-list">
+<sanctions-program ssid="20"><program-key lang="eng">Belarus</program-key>
+  <sanctions-set ssid="4387" lang="eng">annexe 13</sanctions-set></sanctions-program>
+<target ssid="100"><sanctions-set-id>4387</sanctions-set-id>
+  <modification modification-type="listed" effective-date="2022-03-16"/>
+  <individual><identity ssid="1" main="true">
+    <name name-type="primary-name"><name-part order="1" name-part-type="family-name"><value>Lukashenka</value>
+      <spelling-variant script="LATN">Lukashenko</spelling-variant><spelling-variant script="CYRL">ЛУКАШЕНКО</spelling-variant></name-part>
+    <name-part order="2" name-part-type="given-name"><value>Aliaksandr</value>
+      <spelling-variant script="LATN">Alexander</spelling-variant></name-part></name>
+    <day-month-year day="30" month="8" year="1954"/>
+    <nationality ssid="9"><country iso-code="BY">Belarus</country></nationality></identity>
+  <justification>President.</justification></individual>
+</target>
+<target ssid="5144"><sanctions-set-id>4387</sanctions-set-id>
+  <individual><identity ssid="2" main="true"><name name-type="primary-name">
+    <name-part order="1"><value>Lukashenka</value></name-part><name-part order="2"><value>Dzmitry</value></name-part></name></identity></individual>
+  <modification modification-type="de-listed" effective-date="2016-03-01"/>
+  <modification modification-type="amended" effective-date="2015-11-18"><added><individual/></added></modification>
+</target>
+</swiss-sanctions-list>"""
+
+
+@respx.mock
+def test_official_eu_uk_swiss_lists(monkeypatch):
+    monkeypatch.setattr(osl, "_INDEX", osl._Index())
+    for url in (osl.OFAC_SDN, osl.OFAC_ALT, osl.UN_XML):
+        respx.get(url).mock(return_value=httpx.Response(404))
+    respx.get(url__startswith="https://data.opensanctions.org/").mock(
+        return_value=httpx.Response(404)
+    )
+    respx.get(osl.EU_XML).mock(return_value=httpx.Response(200, text=EU_FSF))
+    respx.get(osl.UK_XML).mock(return_value=httpx.Response(200, text=UK_LIST))
+    respx.get(osl.CH_XML).mock(return_value=httpx.Response(200, text=CH_LIST))
+    monkeypatch.setattr(osl, "_INDEX_EUROPE", osl._Index())
+    conn = osl.EuropeanSanctionsConnector(LIVE)
+
+    [eu] = conn.screen(Entity(id="s", type=EntityType.PERSON, name="Saddam Hussein Al Tikriti"))
+    assert eu.dataset.startswith("EU consolidated") and eu.details["program"] == "IRQ"
+    assert eu.details["birth_date"] == "1937-04-28" and eu.details["nationalities"] == ["IQ"]
+    assert eu.provenance.url == "http://eur-lex.europa.eu/act.pdf"
+    assert conn.screen(company("Example Defence Plant"))[0].details["reference"] == "EU.1.1"
+
+    [uk] = conn.screen(Entity(id="a", type=EntityType.PERSON, name="Mohammad Hassan Akhund"))
+    assert uk.dataset == "UK Sanctions List (FCDO)" and uk.details["birth_date"] == "1945"
+    assert uk.details["nationalities"] == ["AF"] and uk.details["sanctions"].startswith("Asset")
+    assert conn.screen(company("Some Tanker")) == []  # ships are not indexed
+
+    hits = conn.screen(Entity(id="l", type=EntityType.PERSON, name="Alexander Lukashenko"))
+    assert [h.details["reference"] for h in hits] == ["100"]  # the de-listed target is skipped
+    assert hits[0].details["program"] == "Belarus" and hits[0].details["birth_date"] == "1954-08-30"
+    assert hits[0].matched_name == "Aliaksandr Lukashenka"
+    assert hits[0].details["nationalities"] == ["BY"]
+    assert osl._uk_dob("23/03/1980") == "1980-03-23" and osl._uk_dob("dd/03/1980") == "1980-03"

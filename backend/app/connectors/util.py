@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import json
 import re
 from datetime import date
+from functools import lru_cache
 
 from unidecode import unidecode
 
@@ -55,6 +57,7 @@ _NATIONALITIES = {
     "russe": "RU",
     "russian": "RU",
     "russia": "RU",
+    "russian federation": "RU",
     "ukrainienne": "UA",
     "ukrainian": "UA",
     "chinoise": "CN",
@@ -123,6 +126,56 @@ _NATIONALITIES = {
 }
 
 
+# Common short forms of country names used by sanctions lists
+_COUNTRY_ALIASES = {
+    "russia": "RU",
+    "russian federation": "RU",
+    "iran": "IR",
+    "syria": "SY",
+    "north korea": "KP",
+    "democratic people's republic of korea": "KP",
+    "south korea": "KR",
+    "republic of korea": "KR",
+    "united kingdom": "GB",
+    "uk": "GB",
+    "united states": "US",
+    "usa": "US",
+    "venezuela": "VE",
+    "bolivia": "BO",
+    "tanzania": "TZ",
+    "vietnam": "VN",
+    "viet nam": "VN",
+    "laos": "LA",
+    "moldova": "MD",
+    "czech republic": "CZ",
+    "palestine": "PS",
+    "turkey": "TR",
+    "turkiye": "TR",
+    "congo, democratic republic": "CD",
+    "democratic republic of the congo": "CD",
+    "ivory coast": "CI",
+    "cote d'ivoire": "CI",
+    "burma": "MM",
+}
+
+
+@lru_cache(maxsize=1)
+def _country_names() -> dict[str, str]:
+    """Country name -> ISO-2, from the country risk table (config/country_risk.json)."""
+    from app.settings import CONFIG_DIR
+
+    try:
+        data = json.loads((CONFIG_DIR / "country_risk.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return dict(_COUNTRY_ALIASES)
+    out = {
+        unidecode(c.get("name") or "").strip().lower(): iso
+        for iso, c in data.get("countries", {}).items()
+        if c.get("name")
+    }
+    return {**out, **_COUNTRY_ALIASES}
+
+
 def nationality_iso(value: str | None) -> list[str]:
     """'Française' / 'British' / 'FR' -> ['FR']; unknown values are dropped."""
     if not value:
@@ -136,6 +189,8 @@ def nationality_iso(value: str | None) -> list[str]:
             out.append(key.upper())
         elif key in _NATIONALITIES:
             out.append(_NATIONALITIES[key])
+        elif key in _country_names():
+            out.append(_country_names()[key])
     return sorted(set(out))
 
 

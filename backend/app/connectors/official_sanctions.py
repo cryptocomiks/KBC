@@ -457,12 +457,36 @@ def _load_uk(index: _Index, timeout: float) -> None:
         raise ValueError("UK list downloaded but empty")
 
 
-def _ch_name(name: ET.Element) -> str:
+_CH_PART_RANK = {"given-name": 0, "further-given-name": 1, "father-name": 2, "family-name": 4}
+
+
+def _ch_names(name: ET.Element) -> list[str]:
+    """Given names first, family name last; a second form with the Latin spelling variants
+    ('Lukashenka Aliaksandr' -> 'Aliaksandr Lukashenka', 'Alexander Lukashenko')."""
     parts = sorted(
-        (int(p.get("order") or 0), (p.findtext("value") or "").strip())
-        for p in name.findall("name-part")
+        name.findall("name-part"),
+        key=lambda p: (
+            _CH_PART_RANK.get(p.get("name-part-type") or "", 3),
+            int(p.get("order") or 0),
+        ),
     )
-    return " ".join(v for _, v in parts if v)
+    main = [(p.findtext("value") or "").strip() for p in parts]
+    variant = [
+        next(
+            (
+                (v.text or "").strip()
+                for v in p.findall("spelling-variant")
+                if v.get("script") == "LATN" and (v.text or "").strip()
+            ),
+            m,
+        )
+        for p, m in zip(parts, main, strict=True)
+    ]
+    out = [" ".join(v for v in main if v)]
+    alt = " ".join(v for v in variant if v)
+    if alt and alt != out[0]:
+        out.append(alt)
+    return [n for n in out if n]
 
 
 def _load_ch(index: _Index, timeout: float) -> None:
@@ -500,9 +524,11 @@ def _load_ch(index: _Index, timeout: float) -> None:
         nats: list[str] = []
         for identity in subject.findall("identity"):
             for name in identity.findall("name"):
-                n = _ch_name(name)
-                if n and n not in names:
-                    if name.get("name-type") == "primary-name" and identity.get("main") == "true":
+                primary = name.get("name-type") == "primary-name" and identity.get("main") == "true"
+                for i, n in enumerate(_ch_names(name)):
+                    if n in names:
+                        continue
+                    if primary and i == 0:
                         names.insert(0, n)
                     else:
                         names.append(n)
@@ -516,11 +542,15 @@ def _load_ch(index: _Index, timeout: float) -> None:
                     )
             for nat in identity.findall("nationality"):
                 iso = (nat.get("iso-code") or "").strip()
-                if not iso:
-                    c = nat.find("country")
-                    iso = (c.get("iso-code") or "").strip() if c is not None else ""
-                if len(iso) == 2 and iso.upper() not in nats:
-                    nats.append(iso.upper())
+                c = nat.find("country")
+                if not iso and c is not None:
+                    iso = (c.get("iso-code") or "").strip()
+                found = (
+                    [iso.upper()]
+                    if len(iso) == 2
+                    else nationality_iso(c.text if c is not None else nat.text)
+                )
+                nats.extend(x for x in found if x not in nats)
         ssid = el.get("ssid") or ""
         if names:
             index.add(
@@ -535,7 +565,7 @@ def _load_ch(index: _Index, timeout: float) -> None:
                     ),
                     dataset="Swiss sanctions list (SECO)",
                     url=CH_UI,
-                    program=programs.get(el.get("sanctions-set-id") or "") or None,
+                    program=programs.get((el.findtext("sanctions-set-id") or "").strip()) or None,
                     details={
                         "reference": ssid or None,
                         "remarks": (subject.findtext("justification") or "").strip()[:300] or None,
@@ -602,39 +632,45 @@ def _load_il_crypto(index: _Index, timeout: float) -> None:
 
 class OfficialSanctionsConnector(BaseConnector):
     name = "official_sanctions"
-    label = (
-        "Official sanctions lists — OFAC SDN (US), UN Security Council, EU, UK (FCDO), "
-        "Switzerland (SECO), crypto wallets"
-    )
+    label = "Official sanctions lists — OFAC SDN (US), UN Security Council, crypto wallets"
     kind = "screening"
     homepage = "https://ofac.treasury.gov"
 
+    @property
+    def _state(self) -> _Index:
+        return _INDEX
+
+    def _loaders(self) -> list:
+        loaders = [_load_ofac, _load_un]
+        # The crypto address lists come from OpenSanctions exports (CC BY-NC).
+        if self.osn_allowed:
+            loaders.append(_load_il_crypto)
+        return loaders
+
+    def _load_all(self, timeout: float) -> _Index:
+        fresh = _Index()
+        for loader in self._loaders():
+            try:
+                loader(fresh, timeout)
+            except (httpx.HTTPError, ET.ParseError, ValueError) as exc:
+                fresh.errors.append(f"{loader.__name__[6:].upper()} list unavailable ({exc})")
+        return fresh
+
     def _index(self) -> _Index:
-        with _INDEX.lock:
-            if not _INDEX.entries or time.time() - _INDEX.loaded_at > REFRESH_SECONDS:
-                fresh = _Index()
-                timeout = max(self.settings.http_timeout_seconds, 30.0)
-                loaders = [_load_ofac, _load_un, _load_eu, _load_uk, _load_ch]
-                # The crypto address lists come from OpenSanctions exports (CC BY-NC).
-                if self.osn_allowed:
-                    loaders.append(_load_il_crypto)
-                for loader in loaders:
-                    try:
-                        loader(fresh, timeout)
-                    except (httpx.HTTPError, ET.ParseError, ValueError) as exc:
-                        fresh.errors.append(
-                            f"{loader.__name__[6:].upper()} list unavailable ({exc})"
-                        )
+        state = self._state
+        with state.lock:
+            if not state.entries or time.time() - state.loaded_at > REFRESH_SECONDS:
+                fresh = self._load_all(max(self.settings.http_timeout_seconds, 30.0))
                 if not fresh.entries:
                     raise ConnectorError(f"{self.label}: " + "; ".join(fresh.errors))
-                _INDEX.entries, _INDEX.by_key, _INDEX.errors = (
+                state.entries, state.by_key, state.errors = (
                     fresh.entries,
                     fresh.by_key,
                     fresh.errors,
                 )
-                _INDEX.wallets = fresh.wallets
-                _INDEX.loaded_at = time.time()
-            return _INDEX
+                state.wallets = fresh.wallets
+                state.loaded_at = time.time()
+            return state
 
     @property
     def osn_allowed(self) -> bool:
@@ -646,7 +682,7 @@ class OfficialSanctionsConnector(BaseConnector):
         )
 
     def prefetch(self) -> None:
-        if not _INDEX.entries:
+        if not self._state.entries:
             threading.Thread(target=self._safe_index, daemon=True).start()
 
     def _safe_index(self) -> None:
@@ -763,3 +799,79 @@ class OfficialSanctionsConnector(BaseConnector):
     def screen_many(self, entities: list[Entity]) -> list[ScreeningHit]:
         # The list is in memory: one pass is cheap, and it avoids parallel downloads.
         return [h for e in entities for h in self.screen(e)]
+
+
+_INDEX_EUROPE = _Index()
+
+
+class EuropeanSanctionsConnector(OfficialSanctionsConnector):
+    """EU, UK and Swiss sanctions lists, from the issuing authorities (~90 MB in all). They
+    download in parallel, in the background: until they are ready on a cold server, the
+    screening waits a little, then says so instead of blocking the OFAC / UN screening."""
+
+    name = "official_sanctions_europe"
+    label = "Official sanctions lists — EU (European Commission), UK (FCDO), Switzerland (SECO)"
+    homepage = EU_UI
+    #: seconds a screening waits for the lists on a cold server before reporting them as loading
+    wait_seconds = 30.0
+
+    @property
+    def _state(self) -> _Index:
+        return _INDEX_EUROPE
+
+    def _loaders(self) -> list:
+        return [_load_eu, _load_uk, _load_ch]
+
+    def _load_all(self, timeout: float) -> _Index:
+        from concurrent.futures import ThreadPoolExecutor
+
+        def run(loader) -> _Index | str:
+            part = _Index()
+            try:
+                loader(part, timeout)
+            except (httpx.HTTPError, ET.ParseError, ValueError) as exc:
+                return f"{loader.__name__[6:].upper()} list unavailable ({exc})"
+            return part
+
+        fresh = _Index()
+        with ThreadPoolExecutor(max_workers=3) as pool:
+            for result in pool.map(run, self._loaders()):
+                if isinstance(result, str):
+                    fresh.errors.append(result)
+                    continue
+                for entry in result.entries:
+                    fresh.add(entry)
+        return fresh
+
+    def prefetch(self) -> None:
+        state = self._state
+        if not state.entries and not getattr(state, "loading", False):
+            state.loading = True  # type: ignore[attr-defined]
+
+            def run() -> None:
+                try:
+                    self._safe_index()
+                finally:
+                    state.loading = False  # type: ignore[attr-defined]
+
+            threading.Thread(target=run, daemon=True).start()
+
+    def screen(self, entity: Entity) -> list[ScreeningHit]:
+        if entity.type not in (EntityType.PERSON, EntityType.COMPANY):
+            return []
+        state = self._state
+        if not state.entries:
+            self.prefetch()
+            deadline = time.time() + self.wait_seconds
+            while not state.entries and getattr(state, "loading", False) and time.time() < deadline:
+                time.sleep(0.5)
+            if not state.entries and getattr(state, "loading", False):
+                raise ConnectorError(
+                    f"{self.label}: still loading on this server — included from the next check"
+                )
+        return super().screen(entity)
+
+    def get_wallet_links(
+        self, entity: Entity, include_transfers: bool = True
+    ) -> list[LinkedEntity]:
+        return []

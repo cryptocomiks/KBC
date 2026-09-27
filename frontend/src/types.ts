@@ -216,11 +216,19 @@ export interface ConnectorStatus {
   demo: boolean;
   homepage: string | null;
   jurisdictions: string[] | null;
+  licence: {
+    category: "open" | "terms" | "subscription" | "non_commercial" | "demo";
+    label: string;
+    name: string;
+    note: string;
+    commercial_licence_held: boolean;
+  };
 }
 
 export interface Meta {
   version: string;
   demo_mode: boolean;
+  commercial_mode?: boolean;
   disclaimer: string;
   max_depth: number;
   max_nodes_limit: number;

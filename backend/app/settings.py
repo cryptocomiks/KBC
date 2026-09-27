@@ -51,6 +51,11 @@ class Settings(BaseSettings):
     app_password: str = ""
     # Secret for the monitoring job (GitHub Actions / Vercel Cron) that refreshes cases.
     cron_secret: str = ""
+    # Commercial use: switches off the sources whose licence forbids it (CC BY-NC watchlists,
+    # developer keys), except those the firm holds a commercial licence for (LICENSED_SOURCES,
+    # connector names, comma-separated). See app/licences.py.
+    commercial_mode: bool = False
+    licensed_sources: str = ""
 
     pappers_api_key: str = ""
     opencorporates_api_token: str = ""
@@ -59,9 +64,11 @@ class Settings(BaseSettings):
     opensanctions_api_key: str = ""
     # The Guardian Open Platform (free developer key): second adverse-media source
     guardian_api_key: str = ""
-    # Open watchlists downloaded as bulk files (OpenSanctions dataset names, comma-separated)
+    # Open watchlists downloaded as bulk files (OpenSanctions dataset names, comma-separated).
+    # The EU, UK and Swiss sanctions lists come from the authorities themselves
+    # (official_sanctions_europe), not from here.
     open_datasets: str = (
-        "eu_fsf,gb_fcdo_sanctions,ch_seco_sanctions,ca_dfatd_sema_sanctions,au_dfat_sanctions,"
+        "ca_dfatd_sema_sanctions,au_dfat_sanctions,"
         "jp_mof_sanctions,worldbank_debarred,interpol_red_notices,"
         "ru_acf_bribetakers,ua_war_sanctions,wd_oligarchs,gb_coh_disqualified,ch_finma_warnings,"
         "be_fod_sanctions,nz_russia_sanctions,lv_magnitsky_list,ru_navalny35,afdb_sanctions,"
