@@ -1,4 +1,5 @@
 import Toaster from "./components/Toaster";
+import ValidationPage from "./components/ValidationPage";
 import { toast } from "./lib/toast";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
@@ -27,7 +28,7 @@ export default function App() {
     route.name === "search" ? { q: route.q, type: route.type, depth: route.depth, maxNodes: route.maxNodes } : null;
   const target: InvestigationParams | null =
     route.name === "investigate" ? { record_ids: route.ids, depth: route.depth, max_nodes: route.maxNodes } : null;
-  const page = route.name === "cases" || route.name === "case" ? "cases" : "main";
+  const page = route.name === "cases" || route.name === "case" ? "cases" : route.name === "validation" ? "validation" : "main";
   const caseId = route.name === "case" ? route.id : null;
   const [saveError, setSaveError] = useState<string | null>(null);
   const [palette, setPalette] = useState(false);
@@ -148,6 +149,7 @@ export default function App() {
       <Disclaimer text={meta.data?.disclaimer} />
       <main className="mx-auto w-full max-w-[1600px] flex-1 space-y-5 px-4 py-5">
         {page === "cases" && !caseId && <Dashboard status={casesStatus} onOpenCase={openCase} />}
+        {page === "validation" && <ValidationPage />}
         {route.name === "case" && (
           <CaseScreen
             key={route.id}

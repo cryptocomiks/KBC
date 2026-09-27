@@ -26,6 +26,7 @@ import type {
   ReviewPack,
   QuickCheckRequest,
   QuickCheckResult,
+  ValidationReport,
 } from "./types";
 
 const BASE = import.meta.env.VITE_API_BASE ?? "/api";
@@ -139,6 +140,7 @@ export const api = {
     triggerDownload(await res.blob(), name);
   },
   sow: (id: string) => request<SowData>(`/cases/${id}/sow`),
+  validation: () => request<ValidationReport>("/validation"),
   checks: (body: QuickCheckRequest) => request<QuickCheckResult>("/checks", { method: "POST", body: JSON.stringify(body) }),
   saveSow: (id: string, data: Record<string, unknown>, by: string) =>
     request<SowData>(`/cases/${id}/sow`, { method: "PUT", body: JSON.stringify({ data, by }) }),

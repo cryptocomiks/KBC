@@ -148,6 +148,12 @@ GENERIC_COMPANY_WORDS = {
     "africa", "middle", "east", "west", "north", "south", "overseas", "trust", "fund", "funds",
     "securities", "advisors", "advisory", "associates", "and", "of", "the", "et", "des", "du",
     "la", "le", "les", "de", "und", "fur", "new", "first", "united", "royal", "national",
+    # country and region adjectives: "Swiss Invest" and "Swiss Holding" share nothing
+    "swiss", "suisse", "schweiz", "schweizer", "svizzera", "helvetia", "helvetic", "french",
+    "france", "german", "germany", "deutsche", "deutschland", "british", "britannia", "uk",
+    "us", "usa", "asian", "african", "nordic", "scandinavian", "atlantic", "alpine", "alpen",
+    "central", "eastern", "western", "northern", "southern", "orient", "oriental", "gulf",
+    "continental", "universal", "prime", "premier", "luxembourg", "monaco", "dubai",
 }  # fmt: skip
 # Very frequent given names and surnames: a name made only of these needs a date of birth.
 COMMON_NAMES = {
@@ -318,7 +324,9 @@ def _guard(ta: list[str], tb: list[str], kind: str) -> tuple[float, str] | None:
         da = [t for t in ta if t not in GENERIC_COMPANY_WORDS]
         db = [t for t in tb if t not in GENERIC_COMPANY_WORDS]
         if not da and not db:
-            return 84.0, "generic name (only common words): needs an identifier to confirm"
+            if sorted(ta) == sorted(tb):
+                return 84.0, "generic name (only common words): needs an identifier to confirm"
+            return 60.0, "different generic names (only common words, not the same ones)"
         if not da or not db:
             return 68.0, "one name has only generic words: the distinctive part is missing"
         ca, cb = [canonical(t) for t in da], [canonical(t) for t in db]
@@ -333,4 +341,41 @@ def _guard(ta: list[str], tb: list[str], kind: str) -> tuple[float, str] | None:
         return None
     if min(len(ta), len(tb)) == 1 and max(len(ta), len(tb)) > 1:
         return 68.0, "single-word name against a full name: not enough to identify a person"
+    weak = _weakest_part(ta, tb)
+    if weak and weak[0] < 80:
+        return 66.0, f"a name part differs ({weak[1]} ≠ {weak[2]}): probably another person"
     return None
+
+
+def _romanised(x: str) -> str:
+    """Key absorbing Arabic / Persian romanisation variants: q, g, gh, k -> k; dh -> d;
+    double letters collapsed (Gaddafi, Qadhafi, Kadhafi -> kadafi)."""
+    s = re.sub(r"gh|q|g", "k", x).replace("dh", "d")
+    return re.sub(r"(.)\1+", r"\1", s)
+
+
+def _part_similarity(x: str, y: str) -> float:
+    """Similarity of two name parts, allowing for transliteration and romanisation variants."""
+    if canonical(x) == canonical(y) or phonetic(canonical(x)) == phonetic(canonical(y)):
+        return 100.0
+    if _romanised(canonical(x)) == _romanised(canonical(y)):
+        return 100.0
+    return max(fuzz.ratio(x, y), fuzz.ratio(canonical(x), canonical(y)))
+
+
+def _weakest_part(ta: list[str], tb: list[str]) -> tuple[float, str, str] | None:
+    """The least similar part of the shorter name, matched against the best part of the other
+    name (e.g. "putin" ≈ "potanin" 67 %): two different surnames with the same first name are
+    two people, however similar the full strings look."""
+    short, long_ = (ta, tb) if len(ta) <= len(tb) else (tb, ta)
+    if len(short) < 2:
+        return None
+    # compound parts written in one or two words: "Abdulrahman" = "Abdul Rahman"
+    long_ = [*long_, *(a + b for a, b in zip(long_, long_[1:], strict=False))]
+    worst: tuple[float, str, str] | None = None
+    for x in short:
+        best = max(long_, key=lambda y: _part_similarity(x, y))
+        sim = _part_similarity(x, best)
+        if worst is None or sim < worst[0]:
+            worst = (sim, x, best)
+    return worst

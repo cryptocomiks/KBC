@@ -1,0 +1,1263 @@
+{
+ "version": 2,
+ "description": "Labelled name pairs used to measure the screening match engine (KYC 1 CLICK). 'match' pairs must score at or above the possible-match threshold; 'no_match' pairs must stay below it. Public figures and fictitious names only.",
+ "cases": [
+  {
+   "category": "Transliteration / middle names",
+   "query": {
+    "type": "person",
+    "name": "Muammar Gaddafi"
+   },
+   "candidate": {
+    "type": "person",
+    "name": "Moammar Qadhafi"
+   },
+   "expected": "match",
+   "note": ""
+  },
+  {
+   "category": "Transliteration / middle names",
+   "query": {
+    "type": "person",
+    "name": "Mohammed Al-Rashid"
+   },
+   "candidate": {
+    "type": "person",
+    "name": "Muhammad al Rashid"
+   },
+   "expected": "match",
+   "note": ""
+  },
+  {
+   "category": "Transliteration / middle names",
+   "query": {
+    "type": "person",
+    "name": "Mohamed Qadrany"
+   },
+   "candidate": {
+    "type": "person",
+    "name": "Mohammed Kadrani"
+   },
+   "expected": "match",
+   "note": ""
+  },
+  {
+   "category": "Transliteration / middle names",
+   "query": {
+    "type": "person",
+    "name": "Oleg Deripaska"
+   },
+   "candidate": {
+    "type": "person",
+    "name": "Oleg Vladimirovich Deripaska"
+   },
+   "expected": "match",
+   "note": ""
+  },
+  {
+   "category": "Transliteration / middle names",
+   "query": {
+    "type": "person",
+    "name": "Alisher Usmanov"
+   },
+   "candidate": {
+    "type": "person",
+    "name": "Alisher Burkhanovich Usmanov"
+   },
+   "expected": "match",
+   "note": ""
+  },
+  {
+   "category": "Transliteration / middle names",
+   "query": {
+    "type": "person",
+    "name": "Yevgeny Prigozhin"
+   },
+   "candidate": {
+    "type": "person",
+    "name": "Evgeniy Prigozhin"
+   },
+   "expected": "match",
+   "note": ""
+  },
+  {
+   "category": "Transliteration / middle names",
+   "query": {
+    "type": "person",
+    "name": "Ramzan Kadyrov"
+   },
+   "candidate": {
+    "type": "person",
+    "name": "Ramzan Akhmadovich Kadyrov"
+   },
+   "expected": "match",
+   "note": ""
+  },
+  {
+   "category": "Transliteration / middle names",
+   "query": {
+    "type": "person",
+    "name": "Viktor Yanukovych"
+   },
+   "candidate": {
+    "type": "person",
+    "name": "Viktor Yanukovich"
+   },
+   "expected": "match",
+   "note": ""
+  },
+  {
+   "category": "Transliteration / middle names",
+   "query": {
+    "type": "person",
+    "name": "Aleksandr Lukashenko"
+   },
+   "candidate": {
+    "type": "person",
+    "name": "Alexander Lukashenko"
+   },
+   "expected": "match",
+   "note": ""
+  },
+  {
+   "category": "Transliteration / middle names",
+   "query": {
+    "type": "person",
+    "name": "Sergei Chemezov"
+   },
+   "candidate": {
+    "type": "person",
+    "name": "Sergey Chemezov"
+   },
+   "expected": "match",
+   "note": ""
+  },
+  {
+   "category": "Transliteration / middle names",
+   "query": {
+    "type": "person",
+    "name": "Igor Sechin"
+   },
+   "candidate": {
+    "type": "person",
+    "name": "Igor Ivanovich Sechin"
+   },
+   "expected": "match",
+   "note": ""
+  },
+  {
+   "category": "Transliteration / middle names",
+   "query": {
+    "type": "person",
+    "name": "Hosni Mubarak"
+   },
+   "candidate": {
+    "type": "person",
+    "name": "Muhammad Hosni Mubarak"
+   },
+   "expected": "match",
+   "note": ""
+  },
+  {
+   "category": "Transliteration / middle names",
+   "query": {
+    "type": "person",
+    "name": "Abdul Rahman Yasin"
+   },
+   "candidate": {
+    "type": "person",
+    "name": "Abdulrahman Yasin"
+   },
+   "expected": "match",
+   "note": ""
+  },
+  {
+   "category": "Transliteration / middle names",
+   "query": {
+    "type": "person",
+    "name": "Kim Jong Un"
+   },
+   "candidate": {
+    "type": "person",
+    "name": "Kim Jong-un"
+   },
+   "expected": "match",
+   "note": ""
+  },
+  {
+   "category": "Transliteration / middle names",
+   "query": {
+    "type": "person",
+    "name": "Ali Khamenei"
+   },
+   "candidate": {
+    "type": "person",
+    "name": "Ali Hosseini Khamenei"
+   },
+   "expected": "match",
+   "note": ""
+  },
+  {
+   "category": "Transliteration / middle names",
+   "query": {
+    "type": "person",
+    "name": "Teodoro Obiang"
+   },
+   "candidate": {
+    "type": "person",
+    "name": "Teodoro Obiang Nguema Mbasogo"
+   },
+   "expected": "match",
+   "note": ""
+  },
+  {
+   "category": "Transliteration / middle names",
+   "query": {
+    "type": "person",
+    "name": "Arkady Rotenberg"
+   },
+   "candidate": {
+    "type": "person",
+    "name": "Arkadiy Rotenberg"
+   },
+   "expected": "match",
+   "note": ""
+  },
+  {
+   "category": "Transliteration / middle names",
+   "query": {
+    "type": "person",
+    "name": "Gennady Timchenko"
+   },
+   "candidate": {
+    "type": "person",
+    "name": "Gennadiy Timchenko"
+   },
+   "expected": "match",
+   "note": ""
+  },
+  {
+   "category": "Transliteration / middle names",
+   "query": {
+    "type": "person",
+    "name": "Mikhail Fridman"
+   },
+   "candidate": {
+    "type": "person",
+    "name": "Mikhail Maratovich Fridman"
+   },
+   "expected": "match",
+   "note": ""
+  },
+  {
+   "category": "Transliteration / middle names",
+   "query": {
+    "type": "person",
+    "name": "Roman Abramovich"
+   },
+   "candidate": {
+    "type": "person",
+    "name": "Roman Arkadyevich Abramovich"
+   },
+   "expected": "match",
+   "note": ""
+  },
+  {
+   "category": "Diacritics & case",
+   "query": {
+    "type": "person",
+    "name": "José Álvarez Núñez"
+   },
+   "candidate": {
+    "type": "person",
+    "name": "Jose Alvarez Nunez"
+   },
+   "expected": "match",
+   "note": ""
+  },
+  {
+   "category": "Diacritics & case",
+   "query": {
+    "type": "person",
+    "name": "François Müller"
+   },
+   "candidate": {
+    "type": "person",
+    "name": "Francois Mueller"
+   },
+   "expected": "match",
+   "note": ""
+  },
+  {
+   "category": "Diacritics & case",
+   "query": {
+    "type": "person",
+    "name": "Øystein Sørensen"
+   },
+   "candidate": {
+    "type": "person",
+    "name": "Oystein Sorensen"
+   },
+   "expected": "match",
+   "note": ""
+  },
+  {
+   "category": "Diacritics & case",
+   "query": {
+    "type": "person",
+    "name": "ŁUKASZ WÓJCIK"
+   },
+   "candidate": {
+    "type": "person",
+    "name": "Lukasz Wojcik"
+   },
+   "expected": "match",
+   "note": ""
+  },
+  {
+   "category": "Diacritics & case",
+   "query": {
+    "type": "person",
+    "name": "Zoë Brontë"
+   },
+   "candidate": {
+    "type": "person",
+    "name": "Zoe Bronte"
+   },
+   "expected": "match",
+   "note": ""
+  },
+  {
+   "category": "Name order",
+   "query": {
+    "type": "person",
+    "name": "Castelnau Henri"
+   },
+   "candidate": {
+    "type": "person",
+    "name": "Henri Castelnau"
+   },
+   "expected": "match",
+   "note": ""
+  },
+  {
+   "category": "Name order",
+   "query": {
+    "type": "person",
+    "name": "TEREKHOV Rouslan"
+   },
+   "candidate": {
+    "type": "person",
+    "name": "Rouslan Terekhov"
+   },
+   "expected": "match",
+   "note": ""
+  },
+  {
+   "category": "Name order",
+   "query": {
+    "type": "person",
+    "name": "Wang Jianlin"
+   },
+   "candidate": {
+    "type": "person",
+    "name": "Jianlin Wang"
+   },
+   "expected": "match",
+   "note": ""
+  },
+  {
+   "category": "Name order",
+   "query": {
+    "type": "person",
+    "name": "Smith, John Robert"
+   },
+   "candidate": {
+    "type": "person",
+    "name": "John Robert Smith"
+   },
+   "expected": "match",
+   "note": ""
+  },
+  {
+   "category": "Same person, same date of birth",
+   "query": {
+    "type": "person",
+    "name": "Rouslan Terekhov",
+    "birth_date": "1971-03-14"
+   },
+   "candidate": {
+    "type": "person",
+    "name": "Ruslan Terekhov",
+    "birth_date": "1971-03-14"
+   },
+   "expected": "match",
+   "note": ""
+  },
+  {
+   "category": "Same person, same date of birth",
+   "query": {
+    "type": "person",
+    "name": "Henri Castelnau",
+    "birth_date": "1962-05"
+   },
+   "candidate": {
+    "type": "person",
+    "name": "Henri Castelnau",
+    "birth_date": "1962-05-21"
+   },
+   "expected": "match",
+   "note": ""
+  },
+  {
+   "category": "Same person, same date of birth",
+   "query": {
+    "type": "person",
+    "name": "Maria Gonzalez Lopez",
+    "birth_date": "1980-01-02",
+    "nationalities": [
+     "ES"
+    ]
+   },
+   "candidate": {
+    "type": "person",
+    "name": "María González López",
+    "birth_date": "1980-01-02",
+    "nationalities": [
+     "ES"
+    ]
+   },
+   "expected": "match",
+   "note": ""
+  },
+  {
+   "category": "Company legal forms & punctuation",
+   "query": {
+    "type": "company",
+    "name": "Meridian Capital Holdings S.à r.l."
+   },
+   "candidate": {
+    "type": "company",
+    "name": "Meridian Capital Holdings SARL"
+   },
+   "expected": "match",
+   "note": ""
+  },
+  {
+   "category": "Company legal forms & punctuation",
+   "query": {
+    "type": "company",
+    "name": "Northgate Maritime Holdings Ltd"
+   },
+   "candidate": {
+    "type": "company",
+    "name": "Northgate Maritime Holdings Limited"
+   },
+   "expected": "match",
+   "note": ""
+  },
+  {
+   "category": "Company legal forms & punctuation",
+   "query": {
+    "type": "company",
+    "name": "Solenne Holdings Ltd."
+   },
+   "candidate": {
+    "type": "company",
+    "name": "SOLENNE HOLDINGS LIMITED"
+   },
+   "expected": "match",
+   "note": ""
+  },
+  {
+   "category": "Company legal forms & punctuation",
+   "query": {
+    "type": "company",
+    "name": "Glencore plc"
+   },
+   "candidate": {
+    "type": "company",
+    "name": "Glencore PLC"
+   },
+   "expected": "match",
+   "note": ""
+  },
+  {
+   "category": "Company legal forms & punctuation",
+   "query": {
+    "type": "company",
+    "name": "Gazprom PJSC"
+   },
+   "candidate": {
+    "type": "company",
+    "name": "PJSC Gazprom"
+   },
+   "expected": "match",
+   "note": ""
+  },
+  {
+   "category": "Company legal forms & punctuation",
+   "query": {
+    "type": "company",
+    "name": "Rosneft Oil Company"
+   },
+   "candidate": {
+    "type": "company",
+    "name": "Rosneft Oil Company OAO"
+   },
+   "expected": "match",
+   "note": ""
+  },
+  {
+   "category": "Company legal forms & punctuation",
+   "query": {
+    "type": "company",
+    "name": "Wagner Group"
+   },
+   "candidate": {
+    "type": "company",
+    "name": "PMC Wagner Group"
+   },
+   "expected": "match",
+   "note": ""
+  },
+  {
+   "category": "Company legal forms & punctuation",
+   "query": {
+    "type": "company",
+    "name": "Bank Rossiya"
+   },
+   "candidate": {
+    "type": "company",
+    "name": "Joint Stock Company Bank Rossiya"
+   },
+   "expected": "match",
+   "note": ""
+  },
+  {
+   "category": "Company legal forms & punctuation",
+   "query": {
+    "type": "company",
+    "name": "Medium Rare N.V."
+   },
+   "candidate": {
+    "type": "company",
+    "name": "Medium Rare NV"
+   },
+   "expected": "match",
+   "note": ""
+  },
+  {
+   "category": "Company legal forms & punctuation",
+   "query": {
+    "type": "company",
+    "name": "Sberbank of Russia"
+   },
+   "candidate": {
+    "type": "company",
+    "name": "Sberbank of Russia PJSC"
+   },
+   "expected": "match",
+   "note": ""
+  },
+  {
+   "category": "Company legal forms & punctuation",
+   "query": {
+    "type": "company",
+    "name": "Harbour Papers S.A."
+   },
+   "candidate": {
+    "type": "company",
+    "name": "Harbour Papers SA"
+   },
+   "expected": "match",
+   "note": ""
+  },
+  {
+   "category": "Company legal forms & punctuation",
+   "query": {
+    "type": "company",
+    "name": "Qadrany Investissements SAS"
+   },
+   "candidate": {
+    "type": "company",
+    "name": "QADRANY INVESTISSEMENTS"
+   },
+   "expected": "match",
+   "note": ""
+  },
+  {
+   "category": "Company legal forms & punctuation",
+   "query": {
+    "type": "company",
+    "name": "Aurelia Trading Ltd"
+   },
+   "candidate": {
+    "type": "company",
+    "name": "Aurelia Trading Limited"
+   },
+   "expected": "match",
+   "note": ""
+  },
+  {
+   "category": "Company legal forms & punctuation",
+   "query": {
+    "type": "company",
+    "name": "Alfa-Bank JSC"
+   },
+   "candidate": {
+    "type": "company",
+    "name": "Alfa Bank"
+   },
+   "expected": "match",
+   "note": ""
+  },
+  {
+   "category": "Typos",
+   "query": {
+    "type": "person",
+    "name": "Rouslan Terekhov"
+   },
+   "candidate": {
+    "type": "person",
+    "name": "Rouslan Terekov"
+   },
+   "expected": "match",
+   "note": ""
+  },
+  {
+   "category": "Typos",
+   "query": {
+    "type": "person",
+    "name": "Mohammed Qadrany"
+   },
+   "candidate": {
+    "type": "person",
+    "name": "Mohammed Qadranny"
+   },
+   "expected": "match",
+   "note": ""
+  },
+  {
+   "category": "Typos",
+   "query": {
+    "type": "company",
+    "name": "Glencore International"
+   },
+   "candidate": {
+    "type": "company",
+    "name": "Glencor International"
+   },
+   "expected": "match",
+   "note": ""
+  },
+  {
+   "category": "Typos",
+   "query": {
+    "type": "company",
+    "name": "Northgate Maritime"
+   },
+   "candidate": {
+    "type": "company",
+    "name": "Northgate Maritme"
+   },
+   "expected": "match",
+   "note": ""
+  },
+  {
+   "category": "Same registration number",
+   "query": {
+    "type": "company",
+    "name": "Alpha Holding SA",
+    "jurisdiction": "LU",
+    "registration_number": "B198765"
+   },
+   "candidate": {
+    "type": "company",
+    "name": "Alpha Holdings S.A. (in liquidation)",
+    "jurisdiction": "LU",
+    "registration_number": "B 198765"
+   },
+   "expected": "match",
+   "note": ""
+  },
+  {
+   "category": "Same registration number",
+   "query": {
+    "type": "company",
+    "name": "ACME SAS",
+    "jurisdiction": "FR",
+    "registration_number": "900100101"
+   },
+   "candidate": {
+    "type": "company",
+    "name": "Acme France",
+    "jurisdiction": "FR",
+    "registration_number": "900 100 101"
+   },
+   "expected": "match",
+   "note": ""
+  },
+  {
+   "category": "Namesakes, different date of birth",
+   "query": {
+    "type": "person",
+    "name": "John Smith",
+    "birth_date": "1970-01-01"
+   },
+   "candidate": {
+    "type": "person",
+    "name": "John Smith",
+    "birth_date": "1985-06-12"
+   },
+   "expected": "no_match",
+   "note": ""
+  },
+  {
+   "category": "Namesakes, different date of birth",
+   "query": {
+    "type": "person",
+    "name": "Mohamed Ali",
+    "birth_date": "1961-02-03"
+   },
+   "candidate": {
+    "type": "person",
+    "name": "Mohamed Ali",
+    "birth_date": "1990-11-30"
+   },
+   "expected": "no_match",
+   "note": ""
+  },
+  {
+   "category": "Namesakes, different date of birth",
+   "query": {
+    "type": "person",
+    "name": "Maria Garcia",
+    "birth_date": "1975-04-04"
+   },
+   "candidate": {
+    "type": "person",
+    "name": "Maria Garcia",
+    "birth_date": "1952-08-19"
+   },
+   "expected": "no_match",
+   "note": ""
+  },
+  {
+   "category": "Namesakes, different date of birth",
+   "query": {
+    "type": "person",
+    "name": "Henri Castelnau",
+    "birth_date": "1962-05-21"
+   },
+   "candidate": {
+    "type": "person",
+    "name": "Henri Castelnau",
+    "birth_date": "1994-02-02"
+   },
+   "expected": "no_match",
+   "note": ""
+  },
+  {
+   "category": "Namesakes, different date of birth",
+   "query": {
+    "type": "person",
+    "name": "Wei Zhang",
+    "birth_date": "1988-03-03"
+   },
+   "candidate": {
+    "type": "person",
+    "name": "Wei Zhang",
+    "birth_date": "1969-12-12"
+   },
+   "expected": "no_match",
+   "note": ""
+  },
+  {
+   "category": "Namesakes, different date of birth",
+   "query": {
+    "type": "person",
+    "name": "Rouslan Terekhov",
+    "birth_date": "1971-03-14"
+   },
+   "candidate": {
+    "type": "person",
+    "name": "Rouslan Terekhov",
+    "birth_date": "2001-07-07"
+   },
+   "expected": "no_match",
+   "note": ""
+  },
+  {
+   "category": "Very common names, no date of birth",
+   "query": {
+    "type": "person",
+    "name": "John Smith",
+    "nationalities": [
+     "GB"
+    ]
+   },
+   "candidate": {
+    "type": "person",
+    "name": "John Smith",
+    "nationalities": [
+     "US"
+    ]
+   },
+   "expected": "no_match",
+   "note": "common name, different nationality, no DOB"
+  },
+  {
+   "category": "Very common names, no date of birth",
+   "query": {
+    "type": "person",
+    "name": "David Brown",
+    "nationalities": [
+     "GB"
+    ]
+   },
+   "candidate": {
+    "type": "person",
+    "name": "David Brown",
+    "nationalities": [
+     "US"
+    ]
+   },
+   "expected": "no_match",
+   "note": "common name, different nationality, no DOB"
+  },
+  {
+   "category": "Very common names, no date of birth",
+   "query": {
+    "type": "person",
+    "name": "Maria Rodriguez",
+    "nationalities": [
+     "GB"
+    ]
+   },
+   "candidate": {
+    "type": "person",
+    "name": "Maria Rodriguez",
+    "nationalities": [
+     "US"
+    ]
+   },
+   "expected": "no_match",
+   "note": "common name, different nationality, no DOB"
+  },
+  {
+   "category": "Very common names, no date of birth",
+   "query": {
+    "type": "person",
+    "name": "Ahmed Hassan",
+    "nationalities": [
+     "GB"
+    ]
+   },
+   "candidate": {
+    "type": "person",
+    "name": "Ahmed Hassan",
+    "nationalities": [
+     "US"
+    ]
+   },
+   "expected": "no_match",
+   "note": "common name, different nationality, no DOB"
+  },
+  {
+   "category": "Very common names, no date of birth",
+   "query": {
+    "type": "person",
+    "name": "Li Wei",
+    "nationalities": [
+     "GB"
+    ]
+   },
+   "candidate": {
+    "type": "person",
+    "name": "Li Wei",
+    "nationalities": [
+     "US"
+    ]
+   },
+   "expected": "no_match",
+   "note": "common name, different nationality, no DOB"
+  },
+  {
+   "category": "Very common names, no date of birth",
+   "query": {
+    "type": "person",
+    "name": "Peter Muller",
+    "nationalities": [
+     "GB"
+    ]
+   },
+   "candidate": {
+    "type": "person",
+    "name": "Peter Muller",
+    "nationalities": [
+     "US"
+    ]
+   },
+   "expected": "no_match",
+   "note": "common name, different nationality, no DOB"
+  },
+  {
+   "category": "Different people sharing a name part",
+   "query": {
+    "type": "person",
+    "name": "Vladimir Putin"
+   },
+   "candidate": {
+    "type": "person",
+    "name": "Vladimir Potanin"
+   },
+   "expected": "no_match",
+   "note": ""
+  },
+  {
+   "category": "Different people sharing a name part",
+   "query": {
+    "type": "person",
+    "name": "Igor Sechin"
+   },
+   "candidate": {
+    "type": "person",
+    "name": "Igor Shuvalov"
+   },
+   "expected": "no_match",
+   "note": ""
+  },
+  {
+   "category": "Different people sharing a name part",
+   "query": {
+    "type": "person",
+    "name": "Oleg Deripaska"
+   },
+   "candidate": {
+    "type": "person",
+    "name": "Oleg Tinkov"
+   },
+   "expected": "no_match",
+   "note": ""
+  },
+  {
+   "category": "Different people sharing a name part",
+   "query": {
+    "type": "person",
+    "name": "Mikhail Fridman"
+   },
+   "candidate": {
+    "type": "person",
+    "name": "Mikhail Prokhorov"
+   },
+   "expected": "no_match",
+   "note": ""
+  },
+  {
+   "category": "Different people sharing a name part",
+   "query": {
+    "type": "person",
+    "name": "Alexander Smith"
+   },
+   "candidate": {
+    "type": "person",
+    "name": "Alexandra Smithson"
+   },
+   "expected": "no_match",
+   "note": ""
+  },
+  {
+   "category": "Different people sharing a name part",
+   "query": {
+    "type": "person",
+    "name": "Jean Dupont"
+   },
+   "candidate": {
+    "type": "person",
+    "name": "Jean Durand"
+   },
+   "expected": "no_match",
+   "note": ""
+  },
+  {
+   "category": "Single word vs full name",
+   "query": {
+    "type": "person",
+    "name": "Castelnau"
+   },
+   "candidate": {
+    "type": "person",
+    "name": "Henri Castelnau"
+   },
+   "expected": "no_match",
+   "note": ""
+  },
+  {
+   "category": "Single word vs full name",
+   "query": {
+    "type": "person",
+    "name": "Terekhov"
+   },
+   "candidate": {
+    "type": "person",
+    "name": "Rouslan Terekhov"
+   },
+   "expected": "no_match",
+   "note": ""
+  },
+  {
+   "category": "Single word vs full name",
+   "query": {
+    "type": "person",
+    "name": "Mohammed"
+   },
+   "candidate": {
+    "type": "person",
+    "name": "Mohammed Al-Rashid"
+   },
+   "expected": "no_match",
+   "note": ""
+  },
+  {
+   "category": "Generic company words only",
+   "query": {
+    "type": "company",
+    "name": "Global Trading Ltd"
+   },
+   "candidate": {
+    "type": "company",
+    "name": "International Trading Limited"
+   },
+   "expected": "no_match",
+   "note": ""
+  },
+  {
+   "category": "Generic company words only",
+   "query": {
+    "type": "company",
+    "name": "Capital Holdings SA"
+   },
+   "candidate": {
+    "type": "company",
+    "name": "Global Capital Holdings Ltd"
+   },
+   "expected": "no_match",
+   "note": ""
+  },
+  {
+   "category": "Generic company words only",
+   "query": {
+    "type": "company",
+    "name": "Alpha Investments Ltd"
+   },
+   "candidate": {
+    "type": "company",
+    "name": "Beta Investments Ltd"
+   },
+   "expected": "no_match",
+   "note": ""
+  },
+  {
+   "category": "Generic company words only",
+   "query": {
+    "type": "company",
+    "name": "First Capital Partners"
+   },
+   "candidate": {
+    "type": "company",
+    "name": "Capital Partners Group"
+   },
+   "expected": "no_match",
+   "note": ""
+  },
+  {
+   "category": "Generic company words only",
+   "query": {
+    "type": "company",
+    "name": "Euro Services SARL"
+   },
+   "candidate": {
+    "type": "company",
+    "name": "Global Services SARL"
+   },
+   "expected": "no_match",
+   "note": ""
+  },
+  {
+   "category": "Same distinctive name, other generic words (review expected)",
+   "query": {
+    "type": "company",
+    "name": "Meridian Capital Holdings"
+   },
+   "candidate": {
+    "type": "company",
+    "name": "Meridian Trading"
+   },
+   "expected": "match",
+   "note": "same distinctive word: the analyst checks whether it is the same group"
+  },
+  {
+   "category": "Generic company words only",
+   "query": {
+    "type": "company",
+    "name": "Swiss Invest AG"
+   },
+   "candidate": {
+    "type": "company",
+    "name": "Swiss Holding AG"
+   },
+   "expected": "no_match",
+   "note": ""
+  },
+  {
+   "category": "Generic company words only",
+   "query": {
+    "type": "company",
+    "name": "Asia Pacific Holdings"
+   },
+   "candidate": {
+    "type": "company",
+    "name": "Pacific Holdings Group"
+   },
+   "expected": "no_match",
+   "note": ""
+  },
+  {
+   "category": "Generic company words only",
+   "query": {
+    "type": "company",
+    "name": "United Energy Group"
+   },
+   "candidate": {
+    "type": "company",
+    "name": "United Energy Services"
+   },
+   "expected": "no_match",
+   "note": ""
+  },
+  {
+   "category": "Same name, different country",
+   "query": {
+    "type": "company",
+    "name": "Meridian Capital Holdings",
+    "jurisdiction": "LU"
+   },
+   "candidate": {
+    "type": "company",
+    "name": "Meridian Capital Holdings",
+    "jurisdiction": "US"
+   },
+   "expected": "no_match",
+   "note": "homonymous companies in different registers"
+  },
+  {
+   "category": "Same name, different country",
+   "query": {
+    "type": "company",
+    "name": "Northgate Holdings",
+    "jurisdiction": "GB"
+   },
+   "candidate": {
+    "type": "company",
+    "name": "Northgate Holdings",
+    "jurisdiction": "AU"
+   },
+   "expected": "no_match",
+   "note": "homonymous companies in different registers"
+  },
+  {
+   "category": "Same name, different country",
+   "query": {
+    "type": "company",
+    "name": "Atlas Maritime",
+    "jurisdiction": "GR"
+   },
+   "candidate": {
+    "type": "company",
+    "name": "Atlas Maritime",
+    "jurisdiction": "PA"
+   },
+   "expected": "no_match",
+   "note": "homonymous companies in different registers"
+  },
+  {
+   "category": "Person vs company",
+   "query": {
+    "type": "person",
+    "name": "Henri Castelnau"
+   },
+   "candidate": {
+    "type": "company",
+    "name": "Castelnau Henri SARL"
+   },
+   "expected": "no_match",
+   "note": ""
+  },
+  {
+   "category": "Person vs company",
+   "query": {
+    "type": "person",
+    "name": "Rouslan Terekhov"
+   },
+   "candidate": {
+    "type": "company",
+    "name": "Terekhov Holding Ltd"
+   },
+   "expected": "no_match",
+   "note": ""
+  },
+  {
+   "category": "Person vs company",
+   "query": {
+    "type": "person",
+    "name": "Glencore"
+   },
+   "candidate": {
+    "type": "company",
+    "name": "Glencore Ivan"
+   },
+   "expected": "no_match",
+   "note": ""
+  },
+  {
+   "category": "Different people sharing a name part",
+   "query": {
+    "type": "person",
+    "name": "Maria Schneider"
+   },
+   "candidate": {
+    "type": "person",
+    "name": "Maria Schneeberger"
+   },
+   "expected": "no_match",
+   "note": ""
+  },
+  {
+   "category": "Different people sharing a name part",
+   "query": {
+    "type": "person",
+    "name": "Pierre Durand"
+   },
+   "candidate": {
+    "type": "person",
+    "name": "Pierre Dumont"
+   },
+   "expected": "no_match",
+   "note": ""
+  },
+  {
+   "category": "Different people sharing a name part",
+   "query": {
+    "type": "person",
+    "name": "Carlos Mendes"
+   },
+   "candidate": {
+    "type": "person",
+    "name": "Carlos Menezes Duarte"
+   },
+   "expected": "no_match",
+   "note": ""
+  }
+ ]
+}

@@ -674,3 +674,38 @@ export interface QuickCheckResult {
   wallet?: CheckBlock;
   verdict: CheckStatus;
 }
+
+/* ------------------------------------------------------------ matching validation */
+export interface ValidationStats {
+  pairs: number;
+  match_pairs: number;
+  no_match_pairs: number;
+  detected: number;
+  detection_rate: number | null;
+  strong_detection_rate: number | null;
+  false_positives: number;
+  false_positive_rate: number | null;
+  accuracy: number | null;
+}
+export interface ValidationPair {
+  category: string;
+  query: string;
+  candidate: string;
+  expected: "match" | "no_match";
+  score: number;
+  flagged: boolean;
+  triage: string;
+  correct: boolean;
+  explanation: string[];
+}
+export interface ValidationReport {
+  generated_at: string;
+  engine_version: string;
+  testset_version: number;
+  limits: string;
+  thresholds: { possible_match: number; strong_match: number };
+  overall: ValidationStats;
+  categories: (ValidationStats & { category: string; expected: "match" | "no_match" })[];
+  errors: ValidationPair[];
+  pairs: ValidationPair[];
+}

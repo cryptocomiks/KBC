@@ -15,6 +15,7 @@ export type Route =
   | { name: "search"; q: string; type: SearchType; depth: number; maxNodes: number }
   | { name: "investigate"; ids: string[]; depth: number; maxNodes: number }
   | { name: "cases" }
+  | { name: "validation" }
   | { name: "case"; id: string; tab: CaseTab };
 
 const TABS: CaseTab[] = ["kyc", "alerts", "cdb", "sow", "checks", "review", "investigation", "memo", "history"];
@@ -42,6 +43,7 @@ export function parseRoute(hash: string): Route {
     const ids = (qs.get("ids") ?? "").split(",").filter(Boolean).slice(0, 20);
     if (ids.length) return { name: "investigate", ids, depth: int(qs.get("depth"), 2, 1, 3), maxNodes: int(qs.get("n"), 60, 5, 250) };
   }
+  if (parts[0] === "validation") return { name: "validation" };
   if (parts[0] === "cases") {
     if (parts[1]) return { name: "case", id: parts[1], tab: TABS.includes(parts[2] as CaseTab) ? (parts[2] as CaseTab) : "kyc" };
     return { name: "cases" };
@@ -57,6 +59,8 @@ export function formatRoute(r: Route): string {
       return `#/investigate?${new URLSearchParams({ ids: r.ids.join(","), depth: String(r.depth), n: String(r.maxNodes) })}`;
     case "cases":
       return "#/cases";
+    case "validation":
+      return "#/validation";
     case "case":
       return `#/cases/${encodeURIComponent(r.id)}${r.tab === "kyc" ? "" : `/${r.tab}`}`;
     default:

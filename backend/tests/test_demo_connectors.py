@@ -51,7 +51,9 @@ def test_screening_returns_explained_hits():
 def test_screening_weak_hit_for_namesake_with_other_dob():
     fr, sanctions = DemoFrRegistry(), DemoSanctions()
     hits = sanctions.screen(fr.get_person_details("demo_fr_registry:P-001"))
-    assert hits and all(h.score < 70 for h in hits)
+    # "Mohammad Qadri" (born 1949) is another person: never an alert — either weak or,
+    # since the name-part guard, left out altogether (Qadri ≠ Qadrany)
+    assert all(h.score < 70 for h in hits)
 
 
 def test_empty_env_vars_fall_back_to_defaults(monkeypatch):

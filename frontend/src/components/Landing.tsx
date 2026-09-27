@@ -255,7 +255,16 @@ export default function Landing({ search, connectors, onCases }: Props) {
       </Section>
 
       {/* Method, limits & privacy */}
-      <Section tag="Method & limits" title="An analytical aid. Not a verdict." className="bg-white dark:bg-black">
+      <Section
+        tag="Method & limits"
+        title="An analytical aid. Not a verdict."
+        intro={
+          <a href="#/validation" className="link-more">
+            Read the matching validation report <ChevronRight className="h-4 w-4" />
+          </a>
+        }
+        className="bg-white dark:bg-black"
+      >
         <div className="grid gap-10 md:grid-cols-3">
           {[
             {

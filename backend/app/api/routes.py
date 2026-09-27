@@ -69,6 +69,14 @@ def investigate(req: InvestigationRequest) -> Investigation:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
 
 
+@router.get("/validation")
+def matching_validation() -> dict:
+    """Detection and false-positive rates of the match engine on the labelled test set."""
+    from app.validation import cached_validation
+
+    return cached_validation()
+
+
 class ChecksRequest(BaseModel):
     iban: str | None = Field(default=None, max_length=64)
     email: str | None = Field(default=None, max_length=254)
