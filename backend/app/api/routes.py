@@ -6,7 +6,7 @@ from typing import Literal
 
 from fastapi import APIRouter, Header, HTTPException, Query
 from fastapi.responses import Response
-from pydantic import Field
+from pydantic import BaseModel, Field
 from unidecode import unidecode
 
 from app import __version__
@@ -67,6 +67,25 @@ def investigate(req: InvestigationRequest) -> Investigation:
         return service().investigate(req)
     except LookupError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+class ChecksRequest(BaseModel):
+    iban: str | None = Field(default=None, max_length=64)
+    email: str | None = Field(default=None, max_length=254)
+    website: str | None = Field(default=None, max_length=253)
+    wallet: str | None = Field(default=None, max_length=128)
+    company: str | None = Field(default=None, max_length=200)
+    client_country: str | None = Field(default=None, max_length=2)
+
+
+@router.post("/checks")
+def quick_checks(req: ChecksRequest) -> dict:
+    """IBAN, e-mail, website and crypto-address checks. Nothing is stored."""
+    from app.checks import run_checks
+
+    if not any((req.iban, req.email, req.website, req.wallet)):
+        raise HTTPException(status_code=422, detail="Nothing to check")
+    return run_checks(req.model_dump())
 
 
 @router.post("/reports/pdf")

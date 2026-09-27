@@ -140,7 +140,7 @@ export default function Dashboard({ status, onOpenCase }: Props) {
             <button
               key={qd.key}
               onClick={() => setQueue(on ? null : qd.key)}
-              className={`card lift flex flex-col gap-2 p-3 text-left ${on ? "ring-2 ring-brand-500" : ""}`}
+              className={`glass-tile glass-press flex flex-col gap-2 rounded-[var(--radius-card)] p-3 text-left ${on ? "ring-2 ring-brand-500" : ""}`}
               aria-pressed={on}
             >
               <span className="flex items-center gap-1.5 text-[11.5px] font-semibold">

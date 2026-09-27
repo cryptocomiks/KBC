@@ -20,6 +20,7 @@ const TABS: { id: CaseTab; label: string }[] = [
   { id: "alerts", label: "Alerts" },
   { id: "cdb", label: "UBO forms (CDB 20)" },
   { id: "sow", label: "Source of wealth" },
+  { id: "checks", label: "Quick checks" },
   { id: "review", label: "Periodic review" },
   { id: "investigation", label: "Investigation" },
   { id: "memo", label: "Decision memo" },
@@ -69,7 +70,7 @@ export default function CaseHeader({ view, tab, onTab, onBack }: Props) {
 
   return (
     <>
-      <div className="card -mx-1 overflow-hidden p-0">
+      <div className="glass -mx-1 overflow-hidden rounded-[var(--radius-card)] p-0">
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 pt-3 pb-2">
           <button className="btn-ghost -ml-2 px-2 py-1 text-xs" onClick={onBack} aria-label="Back to cases">
             <ArrowLeft className="h-4 w-4" />
@@ -127,7 +128,7 @@ export default function CaseHeader({ view, tab, onTab, onBack }: Props) {
             sub={o?.vigilance ? "from the questionnaire" : "answer the questionnaire"}
             onClick={() => onTab("kyc")}
           />
-          <div className="col-span-2 flex flex-col justify-between rounded-xl border border-slate-200 p-3 dark:border-white/[0.07]">
+          <div className="glass-tile col-span-2 flex flex-col justify-between rounded-xl p-3">
             <span className="text-[11px] font-medium text-slate-500">
               Validation · {workflow?.state === "rejected" ? "sent back" : (workflow?.label ?? "—")}
             </span>
@@ -159,7 +160,7 @@ export default function CaseHeader({ view, tab, onTab, onBack }: Props) {
       </div>
 
       {/* Tabs */}
-      <nav className="card sticky top-14 z-20 -mx-1 flex gap-1 overflow-x-auto px-3 py-0 backdrop-blur-xl" role="tablist">
+      <nav className="glass-bar sticky top-14 z-20 -mx-1 flex gap-1 overflow-x-auto rounded-[var(--radius-card)] border border-slate-200/70 px-3 py-0 dark:border-white/[0.07]" role="tablist">
         {TABS.map((t) => {
           const b = badge[t.id];
           return (

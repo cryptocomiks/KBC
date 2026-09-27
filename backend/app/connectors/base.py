@@ -264,6 +264,12 @@ class BaseConnector(ABC):
             "POST", url, params=params, headers=headers, json_body=json_body, form=form
         )
 
+    def http_post_text(
+        self, url: str, content: str, headers: dict[str, str] | None = None
+    ) -> str | None:
+        """POST a raw body (e.g. a SOAP envelope) and return the response text, cached."""
+        return self._request("POST", url, headers=headers, content=content, as_text=True)
+
     def _request(
         self,
         method: str,
@@ -274,11 +280,13 @@ class BaseConnector(ABC):
         auth: tuple[str, str] | None = None,
         json_body: Any = None,
         form: dict[str, str] | None = None,
+        content: str | None = None,
         as_text: bool = False,
     ) -> Any:
         cache = get_cache()
         key_material = json.dumps(
-            [method, url, sorted((params or {}).items()), json_body, form, as_text], default=str
+            [method, url, sorted((params or {}).items()), json_body, form, content, as_text],
+            default=str,
         )
         key = hashlib.sha256(key_material.encode()).hexdigest()
         cached = cache.get(f"http:{self.name}", key)
@@ -305,6 +313,7 @@ class BaseConnector(ABC):
                     auth=auth,
                     json=json_body,
                     data=form,
+                    content=content.encode() if content is not None else None,
                     timeout=self.timeout_seconds or self.settings.http_timeout_seconds,
                     follow_redirects=True,
                 )

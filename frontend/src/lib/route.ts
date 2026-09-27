@@ -8,7 +8,7 @@ import { useCallback, useEffect, useState } from "react";
  *  #/cases/<id>[/<tab>]                a case (tab: kyc | alerts | cdb | sow | review | investigation | memo | history)
  */
 export type SearchType = "any" | "person" | "company";
-export type CaseTab = "kyc" | "alerts" | "cdb" | "sow" | "review" | "investigation" | "memo" | "history";
+export type CaseTab = "kyc" | "alerts" | "cdb" | "sow" | "checks" | "review" | "investigation" | "memo" | "history";
 export type Route =
   | { name: "home" }
   | { name: "search"; q: string; type: SearchType; depth: number; maxNodes: number }
@@ -16,7 +16,7 @@ export type Route =
   | { name: "cases" }
   | { name: "case"; id: string; tab: CaseTab };
 
-const TABS: CaseTab[] = ["kyc", "alerts", "cdb", "sow", "review", "investigation", "memo", "history"];
+const TABS: CaseTab[] = ["kyc", "alerts", "cdb", "sow", "checks", "review", "investigation", "memo", "history"];
 const int = (v: string | null, fallback: number, min: number, max: number) => {
   const n = Number(v);
   return Number.isFinite(n) && n >= min && n <= max ? Math.round(n) : fallback;

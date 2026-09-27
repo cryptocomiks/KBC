@@ -69,9 +69,9 @@ export default function CommandPalette({ casesEnabled, onClose, onNavigate }: Pr
   }, [active]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 px-4 pt-[12vh] backdrop-blur-sm" onMouseDown={onClose}>
+    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/35 px-4 pt-[12vh] backdrop-blur-[3px]" onMouseDown={onClose}>
       <div
-        className="card w-full max-w-xl overflow-hidden p-0 shadow-2xl"
+        className="glass-panel w-full max-w-xl overflow-hidden rounded-[22px] p-0"
         role="dialog"
         aria-label="Quick open"
         onMouseDown={(e) => e.stopPropagation()}

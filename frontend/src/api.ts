@@ -24,6 +24,8 @@ import type {
   CdbData,
   SowData,
   ReviewPack,
+  QuickCheckRequest,
+  QuickCheckResult,
 } from "./types";
 
 const BASE = import.meta.env.VITE_API_BASE ?? "/api";
@@ -137,6 +139,7 @@ export const api = {
     triggerDownload(await res.blob(), name);
   },
   sow: (id: string) => request<SowData>(`/cases/${id}/sow`),
+  checks: (body: QuickCheckRequest) => request<QuickCheckResult>("/checks", { method: "POST", body: JSON.stringify(body) }),
   saveSow: (id: string, data: Record<string, unknown>, by: string) =>
     request<SowData>(`/cases/${id}/sow`, { method: "PUT", body: JSON.stringify({ data, by }) }),
   review: (id: string) => request<ReviewPack>(`/cases/${id}/review`),

@@ -79,9 +79,7 @@ export function Tile({
   return (
     <Tag
       onClick={onClick}
-      className={`relative flex min-w-0 flex-col rounded-xl border border-slate-200 bg-white/60 p-3 text-left dark:border-white/[0.07] dark:bg-white/[0.02] ${
-        onClick ? "lift cursor-pointer transition-colors hover:border-brand-500/40" : ""
-      }`}
+      className={`glass-tile flex min-w-0 flex-col rounded-xl p-3 text-left ${onClick ? "glass-press cursor-pointer" : ""}`}
     >
       <span className="flex items-center gap-1.5 text-[11px] font-medium text-slate-500">
         {tone && <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: TONE[tone] }} aria-hidden />}

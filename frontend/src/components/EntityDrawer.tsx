@@ -40,7 +40,7 @@ export default function EntityDrawer({ investigation: inv, entityId, onClose, on
         onClick={onClose}
       />
       <aside
-        className={`material absolute top-0 right-0 flex h-full w-[min(460px,100vw)] flex-col border-l border-black/[0.08] shadow-2xl transition-transform duration-[380ms] [transition-timing-function:var(--ease-fluid)] dark:border-white/[0.1] ${
+        className={`glass-panel absolute top-0 right-0 flex h-full w-[min(460px,100vw)] flex-col border-l border-black/[0.08] shadow-2xl transition-transform duration-[380ms] [transition-timing-function:var(--ease-fluid)] dark:border-white/[0.1] ${
           visible ? "translate-x-0" : "translate-x-full"
         }`}
       >

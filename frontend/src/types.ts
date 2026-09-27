@@ -640,3 +640,37 @@ export interface ReviewPack {
   workflow_state: string | null;
   warning?: string | null;
 }
+
+/* ------------------------------------------------------------ quick checks */
+export type CheckStatus = "ok" | "info" | "warn" | "alert" | "unknown";
+export interface CheckLine {
+  label: string;
+  status: CheckStatus;
+  detail: string;
+  source: string | null;
+}
+export interface CheckBlock {
+  input: string;
+  valid: boolean;
+  checks: CheckLine[];
+  normalized?: string;
+  country?: { code: string; name: string };
+  bank?: { name: string; bic: string | null; town: string; iid: number };
+  domain?: string;
+  chain?: string;
+}
+export interface QuickCheckRequest {
+  iban?: string;
+  email?: string;
+  website?: string;
+  wallet?: string;
+  company?: string;
+  client_country?: string;
+}
+export interface QuickCheckResult {
+  iban?: CheckBlock;
+  email?: CheckBlock;
+  website?: CheckBlock;
+  wallet?: CheckBlock;
+  verdict: CheckStatus;
+}

@@ -25,6 +25,15 @@ def _connector_classes() -> list[type[BaseConnector]]:
         LatviaRegisterConnector,
         PrhConnector,
     )
+    from app.connectors.extra_sources import (
+        AsicBannedConnector,
+        BundestagLobbyregisterConnector,
+        GuardianConnector,
+        LobbywatchConnector,
+        MicaRegisterConnector,
+        ScamListsConnector,
+        UidRegisterConnector,
+    )
     from app.connectors.free_sources import (
         CroConnector,
         EuTransparencyRegisterConnector,
@@ -68,6 +77,8 @@ def _connector_classes() -> list[type[BaseConnector]]:
         CompaniesHouseConnector,
         CompaniesHouseWebConnector,
         ZefixConnector,
+        UidRegisterConnector,
+        LobbywatchConnector,
         BrregConnector,
         AresConnector,
         KboConnector,
@@ -89,6 +100,7 @@ def _connector_classes() -> list[type[BaseConnector]]:
         WikidataConnector,
         WikidataPepConnector,
         GdeltConnector,
+        GuardianConnector,
         WaybackConnector,
         LinkedWebsitesConnector,
         RdapConnector,
@@ -102,6 +114,10 @@ def _connector_classes() -> list[type[BaseConnector]]:
         RegulatorsConnector,
         LittleSisConnector,
         EuTransparencyRegisterConnector,
+        BundestagLobbyregisterConnector,
+        MicaRegisterConnector,
+        AsicBannedConnector,
+        ScamListsConnector,
         IcijReconcileConnector,
         IcijLocalConnector,
         CasinoSecretsConnector,

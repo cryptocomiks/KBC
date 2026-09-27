@@ -9,7 +9,10 @@ this API (see the Pappers connector for beneficial owners).
 
 from __future__ import annotations
 
+import re
 from typing import Any
+
+from unidecode import unidecode
 
 from app.connectors.base import BaseConnector
 from app.connectors.util import nationality_iso, parse_date, person_name
@@ -41,6 +44,13 @@ LEGAL_FORMS = {
 }
 # Statutory auditors are not control relationships: skipped to reduce noise.
 SKIPPED_ROLES = ("commissaire aux comptes",)
+
+
+def _addr_key(address: str) -> str:
+    """Comparable form of a French address (case, accents, punctuation, CEDEX ignored)."""
+    s = re.sub(r"[^A-Z0-9 ]+", " ", unidecode(address or "").upper())
+    s = re.sub(r"\bCEDEX\b.*$", "", s)
+    return " ".join(s.split())
 
 
 class AnnuaireEntreprisesConnector(BaseConnector):
@@ -173,6 +183,19 @@ class AnnuaireEntreprisesConnector(BaseConnector):
     # --------------------------------------------------------- interface
     def search_company(self, name: str, **filters: Any) -> list[Entity]:
         return [self._company(r) for r in self._search(q=name)]
+
+    def search_address(self, address: str) -> list[Entity]:
+        """Companies whose head office is at the same address (domiciliation hubs):
+        the full-text search also matches addresses; only exact address matches are kept."""
+        key = _addr_key(address)
+        if len(key) < 12 or not re.search(r"\b\d{5}\b", address):
+            return []
+        found = self._search(q=address[:120], per_page=25, etat_administratif="A")
+        return [
+            self._company(r)
+            for r in found
+            if _addr_key((r.get("siege") or {}).get("adresse") or "") == key
+        ]
 
     def get_by_identifier(self, ident: Any) -> Entity | None:
         return (

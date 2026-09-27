@@ -35,7 +35,7 @@ export default function Header({ meta, theme, onToggleTheme, onHome, onCases, ca
   const live = connectors.data?.some((c) => c.enabled && !c.demo);
 
   return (
-    <header className="sticky top-0 z-30 border-b border-white/[0.06] bg-[#07090b]/85 text-white backdrop-blur-xl [&_.btn-ghost]:text-slate-300 [&_.btn-ghost:hover]:bg-white/[0.06] [&_.btn-ghost:hover]:text-white">
+    <header className="sticky top-0 z-30 border-b border-white/[0.06] bg-[#07090b]/70 text-white backdrop-blur-2xl backdrop-saturate-[1.8] shadow-[inset_0_1px_0_rgb(255_255_255/0.06),0_12px_32px_-20px_rgb(0_0_0/0.9)] [&_.btn-ghost]:text-slate-300 [&_.btn-ghost:hover]:bg-white/[0.06] [&_.btn-ghost:hover]:text-white">
       <div className="mx-auto flex h-14 max-w-[1600px] items-center gap-3 px-4">
         <button onClick={onHome} className="flex items-center gap-2.5" aria-label="Home">
           <Logo className="h-8 w-8" />
@@ -53,7 +53,7 @@ export default function Header({ meta, theme, onToggleTheme, onHome, onCases, ca
         )}
         <button
           onClick={onQuickOpen}
-          className="ml-auto flex h-9 items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 text-[13px] text-slate-400 transition-colors hover:border-white/20 hover:text-slate-200 md:ml-6 md:w-72"
+          className="ml-auto flex h-9 items-center gap-2 rounded-full border border-white/12 bg-gradient-to-b from-white/[0.09] to-white/[0.03] px-3 shadow-[inset_0_1px_0_rgb(255_255_255/0.12)] backdrop-blur-xl text-[13px] text-slate-400 transition-colors hover:border-white/20 hover:text-slate-200 md:ml-6 md:w-72"
           aria-label="Quick open"
         >
           <Search className="h-4 w-4" />
@@ -73,7 +73,7 @@ export default function Header({ meta, theme, onToggleTheme, onHome, onCases, ca
               </span>
             </button>
             {open && (
-              <div className="card absolute right-0 mt-2 text-slate-800 dark:text-slate-100 max-h-[70vh] w-[min(420px,calc(100vw-2rem))] overflow-y-auto p-3 shadow-lg" onMouseLeave={() => setOpen(false)}>
+              <div className="glass-panel absolute right-0 mt-2 rounded-2xl text-slate-800 dark:text-slate-100 max-h-[70vh] w-[min(420px,calc(100vw-2rem))] overflow-y-auto p-3 shadow-lg" onMouseLeave={() => setOpen(false)}>
                 <div className="label mb-2">Data sources (connectors)</div>
                 <ul className="space-y-2">
                   {[...(connectors.data ?? [])].sort((a, b) => Number(b.enabled) - Number(a.enabled)).map((c) => (

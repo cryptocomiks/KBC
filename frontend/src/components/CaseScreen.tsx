@@ -19,6 +19,7 @@ import InvestigationView from "./InvestigationView";
 import KycQuestionnaire from "./KycQuestionnaire";
 import PasswordGate from "./PasswordGate";
 import PeriodicReview from "./PeriodicReview";
+import QuickChecks from "./QuickChecks";
 import SourceOfWealth from "./SourceOfWealth";
 
 interface Props {
@@ -79,6 +80,15 @@ export default function CaseScreen({ caseId, tab, onTab, theme, onBack, onInvest
       {tab === "alerts" && <CaseAlerts caseId={caseId} />}
       {tab === "cdb" && <CdbForms caseId={caseId} />}
       {tab === "sow" && <SourceOfWealth caseId={caseId} subjectName={q.data.case.subject_name as string} />}
+      {tab === "checks" && (
+        <QuickChecks
+          company={q.data.case.subject_type === "company" ? (q.data.case.subject_name as string) : undefined}
+          country={(() => {
+            const subject = inv.entities.find((e) => e.id === inv.subject_id);
+            return subject?.jurisdiction ?? subject?.nationalities?.[0] ?? undefined;
+          })()}
+        />
+      )}
       {tab === "review" && <PeriodicReview caseId={caseId} onTab={onTab} />}
       {tab === "memo" && <DecisionMemo caseId={caseId} />}
       {tab === "history" && <CaseHistory key={q.data.case.updated_at} view={q.data} />}

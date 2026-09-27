@@ -57,6 +57,8 @@ class Settings(BaseSettings):
     companies_house_api_key: str = ""
     aleph_api_key: str = ""
     opensanctions_api_key: str = ""
+    # The Guardian Open Platform (free developer key): second adverse-media source
+    guardian_api_key: str = ""
     # Open watchlists downloaded as bulk files (OpenSanctions dataset names, comma-separated)
     open_datasets: str = (
         "eu_fsf,gb_fcdo_sanctions,ch_seco_sanctions,ca_dfatd_sema_sanctions,au_dfat_sanctions,"

@@ -521,6 +521,80 @@ def check_free_sources() -> None:
         print(f"SKIP  EU Transparency Register: {tr.status()[1]}")
 
 
+def check_extra_sources() -> None:
+    from app import checks
+    from app.connectors import extra_sources as es
+    from app.identifiers import Identifier
+
+    uid = es.UidRegisterConnector(settings).get_by_identifier(
+        Identifier("ch_uid", "CHE-116.281.710", "Swiss UID")
+    )
+    expect(
+        "UID register: CHE-116.281.710 (Nestlé VAT group)",
+        uid is not None,
+        f"{uid.name} · {uid.extra.get('vat_status')}" if uid else "none",
+    )
+    lw = es.LobbywatchConnector(settings)
+    parl = lw.search_person("Gerhard Pfister")
+    expect(
+        "Lobbywatch: parliamentarian found",
+        bool(parl),
+        parl[0].extra.get("pep_position", "") if parl else "none",
+    )
+    if parl:
+        roles = lw.get_person_roles(parl[0].id)
+        expect("Lobbywatch: declared interests", bool(roles), f"{len(roles)} interests")
+    ruag = lw.search_company("RUAG International Holding AG")
+    expect("Lobbywatch: organisation with UID", any(o.identifiers.get("UID") for o in ruag))
+    de = es.BundestagLobbyregisterConnector(settings).get_documents(company("Siemens AG", "DE"))
+    expect("Bundestag Lobbyregister: Siemens AG", bool(de), de[0].summary[:120] if de else "none")
+    mica = es.MicaRegisterConnector(settings)
+    docs = mica.get_documents(company("Bitpanda GmbH", "AT"))
+    expect(
+        "ESMA MiCA: Bitpanda authorised CASP", bool(docs), docs[0].summary[:120] if docs else "none"
+    )
+    rows = es._MICA.get(mica._load)
+    expect(
+        "ESMA MiCA: non-compliant list loaded",
+        len(rows.get("NCASP", [])) > 10,
+        f"{len(rows['NCASP'])} entries",
+    )
+    asic = es.AsicBannedConnector(settings)
+    index = es._ASIC.get(asic._load)
+    expect("ASIC banned & disqualified persons loaded", sum(map(len, index.values())) > 1000)
+    scam = es.ScamListsConnector(settings)
+    expect(
+        "Scam lists: known phishing domain flagged",
+        scam.domain_hits("evernorthvault.info") is not None
+        or scam.domain_hits("metamask-io.com") is not None,
+    )
+    expect("Scam lists: metamask.io not flagged", scam.domain_hits("metamask.io") is None)
+    iban = checks.check_iban("CH93 0076 2011 6238 5295 7")
+    print("      " + " | ".join(c["detail"] for c in iban["checks"]))
+    expect(
+        "SIX bank master answers",
+        any(c["label"] == "Bank" and c["status"] != "unknown" for c in iban["checks"]),
+    )
+    mail = checks.check_email("info@nestle.com", company="Nestlé S.A.")
+    print("      " + " | ".join(f"{c['label']}: {c['detail']}" for c in mail["checks"]))
+    expect(
+        "E-mail check: MX found for nestle.com",
+        any(c["label"].startswith("Mail server") and c["status"] == "ok" for c in mail["checks"]),
+    )
+    guardian = es.GuardianConnector(settings)
+    if guardian.enabled:
+        news = guardian.get_documents(company("Glencore"))
+        expect(
+            "The Guardian: adverse media for Glencore",
+            bool(news),
+            news[0].title[:100] if news else "none",
+        )
+    else:
+        print("SKIP  The Guardian: GUARDIAN_API_KEY not set")
+    fr = AnnuaireEntreprisesConnector(settings).search_address("60 RUE FRANCOIS IER 75008 PARIS")
+    expect("FR address search (domiciliation)", bool(fr), f"{len(fr)} companies at that address")
+
+
 def check_extended_watchlists() -> None:
     from app.connectors import open_datasets
 
@@ -872,6 +946,9 @@ guarded("Latvia, Poland KRS, securities (ISIN), Israel crypto wallets", check_ne
 guarded("Singapore, Israel, Canada registers; EU Court of Justice", check_world_sources)
 guarded("Extended watchlists (second batch)", check_extended_watchlists)
 guarded("SHAB, VIES, Irish CRO, UK case law, RDAP, EU Transparency Register", check_free_sources)
+guarded(
+    "UID register, Lobbywatch, Bundestag, MiCA, ASIC, scam lists, quick checks", check_extra_sources
+)
 for key, title, fn in [
     ("OPENSANCTIONS_API_KEY", "OpenSanctions", check_opensanctions),
     ("COMPANIES_HOUSE_API_KEY", "Companies House", check_companies_house),
