@@ -16,6 +16,8 @@ import sys
 import time
 import traceback
 
+import httpx
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "backend"))
 os.environ.setdefault("CACHE_PATH", ":memory:")
 
@@ -58,13 +60,23 @@ def expect(name: str, ok: bool, detail: str = "") -> None:
         failures.append(name)
 
 
+# Outages on the source's side (not a code error): reported as warnings
+EXTERNAL = ("network error", "unreachable", "timed out", "rate limited", "unavailable", "captcha")
+
+
 def guarded(title: str, fn) -> None:
     section(title)
     try:
         fn()
     except Exception as exc:  # noqa: BLE001 - report and continue with the other sources
+        text = f"{type(exc).__name__}: {exc}"
+        if isinstance(exc, (ConnectorError, httpx.TimeoutException)) and any(
+            k in text.lower() for k in EXTERNAL
+        ):
+            print(f"WARN  {title}: source outage, not a code error — {text[:200]}")
+            return
         traceback.print_exc()
-        expect(f"{title}: no exception", False, f"{type(exc).__name__}: {exc}")
+        expect(f"{title}: no exception", False, text)
 
 
 def company(name: str, jur: str | None = None) -> Entity:
@@ -999,7 +1011,8 @@ guarded(
     "UID register, Lobbywatch, Bundestag, MiCA, ASIC, scam lists, quick checks", check_extra_sources
 )
 guarded(
-    "Slovak RPO, Russian EGRUL, Brazil CNPJ, FINRA BrokerCheck, RECAP dockets", check_more_registries
+    "Slovak RPO, Russian EGRUL, Brazil CNPJ, FINRA BrokerCheck, RECAP dockets",
+    check_more_registries,
 )
 for key, title, fn in [
     ("OPENSANCTIONS_API_KEY", "OpenSanctions", check_opensanctions),

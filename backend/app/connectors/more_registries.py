@@ -24,7 +24,7 @@ from typing import Any
 from unidecode import unidecode
 
 from app.connectors.base import BaseConnector, ConnectorError
-from app.connectors.free_sources import _day
+from app.connectors.free_sources import _day, core_name
 from app.connectors.public_figures import may_query
 from app.matching.names import name_similarity
 from app.models import (
@@ -112,7 +112,7 @@ class RpoConnector(BaseConnector):
 
     def search_company(self, name: str, **filters: Any) -> list[Entity]:
         data = self.http_get_json(
-            f"{RPO}/search", params={"fullName": name[:80], "onlyActive": "false"}
+            f"{RPO}/search", params={"fullName": core_name(name)[:80], "onlyActive": "false"}
         )
         out = [
             self._entity(r)
@@ -237,9 +237,10 @@ class EgrulConnector(BaseConnector):
     kind = "registry"
     homepage = EGRUL
     jurisdictions = {"RU"}
-    max_retries = 1
+    max_retries = 0
     min_interval_seconds = 1.0
-    crossref_max_depth = 2
+    crossref_max_depth = 1
+    timeout_seconds = 10.0
 
     def _search(self, query: str) -> list[dict[str, Any]]:
         token = self.http_post_json(

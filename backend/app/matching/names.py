@@ -184,6 +184,8 @@ _LEGAL_FORM_PATTERNS = [
     r"\bpublichnoe aktsionernoe obshchestvo\b", r"\bnepublichnoe aktsionernoe obshchestvo\b",
     r"\baktsionernoe obshchestvo\b", r"\bobshchestvo s ogranichennoi otvetstvennostiu\b",
     r"\bpublic joint stock company\b", r"\bjoint stock company\b",
+    # Czech / Slovak forms once punctuation is removed ("a.s.", "s.r.o.", "spol. s r.o.")
+    r"\bspol s r o\b", r"\bs r o\b", r"\ba s\b", r"\bv o s\b", r"\bk s\b",
 ]  # fmt: skip
 
 _PHONETIC_RULES: list[tuple[str, str]] = [

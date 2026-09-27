@@ -321,7 +321,9 @@ class BaseConnector(ABC):
                 if attempt < retries:
                     time.sleep(RETRY_BACKOFF_SECONDS * (2**attempt))
                     continue
-                if isinstance(exc, httpx.ConnectError):
+                # cannot connect (refused or connection timed out): skip the source for a while
+                # instead of waiting again for every entity of the investigation
+                if isinstance(exc, httpx.ConnectError | httpx.ConnectTimeout):
                     _mark_down(self.name, "unreachable")
                     raise ConnectorError(
                         f"{self.label}: source unreachable ({exc}) — skipped for this investigation"

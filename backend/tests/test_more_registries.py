@@ -262,3 +262,18 @@ def test_recap_dockets_keep_cases_where_the_company_is_a_party():
     assert [d.title for d in docs] == ["Oscar v. Glencore Ltd"]
     assert docs[0].url == "https://www.courtlistener.com/docket/60729331/oscar-v-glencore-ltd/"
     assert "closed 2022-04-14" in docs[0].summary and docs[0].flags == ["court"]
+
+
+@respx.mock
+def test_connect_timeout_skips_the_source_for_the_rest_of_the_investigation():
+    import pytest
+
+    from app.connectors.base import ConnectorError
+
+    route = respx.post(f"{mr.EGRUL}/").mock(side_effect=httpx.ConnectTimeout("timed out"))
+    conn = mr.EgrulConnector(LIVE)
+    with pytest.raises(ConnectorError, match="unreachable"):
+        conn.search_company("Rosneft")
+    with pytest.raises(ConnectorError, match="skipped for a few minutes"):
+        conn.search_company("Lukoil")
+    assert route.call_count == 1  # the second lookup does not wait for another timeout

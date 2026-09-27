@@ -45,6 +45,7 @@ LEGAL_WORDS = {
     "ag", "sa", "sarl", "gmbh", "ltd", "limited", "plc", "inc", "llc", "srl", "spa",
     "sas", "bv", "nv", "the", "in", "liquidation", "liq", "dac", "clg", "uc", "co",
     "company", "kg", "se", "oy", "ab", "as", "sagl", "und", "et", "cie",
+    "sro", "ro", "s", "spol", "ooo", "pao", "oao", "zao", "pjsc", "jsc", "ltda",
 }  # fmt: skip
 
 
