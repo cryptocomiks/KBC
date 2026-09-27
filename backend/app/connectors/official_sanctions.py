@@ -4,6 +4,12 @@
   https://ofac.treasury.gov/specially-designated-nationals-and-blocked-persons-list-sdn-human-readable-lists
 * UN Security Council Consolidated List — consolidated.xml
   https://www.un.org/securitycouncil/content/un-sc-consolidated-list
+* EU consolidated list of financial sanctions (European Commission, FSF)
+* UK Sanctions List (Foreign, Commonwealth & Development Office)
+* Swiss sanctions list (SECO)
+
+Official lists are freely reusable, commercial use included: in commercial mode they are
+the core of the sanctions screening (see app/licences.py).
 
 The lists are downloaded once per server instance (refreshed every 12 h),
 indexed by name token, and each network entity is re-scored with KBC's
@@ -48,6 +54,20 @@ OFAC_ALT = "https://www.treasury.gov/ofac/downloads/alt.csv"
 UN_XML = "https://scsanctions.un.org/resources/xml/en/consolidated.xml"
 OFAC_UI = "https://sanctionssearch.ofac.treas.gov/Details.aspx?id={id}"
 UN_UI = "https://main.un.org/securitycouncil/en/content/un-sc-consolidated-list"
+# EU consolidated list of financial sanctions (European Commission, FSF). The token is the
+# public one published on data.europa.eu for anonymous downloads.
+EU_XML = (
+    "https://webgate.ec.europa.eu/fsd/fsf/public/files/xmlFullSanctionsList_1_1/content"
+    "?token=dG9rZW4tMjAxNw"
+)
+UK_XML = "https://sanctionslist.fcdo.gov.uk/docs/UK-Sanctions-List.xml"
+UK_UI = "https://www.gov.uk/government/publications/the-uk-sanctions-list"
+CH_XML = (
+    "https://www.sesam.search.admin.ch/sesam-search-web/pages/downloadXmlGesamtliste.xhtml"
+    "?lang=en&action=downloadXmlGesamtlisteAction"
+)
+CH_UI = "https://www.sesam.search.admin.ch/sesam-search-web/pages/search.xhtml?lang=en"
+EU_UI = "https://data.europa.eu/data/datasets/consolidated-list-of-persons-groups-and-entities-subject-to-eu-financial-sanctions"
 REFRESH_SECONDS = 12 * 3600
 MIN_SCORE = 60
 _MONTHS = {
@@ -182,6 +202,22 @@ def _download(url: str, timeout: float) -> str:
     return resp.content.decode("utf-8", errors="replace")
 
 
+def _download_bytes(url: str, timeout: float) -> bytes:
+    """Streamed download (the Swiss server drops large unstreamed transfers)."""
+    buf = bytearray()
+    with httpx.stream(
+        "GET", url, timeout=timeout, follow_redirects=True, headers={"User-Agent": USER_AGENT}
+    ) as resp:
+        resp.raise_for_status()
+        for chunk in resp.iter_bytes():
+            buf.extend(chunk)
+    return bytes(buf)
+
+
+def _local(tag: str) -> str:
+    return tag.rsplit("}", 1)[-1]
+
+
 def _load_ofac(index: _Index, timeout: float) -> None:
     aliases: dict[str, list[str]] = {}
     for row in csv.reader(io.StringIO(_download(OFAC_ALT, timeout))):
@@ -295,6 +331,223 @@ def _load_un(index: _Index, timeout: float) -> None:
         )
 
 
+def _load_eu(index: _Index, timeout: float) -> None:
+    """EU consolidated financial sanctions list, from the European Commission (~25 MB XML,
+    streamed: each <sanctionEntity> is read, indexed and freed)."""
+    data = _download_bytes(EU_XML, timeout)
+    added = 0
+    for _, el in ET.iterparse(io.BytesIO(data), events=("end",)):
+        if _local(el.tag) != "sanctionEntity":
+            continue
+        subject = next((c.get("code") for c in el if _local(c.tag) == "subjectType"), "")
+        if subject not in ("person", "enterprise"):
+            el.clear()
+            continue
+        is_person = subject == "person"
+        names: list[str] = []
+        births: list[str] = []
+        nats: list[str] = []
+        program, act_url, remark = "", "", ""
+        for c in el:
+            tag = _local(c.tag)
+            if tag == "nameAlias":
+                whole = (c.get("wholeName") or "").strip()
+                if whole and whole not in names:
+                    names.append(whole)
+            elif tag == "birthdate":
+                b = (c.get("birthdate") or c.get("year") or "").strip()
+                if b:
+                    births.append(b)
+            elif tag == "citizenship":
+                iso = (c.get("countryIso2Code") or "").strip().upper()
+                if len(iso) == 2 and iso != "00" and iso not in nats:
+                    nats.append(iso)
+            elif tag == "regulation" and not program:
+                program = c.get("programme") or ""
+                act_url = next(
+                    ((u.text or "").strip() for u in c if _local(u.tag) == "publicationUrl"), ""
+                )
+            elif tag == "remark" and not remark:
+                remark = (c.text or "").strip()
+        ref = el.get("euReferenceNumber") or el.get("logicalId") or ""
+        if names:
+            index.add(
+                ListedEntry(
+                    entity=Entity(
+                        id=f"eu_fsf:{el.get('logicalId')}",
+                        type=EntityType.PERSON if is_person else EntityType.COMPANY,
+                        name=names[0],
+                        aliases=names[1:31],
+                        birth_date=births[0] if is_person and births else None,
+                        nationalities=nats if is_person else [],
+                    ),
+                    dataset="EU consolidated financial sanctions list (European Commission)",
+                    url=act_url or EU_UI,
+                    program=program or None,
+                    details={"reference": ref or None, "remarks": remark[:300] or None},
+                )
+            )
+            added += 1
+        el.clear()
+    if not added:
+        raise ValueError("EU list downloaded but empty")
+
+
+def _uk_dob(raw: str) -> str | None:
+    """'23/03/1980' -> '1980-03-23', 'dd/03/1980' -> '1980-03', 'dd/mm/1945' -> '1945'."""
+    m = re.fullmatch(r"(\w{2})/(\w{2})/(\d{4})", raw.strip())
+    if not m:
+        return None
+    day, month, year = m.groups()
+    if not month.isdigit():
+        return year
+    return f"{year}-{month}" + (f"-{day}" if day.isdigit() else "")
+
+
+def _load_uk(index: _Index, timeout: float) -> None:
+    """UK Sanctions List (FCDO) — the single UK list since OFSI's consolidated list closed."""
+    data = _download_bytes(UK_XML, timeout)
+    added = 0
+    for _, el in ET.iterparse(io.BytesIO(data), events=("end",)):
+        if _local(el.tag) != "Designation":
+            continue
+        kind = (el.findtext("IndividualEntityShip") or "").strip()
+        if kind not in ("Individual", "Entity"):
+            el.clear()
+            continue
+        is_person = kind == "Individual"
+        primary: list[str] = []
+        aliases: list[str] = []
+        for n in el.iter("Name"):
+            parts = [(n.findtext(f"Name{i}") or "").strip() for i in range(1, 7)]
+            name = " ".join(p for p in parts if p)
+            if not name:
+                continue
+            target = primary if (n.findtext("NameType") or "").startswith("Primary") else aliases
+            if name not in primary and name not in aliases:
+                target.append(name)
+        names = primary + aliases
+        dobs = [d for d in (_uk_dob(x.text or "") for x in el.iter("DOB")) if d]
+        nats = nationality_iso(" / ".join((x.text or "") for x in el.iter("Nationality")))
+        uid = (el.findtext("UniqueID") or "").strip()
+        if names:
+            index.add(
+                ListedEntry(
+                    entity=Entity(
+                        id=f"uk_fcdo:{uid}",
+                        type=EntityType.PERSON if is_person else EntityType.COMPANY,
+                        name=names[0],
+                        aliases=names[1:31],
+                        birth_date=dobs[0] if is_person and dobs else None,
+                        nationalities=nats if is_person else [],
+                    ),
+                    dataset="UK Sanctions List (FCDO)",
+                    url=UK_UI,
+                    program=(el.findtext("RegimeName") or "").strip() or None,
+                    details={
+                        "reference": uid or None,
+                        "sanctions": (el.findtext("SanctionsImposed") or "").strip() or None,
+                        "listed_on": (el.findtext("DateDesignated") or "").strip() or None,
+                    },
+                )
+            )
+            added += 1
+        el.clear()
+    if not added:
+        raise ValueError("UK list downloaded but empty")
+
+
+def _ch_name(name: ET.Element) -> str:
+    parts = sorted(
+        (int(p.get("order") or 0), (p.findtext("value") or "").strip())
+        for p in name.findall("name-part")
+    )
+    return " ".join(v for _, v in parts if v)
+
+
+def _load_ch(index: _Index, timeout: float) -> None:
+    """Swiss sanctions list (SECO). The file also keeps de-listed targets: a target whose
+    latest modification is a de-listing is skipped."""
+    data = _download_bytes(CH_XML, timeout)
+    programs: dict[str, str] = {}
+    added = 0
+    for _, el in ET.iterparse(io.BytesIO(data), events=("end",)):
+        tag = el.tag
+        if tag == "sanctions-program":
+            key = next(
+                (k.text for k in el.findall("program-key") if k.get("lang") == "eng" and k.text),
+                "",
+            )
+            for sset in el.findall("sanctions-set"):
+                if sset.get("ssid"):
+                    programs[sset.get("ssid")] = key
+            continue
+        if tag != "target":
+            continue
+        mods = sorted(
+            el.findall("modification"),
+            key=lambda m: m.get("effective-date") or m.get("enactment-date") or "",
+        )
+        subject = el.find("individual")
+        is_person = subject is not None
+        if subject is None:
+            subject = el.find("entity")
+        if subject is None or (mods and mods[-1].get("modification-type") == "de-listed"):
+            el.clear()
+            continue
+        names: list[str] = []
+        births: list[str] = []
+        nats: list[str] = []
+        for identity in subject.findall("identity"):
+            for name in identity.findall("name"):
+                n = _ch_name(name)
+                if n and n not in names:
+                    if name.get("name-type") == "primary-name" and identity.get("main") == "true":
+                        names.insert(0, n)
+                    else:
+                        names.append(n)
+            for d in identity.findall("day-month-year"):
+                y, m, dd = d.get("year"), d.get("month"), d.get("day")
+                if y:
+                    births.append(
+                        y
+                        + (f"-{int(m):02d}" if m else "")
+                        + (f"-{int(dd):02d}" if m and dd else "")
+                    )
+            for nat in identity.findall("nationality"):
+                iso = (nat.get("iso-code") or "").strip()
+                if not iso:
+                    c = nat.find("country")
+                    iso = (c.get("iso-code") or "").strip() if c is not None else ""
+                if len(iso) == 2 and iso.upper() not in nats:
+                    nats.append(iso.upper())
+        ssid = el.get("ssid") or ""
+        if names:
+            index.add(
+                ListedEntry(
+                    entity=Entity(
+                        id=f"ch_seco:{ssid}",
+                        type=EntityType.PERSON if is_person else EntityType.COMPANY,
+                        name=names[0],
+                        aliases=names[1:31],
+                        birth_date=births[0] if is_person and births else None,
+                        nationalities=nats if is_person else [],
+                    ),
+                    dataset="Swiss sanctions list (SECO)",
+                    url=CH_UI,
+                    program=programs.get(el.get("sanctions-set-id") or "") or None,
+                    details={
+                        "reference": ssid or None,
+                        "remarks": (subject.findtext("justification") or "").strip()[:300] or None,
+                    },
+                )
+            )
+            added += 1
+        el.clear()
+    if not added:
+        raise ValueError("Swiss list downloaded but empty")
+
+
 CRYPTO_URL = "https://data.opensanctions.org/datasets/latest/{dataset}/targets.simple.csv"
 IL_CRYPTO = CRYPTO_URL.format(dataset="il_mod_crypto")
 IL_CRYPTO_LABEL = "Israel NBCTF seized / sanctioned crypto wallets (terror financing)"
@@ -350,7 +603,8 @@ def _load_il_crypto(index: _Index, timeout: float) -> None:
 class OfficialSanctionsConnector(BaseConnector):
     name = "official_sanctions"
     label = (
-        "Official sanctions lists — OFAC SDN (US), UN Security Council, Israel NBCTF crypto wallets"
+        "Official sanctions lists — OFAC SDN (US), UN Security Council, EU, UK (FCDO), "
+        "Switzerland (SECO), crypto wallets"
     )
     kind = "screening"
     homepage = "https://ofac.treasury.gov"
@@ -360,7 +614,11 @@ class OfficialSanctionsConnector(BaseConnector):
             if not _INDEX.entries or time.time() - _INDEX.loaded_at > REFRESH_SECONDS:
                 fresh = _Index()
                 timeout = max(self.settings.http_timeout_seconds, 30.0)
-                for loader in (_load_ofac, _load_un, _load_il_crypto):
+                loaders = [_load_ofac, _load_un, _load_eu, _load_uk, _load_ch]
+                # The crypto address lists come from OpenSanctions exports (CC BY-NC).
+                if self.osn_allowed:
+                    loaders.append(_load_il_crypto)
+                for loader in loaders:
                     try:
                         loader(fresh, timeout)
                     except (httpx.HTTPError, ET.ParseError, ValueError) as exc:
@@ -377,6 +635,15 @@ class OfficialSanctionsConnector(BaseConnector):
                 _INDEX.wallets = fresh.wallets
                 _INDEX.loaded_at = time.time()
             return _INDEX
+
+    @property
+    def osn_allowed(self) -> bool:
+        """OpenSanctions exports may be used: not in commercial mode, or under a licence."""
+        from app.licences import licensed_names
+
+        return not self.settings.commercial_mode or "open_watchlists" in licensed_names(
+            self.settings.licensed_sources
+        )
 
     def prefetch(self) -> None:
         if not _INDEX.entries:
