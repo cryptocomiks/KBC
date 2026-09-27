@@ -147,6 +147,8 @@ class RiskEngine:
         for h in net.hits:
             if h.score < t["possible_match_score"]:
                 continue  # weak hit: displayed for review but not scored
+            if h.triage in ("namesake", "dismissed"):
+                continue  # contradicted by the evidence / ruled out: set aside, not scored
             # A hit contradicted by the evidence (other date of birth, nationality, country)
             # stays a possible match to rule out, never a confirmed one.
             strong = h.score >= t["strong_match_score"] and h.triage != "namesake"
@@ -185,6 +187,8 @@ class RiskEngine:
             if e.extra.get("register_warning"):
                 flag("register_warning", eid, f"{e.name}: {e.extra['register_warning']}")
             for doc in e.documents:
+                if "set_aside" in doc.flags:
+                    continue  # judged not relevant (name only cited, not a party): not scored
                 if "vat_invalid" in doc.flags:
                     flag("vat_invalid", eid, f"{e.name}: {doc.title}")
                 if "young_domain" in doc.flags:
@@ -272,7 +276,9 @@ class RiskEngine:
         sanctioned = {
             h.entity_id
             for h in net.hits
-            if h.list_type == ListType.SANCTION and h.score >= t["strong_match_score"]
+            if h.list_type == ListType.SANCTION
+            and h.score >= t["strong_match_score"]
+            and h.triage not in ("namesake", "dismissed")
         }
         for r in net.relationships.values():
             if r.type != RelationType.TRANSFER:
@@ -293,7 +299,9 @@ class RiskEngine:
         peps = {
             h.entity_id: h
             for h in net.hits
-            if h.list_type == ListType.PEP and h.score >= t["strong_match_score"]
+            if h.list_type == ListType.PEP
+            and h.score >= t["strong_match_score"]
+            and h.triage not in ("namesake", "dismissed")
         }
         for r in net.relationships.values():
             if r.type != RelationType.RELATIVE:
@@ -308,7 +316,9 @@ class RiskEngine:
 
         # Adverse media: keyword-filtered press mentions (leads to review)
         for eid, e in ents.items():
-            articles = [d for d in e.documents if "adverse_media" in d.flags]
+            articles = [
+                d for d in e.documents if "adverse_media" in d.flags and "set_aside" not in d.flags
+            ]
             if articles:
                 titles = "; ".join(f"“{d.title[:80]}” ({d.date})" for d in articles[:3])
                 flag(

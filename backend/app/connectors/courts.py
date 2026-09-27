@@ -13,6 +13,7 @@ from typing import Any
 from app.connectors.base import BaseConnector
 from app.connectors.public_figures import is_public_figure, may_query
 from app.models import Document, Entity
+from app.relevance import named_in, set_aside
 
 __all__ = ["CourtListenerConnector", "SwissCourtsConnector", "is_public_figure"]
 
@@ -136,15 +137,16 @@ class CourtListenerConnector(BaseConnector):
             summary = " · ".join(
                 str(p) for p in (r.get("court"), r.get("docketNumber")) if p and str(p).strip()
             )
-            docs.append(
-                Document(
-                    title=case,
-                    kind="court_decision",
-                    date=_day(r.get("dateFiled")),
-                    url=url,
-                    summary=summary or None,
-                    source="US court opinions (CourtListener) — name match, verify the parties",
-                    flags=["court"],
-                )
+            doc = Document(
+                title=case,
+                kind="court_decision",
+                date=_day(r.get("dateFiled")),
+                url=url,
+                summary=summary or None,
+                source="US court opinions (CourtListener) — named as a party, verify identity",
+                flags=["court"],
             )
+            if not named_in(entity, case):
+                set_aside(doc, "not a party to the case (named in the opinion text only)")
+            docs.append(doc)
         return docs

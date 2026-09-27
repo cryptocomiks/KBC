@@ -23,6 +23,10 @@ CONTRADICTIONS = (
     ("different nationalities", "different nationality"),
     ("different jurisdictions", "different country of registration"),
     ("capped at", "conflicting identifiers"),
+    ("only generic words in common", "only generic words in common (holding, capital...)"),
+    ("distinctive part is missing", "the distinctive part of the company name is missing"),
+    ("single-word name", "single-word name: not enough to identify a person"),
+    ("different entity types", "a person against a company (or the reverse)"),
 )
 CORROBORATIONS = (
     ("same date of birth", "same date of birth"),

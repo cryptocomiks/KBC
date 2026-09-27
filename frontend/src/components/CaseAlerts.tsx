@@ -143,6 +143,7 @@ export default function CaseAlerts({ caseId }: { caseId: string }) {
   const q = useQuery({ queryKey: ["alerts", caseId], queryFn: () => api.alerts(caseId) });
   const [name, setName] = useState(analyst.get());
   const [showCleared, setShowCleared] = useState(false);
+  const [showNamesakes, setShowNamesakes] = useState(false);
   const refresh = () => {
     qc.invalidateQueries({ queryKey: ["alerts", caseId] });
     qc.invalidateQueries({ queryKey: ["case", caseId] });
@@ -212,7 +213,7 @@ export default function CaseAlerts({ caseId }: { caseId: string }) {
         {groups.namesakes.length > 0 && (
           <div className="mt-4 flex flex-wrap items-center gap-3 rounded-xl bg-brand-500/8 px-4 py-3 ring-1 ring-brand-500/25">
             <p className="min-w-0 flex-1 text-[13px]">
-              <b>{groups.namesakes.length} alert(s)</b> are contradicted by the evidence. Rule them out in one go — each gets a written
+              <b>{groups.namesakes.length} alert(s)</b> are contradicted by the evidence and already left out of the score. Rule them out in one go — each gets a written
               justification (shown below each alert) and is remembered for every other case.
             </p>
             <button
@@ -249,7 +250,6 @@ export default function CaseAlerts({ caseId }: { caseId: string }) {
       )}
       {[
         { title: "To decide", rows: groups.open, empty: "No open alert." },
-        { title: "Probable namesakes", rows: groups.namesakes, empty: "" },
         { title: "Decided in this case", rows: groups.decided, empty: "" },
       ]
         .filter((g) => g.rows.length || g.empty)
@@ -269,6 +269,22 @@ export default function CaseAlerts({ caseId }: { caseId: string }) {
             )}
           </section>
         ))}
+      {groups.namesakes.length > 0 && (
+        <section className="card p-4">
+          <button className="flex w-full items-center gap-2 text-left text-[13px] font-semibold" onClick={() => setShowNamesakes(!showNamesakes)}>
+            Set aside automatically — probable namesakes <span className="font-mono text-xs text-slate-400">{groups.namesakes.length}</span>
+            <span className="text-[11px] font-normal text-slate-500">contradicted by the evidence, not counted in the score</span>
+            <ChevronDown className={`ml-auto h-4 w-4 text-slate-400 transition-transform ${showNamesakes ? "rotate-180" : ""}`} />
+          </button>
+          {showNamesakes && (
+            <ul className="mt-2 space-y-2">
+              {groups.namesakes.map((a) => (
+                <AlertItem key={a.key} a={a} onDecide={onDecide} busy={decide.isPending} />
+              ))}
+            </ul>
+          )}
+        </section>
+      )}
       {groups.cleared.length > 0 && (
         <section className="card p-4">
           <button className="flex w-full items-center gap-2 text-left text-[13px] font-semibold" onClick={() => setShowCleared(!showCleared)}>

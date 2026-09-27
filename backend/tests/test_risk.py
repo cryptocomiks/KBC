@@ -213,7 +213,7 @@ def test_listed_subject_is_always_top_level_unless_contradicted():
     )
     assert listed.score == 40 and listed.level == "critical"
     namesake = hit("S", ListType.SANCTION, 97)
-    namesake.triage = "namesake"  # other date of birth: to rule out, not a confirmed match
+    namesake.triage = "namesake"  # other date of birth: set aside, shown but not scored
     other = RiskEngine(CFG, JUR, TODAY).assess(net([s], {"S": 0}, hits=[namesake]))
-    assert [f.key for f in other.factors] == ["sanctions_possible_match"]
+    assert [f.key for f in other.factors] == []
     assert other.level == "low"

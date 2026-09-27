@@ -75,8 +75,12 @@ const urls = (r: Row) => {
 };
 
 export default function TablesSection({ investigation: inv, onSelect, activeTab, onTabChange, decisions, onDecide }: Props) {
-  const [hideNamesakes, setHideNamesakes] = useState(false);
-  const hiddenCount = [...inv.tables.screening, ...inv.tables.leaks].filter((r) => r.triage === "namesake" || r.triage === "dismissed").length;
+  // Items set aside automatically (namesakes, ruled-out hits, documents where the name is only
+  // cited) are hidden by default: they do not count in the score, one click shows them.
+  const [hideNamesakes, setHideNamesakes] = useState(true);
+  const setAside = (r: Row) => String(r.flags ?? "").includes("set_aside");
+  const hiddenHits = [...inv.tables.screening, ...inv.tables.leaks].filter((r) => r.triage === "namesake" || r.triage === "dismissed").length;
+  const hiddenDocs = (inv.tables.documents ?? []).filter(setAside).length;
   const decisionColumn: Column[] = onDecide
     ? [
         {
@@ -242,7 +246,7 @@ export default function TablesSection({ investigation: inv, onSelect, activeTab,
     {
       key: "documents",
       label: "Documents & filings",
-      rows: t.documents ?? [],
+      rows: hideNamesakes ? (t.documents ?? []).filter((r) => !setAside(r)) : (t.documents ?? []),
       click: "entity_id",
       empty: "No linked document.",
       columns: [
@@ -372,10 +376,12 @@ export default function TablesSection({ investigation: inv, onSelect, activeTab,
           </button>
         ))}
       </div>
-      {(tab.key === "screening" || tab.key === "leaks") && hiddenCount > 0 && (
+      {((tab.key === "screening" || tab.key === "leaks") ? hiddenHits : tab.key === "documents" ? hiddenDocs : 0) > 0 && (
         <label className="mb-2 inline-flex cursor-pointer items-center gap-2 text-xs text-slate-600 dark:text-slate-300">
           <input type="checkbox" className="accent-brand-600" checked={hideNamesakes} onChange={(e) => setHideNamesakes(e.target.checked)} />
-          Hide probable namesakes and ruled-out hits ({hiddenCount})
+          {tab.key === "documents"
+            ? `Hide documents set aside automatically — name only cited, not a party (${hiddenDocs})`
+            : `Hide hits set aside automatically — probable namesakes and ruled-out hits, not scored (${hiddenHits})`}
         </label>
       )}
       <DataTable

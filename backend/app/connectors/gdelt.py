@@ -1,28 +1,24 @@
 """Adverse media — press mentions of the subject with financial-crime keywords (no key).
 
-1. GDELT DOC 2.0 API (open news index). It allows one request every 5 s per
-   IP address and answers HTTP 429 to shared cloud IPs, so it is not retried;
-2. fallback: Google News RSS search.
+GDELT DOC 2.0 API (open news index). It allows one request every 5 s per IP address and
+answers HTTP 429 to shared cloud IPs, so it is not retried. (Google News feeds are
+licensed for personal reading only: the analyst gets a Google News search link instead.)
 
-Results are *leads*: a name-only match in an article is weak evidence
-(homonyms), so each article is shown with title, outlet and date for review.
-Only the investigated subject is searched.
+Results are *leads*. An article counts as adverse media only when its headline names the
+subject; an article that only mentions the name somewhere in its text is set aside (still
+listed, not scored). Only the investigated subject is searched.
 """
 
 from __future__ import annotations
 
-import xml.etree.ElementTree as ET
 from datetime import date
-from email.utils import parsedate_to_datetime
 from typing import Any
 
-import httpx
-
-from app.connectors.base import USER_AGENT, BaseConnector, ConnectorError
+from app.connectors.base import BaseConnector, ConnectorError
 from app.models import Document, Entity, EntityType
+from app.relevance import named_in, set_aside
 
 API = "https://api.gdeltproject.org/api/v2/doc/doc"
-RSS = "https://news.google.com/rss/search"
 KEYWORDS = [
     "fraud",
     "corruption",
@@ -49,7 +45,7 @@ def _gdelt_day(value: str | None) -> date | None:
 
 class GdeltConnector(BaseConnector):
     name = "gdelt_media"
-    label = "Adverse media — GDELT news index (Google News fallback)"
+    label = "Adverse media — GDELT news index"
     kind = "media"
     homepage = "https://www.gdeltproject.org"
     document_types = {"person", "company"}
@@ -76,7 +72,7 @@ class GdeltConnector(BaseConnector):
                 },
             )
             articles = (data or {}).get("articles", [])
-            return [
+            docs = [
                 self._doc(
                     a.get("title"),
                     a.get("url"),
@@ -86,45 +82,14 @@ class GdeltConnector(BaseConnector):
                 )
                 for a in articles
             ]
+            for d in docs:
+                if not named_in(entity, d.title):
+                    set_aside(
+                        d, "the headline does not name the subject (mentioned in the text only)"
+                    )
+            return docs
         except ConnectorError:
-            return self._google_news(query)
-
-    def _google_news(self, query: str) -> list[Document]:
-        root = None
-        for _ in range(2):  # one retry: the feed occasionally answers 5xx / empty to cloud IPs
-            try:
-                resp = httpx.get(
-                    RSS,
-                    params={"q": query, "hl": "en", "gl": "US", "ceid": "US:en"},
-                    headers={"User-Agent": USER_AGENT},
-                    timeout=self.settings.http_timeout_seconds,
-                    follow_redirects=True,
-                )
-                resp.raise_for_status()
-                root = ET.fromstring(resp.content)
-                break
-            except (httpx.HTTPError, ET.ParseError):
-                continue
-        if root is None:
             return []
-        docs = []
-        for it in root.iter("item"):
-            try:
-                day = parsedate_to_datetime(it.findtext("pubDate") or "").date()
-            except (TypeError, ValueError):
-                day = None
-            docs.append(
-                self._doc(
-                    it.findtext("title"),
-                    it.findtext("link"),
-                    day,
-                    it.findtext("source") or "",
-                    "Google News",
-                )
-            )
-            if len(docs) >= MAX_ARTICLES:
-                break
-        return docs
 
     def _doc(
         self, title: str | None, url: str | None, day: date | None, outlet: str, via: str
@@ -135,6 +100,6 @@ class GdeltConnector(BaseConnector):
             date=day,
             url=url,
             summary=outlet or None,
-            source=f"Adverse media via {via} — keyword match, verify relevance (homonyms)",
+            source=f"Adverse media via {via} — subject named in the headline, verify (homonyms)",
             flags=["adverse_media"],
         )

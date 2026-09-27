@@ -55,6 +55,33 @@ function financials(value: unknown): React.ReactNode {
   );
 }
 
+function DocItem({ d }: { d: Entity["documents"][number] }) {
+  return (
+    <li
+      className={`rounded-md border p-2 ${
+        d.flags.includes("insolvency") && !d.flags.includes("set_aside")
+          ? "border-red-300 bg-red-50 dark:border-red-900 dark:bg-red-950/40"
+          : "border-slate-200 dark:border-slate-700"
+      }`}
+    >
+      <div className="flex items-start gap-2">
+        <span className="font-medium">
+          {d.url ? (
+            <a href={d.url} target="_blank" rel="noreferrer" className="inline-flex items-start gap-1 text-brand-600 hover:underline">
+              {d.title} <ExternalLink className="mt-0.5 h-3 w-3 shrink-0" />
+            </a>
+          ) : (
+            d.title
+          )}
+        </span>
+        {d.date && <span className="ml-auto shrink-0 text-slate-500">{d.date}</span>}
+      </div>
+      {d.summary && <div className="mt-0.5 text-slate-600 dark:text-slate-400">{d.summary}</div>}
+      <div className="mt-0.5 text-[10px] text-slate-400">{d.source}</div>
+    </li>
+  );
+}
+
 export default function EntityPanel({ investigation: inv, entityId, onSelect }: Props) {
   const byId = new Map(inv.entities.map((e) => [e.id, e]));
   const e = byId.get(entityId);
@@ -227,35 +254,25 @@ export default function EntityPanel({ investigation: inv, entityId, onSelect }: 
         {e.documents?.length > 0 && (
           <section>
             <div className="label mb-1.5 flex items-center gap-1">
-              <FileText className="h-3 w-3" /> Documents & filings ({e.documents.length})
+              <FileText className="h-3 w-3" /> Documents & filings ({e.documents.filter((d) => !d.flags.includes("set_aside")).length})
             </div>
             <ul className="space-y-1.5 text-xs">
-              {e.documents.map((d, i) => (
-                <li
-                  key={`${d.url}-${i}`}
-                  className={`rounded-md border p-2 ${
-                    d.flags.includes("insolvency")
-                      ? "border-red-300 bg-red-50 dark:border-red-900 dark:bg-red-950/40"
-                      : "border-slate-200 dark:border-slate-700"
-                  }`}
-                >
-                  <div className="flex items-start gap-2">
-                    <span className="font-medium">
-                      {d.url ? (
-                        <a href={d.url} target="_blank" rel="noreferrer" className="inline-flex items-start gap-1 text-brand-600 hover:underline">
-                          {d.title} <ExternalLink className="mt-0.5 h-3 w-3 shrink-0" />
-                        </a>
-                      ) : (
-                        d.title
-                      )}
-                    </span>
-                    {d.date && <span className="ml-auto shrink-0 text-slate-500">{d.date}</span>}
-                  </div>
-                  {d.summary && <div className="mt-0.5 text-slate-600 dark:text-slate-400">{d.summary}</div>}
-                  <div className="mt-0.5 text-[10px] text-slate-400">{d.source}</div>
-                </li>
+              {e.documents.filter((d) => !d.flags.includes("set_aside")).map((d, i) => (
+                <DocItem key={`${d.url}-${i}`} d={d} />
               ))}
             </ul>
+            {e.documents.some((d) => d.flags.includes("set_aside")) && (
+              <details className="mt-2 text-xs">
+                <summary className="cursor-pointer text-slate-500">
+                  Set aside automatically ({e.documents.filter((d) => d.flags.includes("set_aside")).length}) — name only cited, not scored
+                </summary>
+                <ul className="mt-1.5 space-y-1.5 opacity-75">
+                  {e.documents.filter((d) => d.flags.includes("set_aside")).map((d, i) => (
+                    <DocItem key={`${d.url}-aside-${i}`} d={d} />
+                  ))}
+                </ul>
+              </details>
+            )}
           </section>
         )}
 

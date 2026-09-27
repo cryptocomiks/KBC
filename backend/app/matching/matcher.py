@@ -20,6 +20,8 @@ DOB_NEAR_PENALTY = 10
 NATIONALITY_BONUS = 4
 NATIONALITY_CONFLICT_PENALTY = 8
 JURISDICTION_CONFLICT_PENALTY = 15
+TYPE_MISMATCH_CAP = 50
+COMMON_NAME_PENALTY = 5
 
 
 def best_name_score(query: str, candidate: Entity, kind: str) -> tuple[float, list[str], str]:
@@ -54,6 +56,18 @@ def match_entities(query: Entity, candidate: Entity) -> MatchResult:
     """Confidence that `candidate` refers to the same real-world entity as `query`."""
     if query.type != candidate.type and EntityType.ADDRESS in (query.type, candidate.type):
         return MatchResult(score=0, explanation=["different entity types"])
+    if {query.type, candidate.type} == {EntityType.PERSON, EntityType.COMPANY}:
+        # A person is not a company: at most a lead (e.g. a company named after its founder).
+        s, _, _ = best_name_score(query.name, candidate, "person")
+        return MatchResult(
+            score=round(min(s, TYPE_MISMATCH_CAP), 1),
+            explanation=[
+                f"name {s:.0f}%",
+                f"different entity types ({query.type.value} vs {candidate.type.value}),"
+                f" capped at {TYPE_MISMATCH_CAP}",
+            ],
+            signals={"type": "conflict"},
+        )
     kind = "company" if query.type == EntityType.COMPANY else "person"
 
     # Strong identifier: registration number in the same jurisdiction.
@@ -107,6 +121,15 @@ def match_entities(query: Entity, candidate: Entity) -> MatchResult:
                 f" [-{JURISDICTION_CONFLICT_PENALTY}]"
             )
 
+    if (
+        kind == "person"
+        and any("very common name" in n for n in notes)
+        and signals.get("dob") not in ("match", "partial")
+    ):
+        score -= COMMON_NAME_PENALTY
+        explanation.append(
+            f"very common name without a matching date of birth [-{COMMON_NAME_PENALTY}]"
+        )
     if signals.get("dob") == "conflict" and score > DOB_CONFLICT_CAP:
         score = DOB_CONFLICT_CAP
         explanation.append(f"capped at {DOB_CONFLICT_CAP}: conflicting dates of birth")

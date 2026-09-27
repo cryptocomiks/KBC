@@ -207,17 +207,46 @@ RSS = """<?xml version="1.0"?><rss><channel>
 
 
 @respx.mock
-def test_gdelt_rate_limited_falls_back_to_google_news():
+def test_gdelt_rate_limited_gives_nothing_and_never_calls_google():
     gdelt = respx.get("https://api.gdeltproject.org/api/v2/doc/doc").mock(
         return_value=httpx.Response(429, text="Please limit requests to one every 5 seconds")
     )
-    respx.get("https://news.google.com/rss/search").mock(return_value=httpx.Response(200, text=RSS))
-    [doc] = GdeltConnector(LIVE).get_documents(
+    google = respx.get("https://news.google.com/rss/search").mock(
+        return_value=httpx.Response(200, text=RSS)
+    )
+    docs = GdeltConnector(LIVE).get_documents(
         Entity(id="c", type=EntityType.COMPANY, name="Acme Group")
     )
-    assert gdelt.call_count == 1  # never retried: GDELT asks clients not to
-    assert doc.url == "https://news.example/b" and doc.date.isoformat() == "2026-08-03"
-    assert "Google News" in doc.source and doc.flags == ["adverse_media"]
+    assert docs == [] and gdelt.call_count == 1  # never retried: GDELT asks clients not to
+    assert google.call_count == 0  # Google News feeds are for personal reading only
+
+
+@respx.mock
+def test_gdelt_keeps_articles_naming_the_subject_in_the_headline():
+    respx.get("https://api.gdeltproject.org/api/v2/doc/doc").mock(
+        return_value=httpx.Response(
+            200,
+            json={
+                "articles": [
+                    {
+                        "title": "Acme Group fined for bribery",
+                        "url": "https://n/a",
+                        "seendate": "20260801T000000Z",
+                    },
+                    {
+                        "title": "Markets wrap: stocks fall",
+                        "url": "https://n/b",
+                        "seendate": "20260802T000000Z",
+                    },
+                ]
+            },
+        )
+    )
+    kept, aside = GdeltConnector(LIVE).get_documents(
+        Entity(id="c", type=EntityType.COMPANY, name="Acme Group Holding SA")
+    )
+    assert kept.flags == ["adverse_media"]
+    assert aside.flags == ["adverse_media", "set_aside"] and "headline" in aside.summary
 
 
 def test_demo_pep_relative_is_flagged(registry):

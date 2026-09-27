@@ -140,7 +140,9 @@ def test_courtlistener_opinions():
         "https://www.courtlistener.com/opinion/5287561/glencore-ltd-v-freepoint-commodities-llc/"
     )
     assert doc.date.isoformat() == "2021-10-05" and "653431/19" in doc.summary
-    assert doc.kind == "court_decision" and doc.flags == ["court"]
+    # Glasenberg is named in the opinion, not a party: kept for the record, not scored.
+    assert doc.kind == "court_decision" and doc.flags == ["court", "set_aside"]
+    assert doc.summary.startswith("Set aside automatically: not a party")
 
 
 # ---------------------------------------------------------------------- TED

@@ -121,7 +121,7 @@ def build_brief(net: Network, risk: RiskAssessment, jur_name=lambda c: c or "?")
     ents = net.entities
     subject = ents[net.subject_id]
     name = lambda eid: ents[eid].name if eid in ents else eid  # noqa: E731
-    hits = [h for h in net.hits if h.score >= STRONG]
+    hits = [h for h in net.hits if h.score >= STRONG and h.triage not in ("namesake", "dismissed")]
     sanctioned = {h.entity_id for h in hits if h.list_type == ListType.SANCTION}
     peps = {h.entity_id for h in hits if h.list_type == ListType.PEP}
     leaked = {h.entity_id for h in hits if h.list_type == ListType.LEAK}
@@ -254,7 +254,11 @@ def build_brief(net: Network, risk: RiskAssessment, jur_name=lambda c: c or "?")
         if r.type == RelationType.TRANSFER
         and (r.source_id in sanctioned or r.target_id in sanctioned)
     ]
-    media = sum(d.kind == "adverse_media" for e in ents.values() for d in e.documents)
+    media = sum(
+        d.kind == "adverse_media" and "set_aside" not in d.flags
+        for e in ents.values()
+        for d in e.documents
+    )
     persons = sum(e.type == EntityType.PERSON for e in ents.values())
     companies = sum(e.type == EntityType.COMPANY for e in ents.values())
 

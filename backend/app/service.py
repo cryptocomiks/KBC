@@ -505,7 +505,11 @@ def build_tables(net: Network, risk: RiskAssessment) -> dict[str, list[dict[str,
     )
 
     sanctioned = {
-        h.entity_id for h in net.hits if h.list_type == ListType.SANCTION and h.score >= 85
+        h.entity_id
+        for h in net.hits
+        if h.list_type == ListType.SANCTION
+        and h.score >= 85
+        and h.triage not in ("namesake", "dismissed")
     }
     crypto = []
     for r in rels:

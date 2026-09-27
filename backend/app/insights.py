@@ -237,7 +237,13 @@ def build_summary(net: Network, risk: RiskAssessment, jur_name=lambda c: c or "?
         (ListType.ADVERSE, "Watchlists", "warning"),
     ):
         hits = sorted(
-            (h for h in net.hits if h.list_type == list_type and h.score >= strong),
+            (
+                h
+                for h in net.hits
+                if h.list_type == list_type
+                and h.score >= strong
+                and h.triage not in ("namesake", "dismissed")
+            ),
             key=lambda h: -h.score,
         )
         if hits:
@@ -254,7 +260,13 @@ def build_summary(net: Network, risk: RiskAssessment, jur_name=lambda c: c or "?
                     urls=[u for h in hits[:3] if (u := h.provenance.url)],
                 )
             )
-    leaks = [h for h in net.hits if h.list_type == ListType.LEAK and h.score >= strong]
+    leaks = [
+        h
+        for h in net.hits
+        if h.list_type == ListType.LEAK
+        and h.score >= strong
+        and h.triage not in ("namesake", "dismissed")
+    ]
     if leaks:
         datasets = sorted({h.dataset for h in leaks})
         out.append(
@@ -266,7 +278,12 @@ def build_summary(net: Network, risk: RiskAssessment, jur_name=lambda c: c or "?
                 urls=[u for h in leaks[:3] if (u := h.provenance.url)],
             )
         )
-    media = [(e, d) for e in ents.values() for d in e.documents if d.kind == "adverse_media"]
+    media = [
+        (e, d)
+        for e in ents.values()
+        for d in e.documents
+        if d.kind == "adverse_media" and "set_aside" not in d.flags
+    ]
     if media:
         out.append(
             Finding(
@@ -373,7 +390,7 @@ def build_timeline(net: Network) -> list[TimelineEvent]:
                     )
                 )
         for doc in e.documents:
-            if not doc.date:
+            if not doc.date or "set_aside" in doc.flags:
                 continue
             kind = (
                 "media"
