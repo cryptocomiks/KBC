@@ -1,5 +1,5 @@
 {
- "version": 2,
+ "version": 3,
  "description": "Labelled name pairs used to measure the screening match engine (KYC 1 CLICK). 'match' pairs must score at or above the possible-match threshold; 'no_match' pairs must stay below it. Public figures and fictitious names only.",
  "cases": [
   {
@@ -1257,6 +1257,71 @@
     "name": "Carlos Menezes Duarte"
    },
    "expected": "no_match",
+   "note": ""
+  },
+  {
+   "category": "A distinctive word is missing",
+   "query": {
+    "type": "company",
+    "name": "Gazprom Neft"
+   },
+   "candidate": {
+    "type": "company",
+    "name": "OOO Neft"
+   },
+   "expected": "no_match",
+   "note": ""
+  },
+  {
+   "category": "A distinctive word is missing",
+   "query": {
+    "type": "company",
+    "name": "Rosneft Trading SA"
+   },
+   "candidate": {
+    "type": "company",
+    "name": "Trading SA"
+   },
+   "expected": "no_match",
+   "note": ""
+  },
+  {
+   "category": "A distinctive word is missing",
+   "query": {
+    "type": "company",
+    "name": "Sberbank Europe AG"
+   },
+   "candidate": {
+    "type": "company",
+    "name": "Europe Bank AG"
+   },
+   "expected": "no_match",
+   "note": ""
+  },
+  {
+   "category": "Same name + country (subsidiary, review expected)",
+   "query": {
+    "type": "company",
+    "name": "Acme Offshore Ltd"
+   },
+   "candidate": {
+    "type": "company",
+    "name": "Acme Offshore Guatemala"
+   },
+   "expected": "match",
+   "note": ""
+  },
+  {
+   "category": "Same name + country (subsidiary, review expected)",
+   "query": {
+    "type": "company",
+    "name": "Glencore"
+   },
+   "candidate": {
+    "type": "company",
+    "name": "Glencore International AG"
+   },
+   "expected": "match",
    "note": ""
   }
  ]

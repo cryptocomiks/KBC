@@ -1,6 +1,6 @@
 # Matching validation report
 
-Generated 2026-09-27T15:31:47+00:00 · engine 0.1.0 · test set v2 (91 labelled pairs)
+Generated 2026-09-27T16:16:04+00:00 · engine 0.1.0 · test set v3 (96 labelled pairs)
 
 Thresholds: possible match ≥ 70, strong match ≥ 85 (config/risk.yaml).
 
@@ -8,9 +8,9 @@ Thresholds: possible match ≥ 70, strong match ≥ 85 (config/risk.yaml).
 
 | Measure | Value |
 |---|---|
-| Detection rate (same entity flagged) | **100.0 %** (53/53) |
-| Strong detection (≥ 85) | 92.5 % |
-| False-positive rate (different entity flagged) | **0.0 %** (0/38) |
+| Detection rate (same entity flagged) | **100.0 %** (55/55) |
+| Strong detection (≥ 85) | 92.7 % |
+| False-positive rate (different entity flagged) | **0.0 %** (0/41) |
 | Accuracy | 100.0 % |
 
 ## By category
@@ -32,6 +32,8 @@ Thresholds: possible match ≥ 70, strong match ≥ 85 (config/risk.yaml).
 | Same distinctive name, other generic words (review expected) | match | 1 | 100.0 % | — |
 | Same name, different country | no match | 3 | — | 0.0 % |
 | Person vs company | no match | 3 | — | 0.0 % |
+| A distinctive word is missing | no match | 3 | — | 0.0 % |
+| Same name + country (subsidiary, review expected) | match | 2 | 100.0 % | — |
 
 ## Errors
 

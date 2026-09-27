@@ -29,6 +29,7 @@ CONTRADICTIONS = (
     ("different entity types", "a person against a company (or the reverse)"),
     ("a name part differs", "a part of the name is different (another surname or first name)"),
     ("different generic names", "different company names made of common words only"),
+    ("a distinctive word is missing", "a distinctive word of the company name is missing"),
 )
 CORROBORATIONS = (
     ("same date of birth", "same date of birth"),

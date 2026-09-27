@@ -282,17 +282,19 @@ class EgrulConnector(BaseConnector):
 
     def search_company(self, name: str, **filters: Any) -> list[Entity]:
         queries = [name] if re.search(r"[а-яА-Я]", name) else [to_cyrillic(name), name]
-        seen: dict[str, Entity] = {}
+        scored: dict[str, tuple[float, Entity]] = {}
         for q in queries:
             if len(q) < 3:
                 continue
             for r in self._search(q)[:10]:
                 e = self._entity(r)
-                if max(name_similarity(name, a, "company")[0] for a in [e.name, *e.aliases]) >= 80:
-                    seen.setdefault(e.id, e)
-            if seen:
+                score = max(name_similarity(name, a, "company")[0] for a in [e.name, *e.aliases])
+                if score >= 88:
+                    scored.setdefault(e.id, (score, e))
+            if scored:
                 break
-        return list(seen.values())[:6]
+        # best match first: "Gazprom Neft" before a small "OOO Neft"
+        return [e for _, e in sorted(scored.values(), key=lambda x: -x[0])][:6]
 
     def get_by_identifier(self, ident: Any) -> Entity | None:
         if ident.kind not in ("ru_ogrn", "ru_inn"):

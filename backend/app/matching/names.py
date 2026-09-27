@@ -348,6 +348,16 @@ def _guard(ta: list[str], tb: list[str], kind: str) -> tuple[float, str] | None:
             return 65.0, "only generic words in common" + (
                 f" ({', '.join(shared)})" if shared else ""
             )
+        # a distinctive word of one name absent from the other ("Gazprom Neft" vs "Neft"):
+        # short acronyms (PMC, OAO…) are tolerated
+        sa, sb = {canonical(t) for t in da}, {canonical(t) for t in db}
+        # a country added to the name usually marks a subsidiary of the same group: kept
+        missing = sorted(t for t in sa ^ sb if len(t) >= 4 and t not in _country_words())
+        if missing and (sa < sb or sb < sa):
+            return (
+                72.0,
+                f"a distinctive word is missing ({', '.join(missing)}): probably another company",
+            )
         return None
     if min(len(ta), len(tb)) == 1 and max(len(ta), len(tb)) > 1:
         return 68.0, "single-word name against a full name: not enough to identify a person"
@@ -362,6 +372,23 @@ def _romanised(x: str) -> str:
     double letters collapsed (Gaddafi, Qadhafi, Kadhafi -> kadafi)."""
     s = re.sub(r"gh|q|g", "k", x).replace("dh", "d")
     return re.sub(r"(.)\1+", r"\1", s)
+
+
+@lru_cache(maxsize=1)
+def _country_words() -> frozenset[str]:
+    """Words of country names (config/country_risk.json): "guatemala", "emirates"…"""
+    import json
+    from pathlib import Path
+
+    path = Path(__file__).resolve().parents[3] / "config" / "country_risk.json"
+    try:
+        countries = json.loads(path.read_text(encoding="utf-8")).get("countries", {})
+    except (OSError, ValueError):
+        return frozenset()
+    words = set()
+    for c in countries.values():
+        words.update(w for w in normalize_company(c.get("name") or "") if len(w) >= 4)
+    return frozenset(words)
 
 
 def _part_similarity(x: str, y: str) -> float:
