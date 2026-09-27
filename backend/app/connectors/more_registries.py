@@ -86,6 +86,7 @@ class RpoConnector(BaseConnector):
     homepage = "https://rpo.statistics.sk"
     jurisdictions = {"SK"}
     max_retries = 1
+    timeout_seconds = 30.0  # the detail sheet of large companies can take 15-30 s
 
     def _entity(self, r: dict[str, Any]) -> Entity:
         rid = self.record_id(str(r["id"]))
@@ -112,7 +113,7 @@ class RpoConnector(BaseConnector):
 
     def search_company(self, name: str, **filters: Any) -> list[Entity]:
         data = self.http_get_json(
-            f"{RPO}/search", params={"fullName": core_name(name)[:80], "onlyActive": "false"}
+            f"{RPO}/search", params={"fullName": core_name(name)[:80], "onlyActive": "true"}
         )
         out = [
             self._entity(r)
