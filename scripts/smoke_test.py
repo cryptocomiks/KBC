@@ -127,11 +127,16 @@ def check_live(base: str) -> None:
     )
     for h in inv["hits"][:5]:
         print(f"      hit: {h['list_type']} {h['matched_name']} ({h['dataset']}, {h['score']})")
-    critical = [
+    core = [
         e
         for e in errors
         if e.split(".")[0] in ("annuaire_fr", "icij_offshore_leaks", "official_sanctions")
     ]
+    # A source rate-limiting the shared host IP is an outage of the source, not a code error.
+    throttled = [e for e in core if "rate limited" in e or "skipped for a few minutes" in e]
+    critical = [e for e in core if e not in throttled]
+    if throttled:
+        print(f"WARN  core source rate-limited by its provider: {'; '.join(throttled[:3])}")
     print(f"      non-critical source errors: {[e for e in errors if e not in critical][:5]}")
     check("core live sources answered without error", not critical, "; ".join(critical[:5]))
     cut = [w for w in inv["warnings"] if "during screening" in w]
