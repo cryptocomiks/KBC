@@ -506,9 +506,9 @@ def check_free_sources() -> None:
     )
     tr = fs.EuTransparencyRegisterConnector(settings)
     if tr.status()[0]:
-        docs = tr.get_documents(company("Google"))
+        docs = tr.get_documents(company("Airbus SE"))
         expect(
-            f"EU Transparency Register (export {fs.transparency_loaded_at()}): Google registered",
+            f"EU Transparency Register (export {fs.transparency_loaded_at()}): Airbus registered",
             bool(docs),
             docs[0].title[:100] if docs else "none",
         )
