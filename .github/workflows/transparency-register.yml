@@ -1,0 +1,34 @@
+name: EU Transparency Register index
+
+# Rebuilds config/eu_transparency_register.json.gz (compact index of the EU lobbying
+# register, ~120 MB XML upstream) and commits it when it changes.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "41 4 5 * *"   # monthly
+  push:
+    paths:
+      - "scripts/update_transparency_register.py"
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install httpx
+      - run: python scripts/update_transparency_register.py
+      - name: Commit if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add config/eu_transparency_register.json.gz
+          if git diff --cached --quiet; then echo "no change"; exit 0; fi
+          git commit -m "Refresh the EU Transparency Register index"
+          git pull --rebase
+          git push
