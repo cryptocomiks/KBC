@@ -108,6 +108,8 @@ class OwnershipAnalysis(BaseModel):
     sanctions: list[BlockedRow] = Field(default_factory=list)
     holdings: list[dict[str, Any]] = Field(default_factory=list)
     questions: list[str] = Field(default_factory=list)
+    #: internal steps (escalation, approvals), not to be sent to the client
+    actions: list[str] = Field(default_factory=list)
     #: part of the chain lies beyond the search depth: a deeper investigation may explain more
     depth_limited: bool = False
     max_depth: int = 0
@@ -280,6 +282,7 @@ def analyse(net: Any, risk_level: str | None = None) -> OwnershipAnalysis:
                     }
                 )
         out.holdings.sort(key=lambda h: -(h["effective_pct"] or 0))
+        out.actions = _actions(out)
         return out
 
     ancestors = nx.ancestors(g, sid) if sid in g else set()
@@ -394,6 +397,7 @@ def analyse(net: Any, risk_level: str | None = None) -> OwnershipAnalysis:
                 )
 
     out.questions = _questions(out, subject, ents)
+    out.actions = _actions(out)
     return out
 
 
@@ -419,8 +423,8 @@ def _questions(a: OwnershipAnalysis, subject: Entity, ents: dict[str, Entity]) -
                 f"Give the percentage held by each shareholder of {c.name} ({c.holders_without_pct} without a published percentage)."
             )
     for o in a.owners:
-        if not o.natural_person:
-            continue
+        if not o.natural_person or o.sanctioned:
+            continue  # sanctioned owners: internal escalation first, never a client question
         if o.status == "ubo_ownership":
             q.append(
                 f"{o.name} holds an effective {o.effective_pct:g} % but is not declared as beneficial owner: confirm and add to the UBO declaration."
@@ -446,9 +450,33 @@ def _questions(a: OwnershipAnalysis, subject: Entity, ents: dict[str, Entity]) -
         q.append(
             "No beneficial owner identified by ownership: confirm in writing that no natural person holds 25 % or controls the company by other means."
         )
+    return list(dict.fromkeys(q))
+
+
+def _actions(a: OwnershipAnalysis) -> list[str]:
+    """Internal steps: never sent to the client (tipping-off)."""
+    out: list[str] = []
     for s in a.sanctions:
         if s.blocked:
-            q.append(
-                f"{s.name} is owned {s.aggregate_pct:g} % by sanctioned persons: escalate to sanctions compliance before any transaction."
+            out.append(
+                f"Freeze / do not make funds available to {s.name} (owned {s.aggregate_pct:g} % by sanctioned persons): "
+                "escalate to sanctions compliance and report to the competent authority."
             )
-    return list(dict.fromkeys(q))
+        elif s.control:
+            out.append(
+                f"Assess whether {', '.join(s.control)} controls {s.name} (EU control criteria) and record the conclusion."
+            )
+        elif s.aggregate_pct:
+            out.append(
+                f"Document the {s.aggregate_pct:g} % sanctioned minority holding in {s.name} and monitor changes in ownership."
+            )
+    for o in a.owners:
+        if o.pep and o.status.startswith("ubo"):
+            out.append(
+                f"Senior management approval required: {o.name} is a PEP and a beneficial owner."
+            )
+        if o.sanctioned:
+            out.append(
+                f"{o.name} is on a sanctions list: confirm the match before any contact with the client about ownership."
+            )
+    return list(dict.fromkeys(out))

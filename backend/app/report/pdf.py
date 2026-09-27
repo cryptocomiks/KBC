@@ -278,6 +278,160 @@ def _drop_sections(story: list[Any], prefixes: set[str]) -> list[Any]:
     return out
 
 
+UBO_STATUS = {
+    "ubo_both": "UBO, declared",
+    "ubo_ownership": "UBO, NOT declared",
+    "ubo_declared": "Declared UBO",
+    "below_threshold": "Below threshold",
+    "dead_end": "Chain stops here",
+}
+
+
+def _ownership_analysis(inv: Investigation, st: dict) -> list[Any]:
+    """6a. Beneficial ownership analysis: owners, coverage, SMO fallback, 50 % rule, questions."""
+    a = inv.ownership
+    if a is None:
+        return []
+    out: list[Any] = [Paragraph("6a. Beneficial ownership analysis", st["h2"])]
+    fmt = lambda v: "—" if v is None else f"{v:g} %"  # noqa: E731
+    if not a.subject_is_company:
+        out.append(Paragraph("Holdings of the subject (direct and indirect).", st["muted"]))
+        out.append(
+            _table(
+                [
+                    {
+                        "name": h["name"],
+                        "jur": h.get("jurisdiction") or "",
+                        "pct": fmt(h.get("effective_pct")),
+                        "how": "direct"
+                        if h.get("direct")
+                        else f"{h.get('layers')} intermediate(s)",
+                    }
+                    for h in a.holdings
+                ],
+                [
+                    ("name", "Company", 3),
+                    ("jur", "Country", 0.8),
+                    ("pct", "Effective", 1),
+                    ("how", "Held", 1.4),
+                ],
+                st,
+                empty="No shareholding found.",
+            )
+        )
+    else:
+        ubos = [o for o in a.owners if o.status.startswith("ubo")]
+        out.append(
+            Paragraph(
+                f"Capital traced to natural persons: <b>{fmt(a.traced_pct)}</b> · unexplained: {fmt(a.unexplained_pct)} · "
+                f"beneficial owners: <b>{len(ubos)}</b> · threshold applied: {a.threshold_applied:g} %"
+                + (" (enhanced, high risk)" if a.threshold_applied < a.threshold else "")
+                + (
+                    f" · part of the chain lies beyond the search depth ({a.max_depth})"
+                    if a.depth_limited
+                    else ""
+                ),
+                st["body"],
+            )
+        )
+        out.append(
+            _table(
+                [
+                    {
+                        "name": o.name
+                        + (" [SANCTIONS]" if o.sanctioned else "")
+                        + (" [PEP]" if o.pep else ""),
+                        "status": UBO_STATUS.get(o.status, o.status),
+                        "eff": fmt(o.effective_pct),
+                        "direct": fmt(o.direct_pct),
+                        "declared": fmt(o.declared_pct) if o.declared else "no",
+                        "route": " → ".join(o.countries) or "—",
+                        "layers": str(o.layers),
+                    }
+                    for o in a.owners
+                ],
+                [
+                    ("name", "Owner", 2.4),
+                    ("status", "Status", 1.5),
+                    ("eff", "Effective", 0.9),
+                    ("direct", "Direct", 0.8),
+                    ("declared", "Declared", 0.8),
+                    ("layers", "Layers", 0.6),
+                    ("route", "Countries crossed", 1.4),
+                ],
+                st,
+                empty="No owner found above the subject.",
+            )
+        )
+        if a.smo_reason:
+            out.append(
+                Paragraph(
+                    "<b>Senior managing official (fallback).</b> " + _esc(a.smo_reason), st["muted"]
+                )
+            )
+            if a.smo:
+                out.append(
+                    Paragraph(
+                        _esc(", ".join(f"{s['name']} ({s['role']})" for s in a.smo)), st["muted"]
+                    )
+                )
+        out.append(Paragraph("Ownership coverage, level by level", st["h3"]))
+        out.append(
+            _table(
+                [
+                    {
+                        "name": c.name,
+                        "jur": (c.jurisdiction or "") + (" · offshore" if c.offshore else ""),
+                        "ident": fmt(c.identified_pct),
+                        "unk": fmt(c.unexplained_pct),
+                        "reason": c.reason or "",
+                    }
+                    for c in a.coverage
+                ],
+                [
+                    ("name", "Company", 2.4),
+                    ("jur", "Country", 1),
+                    ("ident", "Identified", 0.9),
+                    ("unk", "Unknown", 0.9),
+                    ("reason", "Note", 3),
+                ],
+                st,
+            )
+        )
+    out.append(
+        Paragraph("Sanctions by ownership and control (OFAC 50 % rule, EU criteria)", st["h3"])
+    )
+    out.append(
+        _table(
+            [
+                {
+                    "name": s.name,
+                    "pct": fmt(s.aggregate_pct),
+                    "status": "BLOCKED (≥ 50 %)" if s.blocked else "Exposure",
+                    "by": "; ".join(f"{o['name']} {o['pct']:g} %" for o in s.owners)
+                    + (f"; sanctioned officer: {', '.join(s.control)}" if s.control else ""),
+                }
+                for s in a.sanctions
+            ],
+            [
+                ("name", "Entity", 2.2),
+                ("pct", "Aggregate", 0.9),
+                ("status", "Status", 1.2),
+                ("by", "Held / run by", 3.5),
+            ],
+            st,
+            empty="No entity in the network is owned or run by a person on a sanctions list (confirmed matches).",
+        )
+    )
+    if a.actions:
+        out.append(Paragraph("Internal actions (not to be shared with the client)", st["h3"]))
+        out.extend(Paragraph("• " + _esc(x), st["muted"]) for x in a.actions)
+    if a.questions:
+        out.append(Paragraph("Questions for the client", st["h3"]))
+        out.extend(Paragraph(f"{i}. " + _esc(q), st["muted"]) for i, q in enumerate(a.questions, 1))
+    return out
+
+
 def build_pdf(
     inv: Investigation,
     graph_png_b64: str | None = None,
@@ -708,6 +862,8 @@ def build_pdf(
             st,
         )
     )
+
+    story.extend(_ownership_analysis(inv, st))
 
     story.append(Paragraph("7. Shareholders and declared beneficial owners", st["h2"]))
     story.append(

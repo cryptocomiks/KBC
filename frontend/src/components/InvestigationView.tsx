@@ -1,4 +1,5 @@
 import {
+  Crown,
   AlertTriangle,
   ArrowLeft,
   ChevronRight,
@@ -29,6 +30,7 @@ import CryptoSankey from "./CryptoSankey";
 import WorldMap from "./WorldMap";
 import KeyFindings from "./KeyFindings";
 import Timeline from "./Timeline";
+import OwnershipPanel from "./OwnershipPanel";
 import GraphView, { GraphLegend, type GraphFilters, type GraphHandle, type GraphLayout } from "./GraphView";
 import RiskPanel, { RiskGauge } from "./RiskPanel";
 import TablesSection from "./TablesSection";
@@ -53,10 +55,11 @@ interface Props {
   onTrail?: (index: number) => void;
 }
 
-type Tab = "overview" | "network" | "map" | "evidence";
+type Tab = "overview" | "network" | "ownership" | "map" | "evidence";
 const TABS: [Tab, string, typeof Network][] = [
   ["overview", "Overview", LayoutDashboard],
   ["network", "Network", Network],
+  ["ownership", "Beneficial owners", Crown],
   ["map", "Map & timeline", MapIcon],
   ["evidence", "Evidence & tables", FileSearch],
 ];
@@ -373,6 +376,8 @@ export default function InvestigationView({
           </div>
         </div>
       </div>
+
+      {tab === "ownership" && <OwnershipPanel investigation={inv} onSelect={select} />}
 
       {tab === "map" && (
         <div className="panel-enter space-y-4">

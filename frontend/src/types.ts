@@ -169,6 +169,7 @@ export interface Investigation {
   timeline: TimelineEvent[];
   brief: Brief | null;
   requests?: DocRequest[];
+  ownership?: OwnershipAnalysis | null;
 }
 
 export interface DocRequest {
@@ -716,4 +717,74 @@ export interface ValidationReport {
   categories: (ValidationStats & { category: string; expected: "match" | "no_match" })[];
   errors: ValidationPair[];
   pairs: ValidationPair[];
+}
+
+export interface OwnershipRoute {
+  ids: string[];
+  names: string[];
+  pcts: (number | null)[];
+  effective: number | null;
+  countries: string[];
+}
+
+export interface OwnershipOwner {
+  id: string;
+  name: string;
+  type: string;
+  natural_person: boolean;
+  effective_pct: number | null;
+  direct_pct: number | null;
+  partly_unknown: boolean;
+  routes: OwnershipRoute[];
+  layers: number;
+  countries: string[];
+  declared: boolean;
+  declared_pct: number | null;
+  roles: string[];
+  pep: boolean;
+  sanctioned: boolean;
+  status: "ubo_both" | "ubo_ownership" | "ubo_declared" | "below_threshold" | "dead_end";
+}
+
+export interface OwnershipCoverage {
+  id: string;
+  name: string;
+  jurisdiction: string | null;
+  offshore: boolean;
+  identified_pct: number;
+  unexplained_pct: number;
+  holders: number;
+  holders_without_pct: number;
+  dead_end: boolean;
+  reason: string | null;
+  depth_limited: boolean;
+}
+
+export interface OwnershipBlocked {
+  id: string;
+  name: string;
+  aggregate_pct: number;
+  blocked: boolean;
+  owners: { id: string; name: string; pct: number; listed: boolean }[];
+  control: string[];
+}
+
+export interface OwnershipAnalysis {
+  subject_id: string;
+  subject_is_company: boolean;
+  threshold: number;
+  enhanced_threshold: number;
+  threshold_applied: number;
+  traced_pct: number | null;
+  unexplained_pct: number | null;
+  owners: OwnershipOwner[];
+  coverage: OwnershipCoverage[];
+  smo: { id: string; name: string; role: string }[];
+  smo_reason: string | null;
+  sanctions: OwnershipBlocked[];
+  holdings: { id: string; name: string; jurisdiction: string | null; effective_pct: number | null; direct: boolean; layers: number }[];
+  questions: string[];
+  actions?: string[];
+  depth_limited: boolean;
+  max_depth: number;
 }

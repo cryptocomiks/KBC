@@ -137,6 +137,11 @@ def test_ofac_50_percent_rule_aggregates_and_propagates():
     rows = {r.name: r for r in blocked_by_ownership(net)}
     assert rows["Holdco"].blocked and rows["Holdco"].aggregate_pct == 55
     assert rows["Subject SA"].blocked and rows["Subject SA"].aggregate_pct == 60
+    a = analyse(net, "critical")
+    assert any("Freeze" in x and "Subject SA" in x for x in a.actions)
+    assert not any(
+        "sanction" in q.lower() or "Xavier" in q for q in a.questions
+    )  # never told to the client
     factors = {f.key: f for f in RiskEngine().assess(net).factors}
     assert "sanctions_ownership" in factors and "Subject SA" in " ".join(
         factors["sanctions_ownership"].evidence
