@@ -335,6 +335,8 @@ FACTOR_AXIS = {
     "long_ownership_chain": ("client", 2, "long ownership chain"),
     "nominee_director": ("client", 2, "possible nominee director"),
     "sanctioned_counterparty": ("transactions", 6, "crypto flows with a sanctioned wallet"),
+    "sanctions_ownership": ("client", 6, "owned 50 % or more by sanctioned persons"),
+    "sanctions_minority_or_control": ("client", 3, "sanctioned minority owner or officer"),
 }
 AXIS_MAX = {"geography": 8, "activity": 6, "client": 12, "transactions": 10}
 

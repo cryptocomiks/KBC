@@ -56,6 +56,10 @@ NEXT_STEPS = {
     "insolvency_proceedings": "Check the status of the proceedings and the counterparty's solvency.",
     "vat_invalid": "Ask why the VAT number is not active (deregistered, never registered, wrong number) and check the invoices issued.",
     "young_domain": "Check the company's real activity: a brand-new website is common for shell and fraud companies.",
+    "sanctions_ownership": "Treat the entity as blocked (OFAC 50 % rule / EU ownership): no funds or economic "
+    "resources may be made available; escalate to sanctions compliance and report to the authority.",
+    "sanctions_minority_or_control": "Assess whether the sanctioned person controls the entity (EU control criteria: "
+    "board, voting rights, veto, influence); document the conclusion and escalate.",
     "register_warning": "Read the register entry and ask the client to regularise (filings, fees) before onboarding.",
     "adverse_media": "Read the articles, keep the relevant ones in the file, dismiss namesakes.",
 }
@@ -112,7 +116,10 @@ class Brief(BaseModel):
 
 
 def _severity(points: float, key: str) -> str:
-    if key.startswith(("sanctions_match", "sanctioned_", "fatf_blacklist")) or points >= 20:
+    if (
+        key.startswith(("sanctions_match", "sanctioned_", "sanctions_ownership", "fatf_blacklist"))
+        or points >= 20
+    ):
         return "critical"
     return "warning" if points >= 5 else "info"
 

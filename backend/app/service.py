@@ -7,6 +7,7 @@ import json
 from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 
+from app.beneficial import analyse as analyse_ownership
 from app.brief import build_brief
 from app.cache import get_cache
 from app.connectors.base import ConnectorError, group_warnings
@@ -252,6 +253,7 @@ class KbcService:
             timeline=build_timeline(net),
             brief=build_brief(net, risk, get_jurisdictions().name),
             requests=build_requests(net, risk, get_jurisdictions().name),
+            ownership=analyse_ownership(net, risk.level),
             queries=net.queries,
             merges=net.merges,
             warnings=group_warnings(net.warnings),

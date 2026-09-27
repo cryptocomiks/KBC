@@ -66,6 +66,8 @@ FACTOR_LABELS = {
     "vat_invalid": "VAT number not active (EU VIES)",
     "young_domain": "Website domain registered less than a year ago",
     "register_warning": "Warning in the company register (strike-off, violation...)",
+    "sanctions_ownership": "Owned 50 % or more by sanctioned persons (OFAC 50 % rule / EU ownership)",
+    "sanctions_minority_or_control": "Sanctioned person as minority owner or officer (EU control test)",
 }
 
 
@@ -271,6 +273,27 @@ class RiskEngine:
                         pid,
                         f"{p.name}: undeclared UBO of {name(cid)} ({pct:g}%)",
                     )
+
+        # Sanctions by ownership / control (OFAC 50 % rule, EU ownership and control)
+        from app.beneficial import blocked_by_ownership
+
+        for row in blocked_by_ownership(net, og):
+            owners = ", ".join(f"{o['name']} {o['pct']:g}%" for o in row.owners[:4])
+            if row.blocked:
+                flag(
+                    "sanctions_ownership",
+                    row.id,
+                    f"{row.name}: {row.aggregate_pct:g}% owned in aggregate by sanctioned persons ({owners})",
+                )
+            elif row.aggregate_pct > 0 or row.control:
+                parts = (
+                    [f"{row.aggregate_pct:g}% held by sanctioned persons ({owners})"]
+                    if row.aggregate_pct
+                    else []
+                )
+                if row.control:
+                    parts.append(f"sanctioned officer(s): {', '.join(row.control)}")
+                flag("sanctions_minority_or_control", row.id, f"{row.name}: " + "; ".join(parts))
 
         # Crypto: direct on-chain flows with a sanctioned wallet (exposure)
         sanctioned = {

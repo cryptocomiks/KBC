@@ -42,6 +42,8 @@ weights:
   authorisation_withdrawn: 6   # a regulator's register shows a withdrawn authorisation / winding up
   vat_invalid: 5               # EU VAT number reported inactive by VIES
   young_domain: 3              # company website domain created less than a year ago (RDAP)
+  sanctions_ownership: 40       # owned >= 50 % in aggregate by sanctioned persons (OFAC 50 % rule / EU)
+  sanctions_minority_or_control: 15  # sanctioned minority owner or officer (EU control test)
   register_warning: 5          # register marks the company (strike-off listed, violating company...)
 
 # Distance (in hops) between the investigated subject and the affected entity.

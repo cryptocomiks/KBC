@@ -31,7 +31,14 @@ ACTIONS = {
     "reject": ({"pending_validation"}, "rejected"),
     "reopen": ({"validated", "pending_validation"}, "to_complete"),
 }
-SENSITIVE_FACTORS = {"sanctions_match", "pep_match", "sanctioned_counterparty", "watchlist_match"}
+SENSITIVE_FACTORS = {
+    "sanctions_match",
+    "pep_match",
+    "sanctioned_counterparty",
+    "watchlist_match",
+    "sanctions_ownership",
+    "sanctions_minority_or_control",
+}
 
 
 class WorkflowError(ValueError):

@@ -7,6 +7,7 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
+from app.beneficial import OwnershipAnalysis
 from app.brief import Brief
 from app.doc_requests import DocRequest
 from app.graph.expander import QueryLog
@@ -68,3 +69,4 @@ class Investigation(BaseModel):
     timeline: list[TimelineEvent] = Field(default_factory=list)
     brief: Brief | None = None
     requests: list[DocRequest] = Field(default_factory=list)
+    ownership: OwnershipAnalysis | None = None
