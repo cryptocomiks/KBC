@@ -8,7 +8,6 @@ import {
   LayoutDashboard,
   Loader2,
   Map as MapIcon,
-  Maximize2,
   Network,
   RefreshCw,
   Workflow,
@@ -88,7 +87,7 @@ export default function InvestigationView({
   }, [inv.subject_id]);
   const graph = useRef<GraphHandle>(null);
   const [layout, setLayout] = useState<GraphLayout>("hierarchy");
-  const [filters, setFilters] = useState<GraphFilters>({ crypto: true, addresses: true, officers: true, ended: true });
+  const [filters, setFilters] = useState<GraphFilters>({ crypto: true, addresses: true, officers: true, ended: true, countries: false });
   const [selected, setSelected] = useState<string | null>(null);
   const [pdfState, setPdfState] = useState<"idle" | "busy" | "error">("idle");
   const [reference, setReference] = useState("");
@@ -348,15 +347,13 @@ export default function InvestigationView({
                 ["crypto", "Crypto"],
                 ["addresses", "Addresses"],
                 ["ended", "Ended links"],
+                ...(layout === "network" ? ([["countries", "Group by country"]] as const) : []),
               ] as const
             ).map(([k, label]) => (
               <label key={k} className="inline-flex cursor-pointer items-center gap-1 text-xs text-slate-600 dark:text-slate-300">
-                <input type="checkbox" checked={filters[k]} onChange={() => toggle(k)} className="accent-brand-600" /> {label}
+                <input type="checkbox" checked={!!filters[k]} onChange={() => toggle(k)} className="accent-brand-600" /> {label}
               </label>
             ))}
-            <button className="btn-ghost ml-auto py-1 text-xs" onClick={() => graph.current?.fit()}>
-              <Maximize2 className="h-3.5 w-3.5" /> Fit
-            </button>
           </div>
           <div className="relative flex-1 bg-[radial-gradient(circle,_rgba(148,163,184,0.18)_1px,_transparent_1px)] [background-size:18px_18px]">
             <div className="absolute inset-0">
