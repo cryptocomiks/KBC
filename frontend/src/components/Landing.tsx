@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import type { ReactNode } from "react";
 import type { ConnectorStatus } from "../types";
+import DemoVideos from "./DemoVideos";
 
 interface Props {
   /** The search form, shown in the hero: the tool starts right here. */
@@ -118,6 +119,11 @@ export default function Landing({ search, connectors, onCases }: Props) {
         </p>
         <div className="mx-auto mt-8 max-w-5xl text-left">{search}</div>
       </div>
+
+      {/* Demo videos */}
+      <Section tag="See it in action" title="From a name to a decision, in 90 seconds">
+        <DemoVideos />
+      </Section>
 
       {/* How it works */}
       <Section tag="How it works" title="From a name to a documented decision">
