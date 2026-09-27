@@ -63,6 +63,9 @@ FACTOR_LABELS = {
     "pre_event_resignation": "Officer left shortly before a liquidation / insolvency",
     "officer_turnover": "High officer turnover",
     "authorisation_withdrawn": "Financial authorisation withdrawn",
+    "vat_invalid": "VAT number not active (EU VIES)",
+    "young_domain": "Website domain registered less than a year ago",
+    "register_warning": "Warning in the company register (strike-off, violation...)",
 }
 
 
@@ -179,7 +182,13 @@ class RiskEngine:
             ):
                 flag("high_risk_country", eid, f"{label}: {self.countries.describe(code)}")
 
+            if e.extra.get("register_warning"):
+                flag("register_warning", eid, f"{e.name}: {e.extra['register_warning']}")
             for doc in e.documents:
+                if "vat_invalid" in doc.flags:
+                    flag("vat_invalid", eid, f"{e.name}: {doc.title}")
+                if "young_domain" in doc.flags:
+                    flag("young_domain", eid, f"{e.name}: {doc.title} — {doc.summary}")
                 if "insolvency" in doc.flags:
                     when = f" on {doc.date}" if doc.date else ""
                     flag(

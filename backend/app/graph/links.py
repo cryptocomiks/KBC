@@ -83,6 +83,32 @@ def register_links(entity: Entity) -> list[Document]:
                 source=SOURCE,
             )
         )
+    if jur == "GB":
+        # The Gazette blocks automated requests: the analyst opens the search.
+        docs.append(
+            Document(
+                title="Insolvency and strike-off notices (The Gazette) — search",
+                kind="legal_notice",
+                url="https://www.thegazette.co.uk/insolvency/notice?text="
+                + quote_plus(f'"{entity.name}"'),
+                source=SOURCE,
+                summary="Official UK public record: winding-up, liquidation, administration, strike-off",
+            )
+        )
+    # Google News feeds are for personal reading only: a search link, not an automated fetch.
+    docs.append(
+        Document(
+            title="Adverse media search (Google News)",
+            kind="press",
+            url="https://news.google.com/search?q="
+            + quote_plus(
+                f'"{entity.name}" (fraud OR "money laundering" OR sanctions OR corruption OR '
+                "investigation OR bankruptcy OR lawsuit)"
+            ),
+            source=SOURCE,
+            summary="Opens the search in the browser: read and keep the relevant articles",
+        )
+    )
     docs.append(
         Document(
             title="Company search (OpenCorporates)",

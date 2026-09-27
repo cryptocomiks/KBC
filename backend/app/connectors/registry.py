@@ -25,6 +25,14 @@ def _connector_classes() -> list[type[BaseConnector]]:
         LatviaRegisterConnector,
         PrhConnector,
     )
+    from app.connectors.free_sources import (
+        CroConnector,
+        EuTransparencyRegisterConnector,
+        RdapConnector,
+        ShabConnector,
+        UkCaseLawConnector,
+        ViesConnector,
+    )
     from app.connectors.gdelt import GdeltConnector
     from app.connectors.gleif import GleifConnector
     from app.connectors.icij import IcijLocalConnector, IcijReconcileConnector
@@ -70,6 +78,7 @@ def _connector_classes() -> list[type[BaseConnector]]:
         AcraConnector,
         IsraelRegistrarConnector,
         CanadaRegistriesConnector,
+        CroConnector,
         RpvsConnector,
         SecEdgarConnector,
         OpenCorporatesConnector,
@@ -82,12 +91,17 @@ def _connector_classes() -> list[type[BaseConnector]]:
         GdeltConnector,
         WaybackConnector,
         LinkedWebsitesConnector,
+        RdapConnector,
+        ShabConnector,
+        ViesConnector,
         SwissCourtsConnector,
         CourtListenerConnector,
         CjeuConnector,
+        UkCaseLawConnector,
         TedConnector,
         RegulatorsConnector,
         LittleSisConnector,
+        EuTransparencyRegisterConnector,
         IcijReconcileConnector,
         IcijLocalConnector,
         CasinoSecretsConnector,

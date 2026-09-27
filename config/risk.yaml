@@ -40,6 +40,9 @@ weights:
   pre_event_resignation: 8     # officer left shortly before the company's liquidation / insolvency
   officer_turnover: 4          # many appointments / departures within 12 months
   authorisation_withdrawn: 6   # a regulator's register shows a withdrawn authorisation / winding up
+  vat_invalid: 5               # EU VAT number reported inactive by VIES
+  young_domain: 3              # company website domain created less than a year ago (RDAP)
+  register_warning: 5          # register marks the company (strike-off listed, violating company...)
 
 # Distance (in hops) between the investigated subject and the affected entity.
 proximity_multiplier:

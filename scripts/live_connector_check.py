@@ -471,6 +471,51 @@ def check_world_sources() -> None:
         expect(f"crypto addresses: {label}", n > 0, str(n))
 
 
+def check_free_sources() -> None:
+    from app.connectors import free_sources as fs
+
+    shab = fs.ShabConnector(settings).get_documents(company("Swissport International AG", "CH"))
+    expect("SHAB/FOSC: notices for Swissport", bool(shab), shab[0].title[:100] if shab else "none")
+    fr = company("SODIMAS", "FR")
+    fr.registration_number = "303265045"
+    vies = fs.ViesConnector(settings).get_documents(fr)
+    expect(
+        "VIES: FR VAT number derived from SIREN is valid",
+        bool(vies) and "valid" in vies[0].title,
+        vies[0].summary if vies else "none",
+    )
+    cro = fs.CroConnector(settings).search_company("Ryanair")
+    expect(
+        "CRO (IE): Ryanair found",
+        any("RYANAIR" in c.name for c in cro),
+        "; ".join(c.name for c in cro[:3]),
+    )
+    cases = fs.UkCaseLawConnector(settings).get_documents(company("Carillion", "GB"))
+    expect(
+        "UK Find Case Law: judgments naming Carillion",
+        bool(cases),
+        cases[0].title[:100] if cases else "none",
+    )
+    web = company("Wirecard AG", "DE")
+    web.extra["website"] = "https://www.wirecard.com"
+    rdap = fs.RdapConnector(settings).get_documents(web)
+    expect(
+        "RDAP: wirecard.com registration date",
+        bool(rdap) and rdap[0].date is not None,
+        rdap[0].summary if rdap else "none",
+    )
+    tr = fs.EuTransparencyRegisterConnector(settings)
+    if tr.status()[0]:
+        docs = tr.get_documents(company("Google"))
+        expect(
+            f"EU Transparency Register (export {fs.transparency_loaded_at()}): Google registered",
+            bool(docs),
+            docs[0].title[:100] if docs else "none",
+        )
+    else:
+        print(f"SKIP  EU Transparency Register: {tr.status()[1]}")
+
+
 def check_extended_watchlists() -> None:
     from app.connectors import open_datasets
 
@@ -821,6 +866,7 @@ guarded("Financial regulators (ESMA, REGAFI/ACPR)", check_regulators)
 guarded("Latvia, Poland KRS, securities (ISIN), Israel crypto wallets", check_new_sources)
 guarded("Singapore, Israel, Canada registers; EU Court of Justice", check_world_sources)
 guarded("Extended watchlists (second batch)", check_extended_watchlists)
+guarded("SHAB, VIES, Irish CRO, UK case law, RDAP, EU Transparency Register", check_free_sources)
 for key, title, fn in [
     ("OPENSANCTIONS_API_KEY", "OpenSanctions", check_opensanctions),
     ("COMPANIES_HOUSE_API_KEY", "Companies House", check_companies_house),

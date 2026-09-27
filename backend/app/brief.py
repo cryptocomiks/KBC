@@ -54,6 +54,9 @@ NEXT_STEPS = {
     "missing_accounts": "Request the latest financial statements.",
     "dissolved_company": "Make sure the dissolved company no longer plays a role (contracts, accounts, flows).",
     "insolvency_proceedings": "Check the status of the proceedings and the counterparty's solvency.",
+    "vat_invalid": "Ask why the VAT number is not active (deregistered, never registered, wrong number) and check the invoices issued.",
+    "young_domain": "Check the company's real activity: a brand-new website is common for shell and fraud companies.",
+    "register_warning": "Read the register entry and ask the client to regularise (filings, fees) before onboarding.",
     "adverse_media": "Read the articles, keep the relevant ones in the file, dismiss namesakes.",
 }
 
