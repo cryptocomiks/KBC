@@ -31,6 +31,7 @@ import WorldMap from "./WorldMap";
 import KeyFindings from "./KeyFindings";
 import Timeline from "./Timeline";
 import OwnershipPanel from "./OwnershipPanel";
+import LegalBasis from "./LegalBasis";
 import GraphView, { GraphLegend, type GraphFilters, type GraphHandle, type GraphLayout } from "./GraphView";
 import RiskPanel, { RiskGauge } from "./RiskPanel";
 import TablesSection from "./TablesSection";
@@ -389,6 +390,7 @@ export default function InvestigationView({
 
       {tab === "evidence" && (
         <div className="panel-enter space-y-4">
+          <LegalBasis investigation={inv} />
           <RiskPanel investigation={inv} onSelect={select} />
           <ClientDocuments investigation={inv} onSelect={select} />
           <TablesSection

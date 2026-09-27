@@ -21,6 +21,7 @@ const TABS: { id: CaseTab; label: string }[] = [
   { id: "alerts", label: "Alerts" },
   { id: "cdb", label: "UBO forms (CDB 20)" },
   { id: "sow", label: "Source of wealth" },
+  { id: "transactions", label: "Transactions" },
   { id: "checks", label: "Quick checks" },
   { id: "review", label: "Periodic review" },
   { id: "investigation", label: "Investigation" },

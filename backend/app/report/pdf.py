@@ -287,6 +287,12 @@ UBO_STATUS = {
 }
 
 
+def refs_for(key: str) -> list[dict]:
+    from app.legal import refs_for as _refs
+
+    return _refs(key)
+
+
 def _ownership_analysis(inv: Investigation, st: dict) -> list[Any]:
     """6a. Beneficial ownership analysis: owners, coverage, SMO fallback, 50 % rule, questions."""
     a = inv.ownership
@@ -771,6 +777,7 @@ def build_pdf(
             "mult": f"×{f.multiplier:g}",
             "points": f.points,
             "evidence": " | ".join(f.evidence),
+            "legal": ", ".join(r["short"] for r in refs_for(f.key)),
         }
         for f in risk.factors
     ]
@@ -783,7 +790,8 @@ def build_pdf(
                 ("distance", "Hops", 0.7),
                 ("mult", "Proximity", 0.9),
                 ("points", "Points", 0.7),
-                ("evidence", "Evidence", 7),
+                ("evidence", "Evidence", 5.4),
+                ("legal", "Legal basis", 1.8),
             ],
             st,
             "No risk factor triggered.",
@@ -791,6 +799,18 @@ def build_pdf(
     )
     story.append(Spacer(1, 3))
     story.append(Paragraph("<br/>".join(_esc(m) for m in risk.methodology), st["small"]))
+    if inv.legal:
+        story.append(Paragraph("Justifications for the file", st["h3"]))
+        story.extend(
+            Paragraph("• " + _esc(item["en"]), st["muted"]) for item in inv.legal if item.get("en")
+        )
+        story.append(
+            Paragraph(
+                "Legal references: an operational map to the texts (config/legal_basis.yaml), not legal advice; "
+                "check the current version of each text and the institution's directives.",
+                st["small"],
+            )
+        )
 
     # ------------------------------------------------------------- graph
     img = _graph_image(graph_png_b64)

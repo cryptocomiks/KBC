@@ -19,8 +19,17 @@ from app.graph.ownership import indirect_stakes, ownership_graph
 from app.graph.resolver import EntityResolver
 from app.identifiers import detect as detect_identifiers
 from app.insights import build_summary, build_timeline
+from app.legal import for_investigation as legal_basis
 from app.matching.matcher import match_name
-from app.models import Entity, EntityType, ListType, RelationType, SearchCandidate, utcnow
+from app.models import (
+    Entity,
+    EntityType,
+    ListType,
+    RelationType,
+    ScreeningHit,
+    SearchCandidate,
+    utcnow,
+)
 from app.risk.config import get_country_risk, get_jurisdictions, get_risk_config
 from app.risk.engine import RiskAssessment, RiskEngine
 from app.schemas import Investigation, InvestigationRequest, SearchResponse
@@ -203,6 +212,17 @@ class KbcService:
         return list(names)[:8], len(names)
 
     # ------------------------------------------------------ investigation
+    def screen_entity(self, entity: Entity) -> list[ScreeningHit]:
+        """Screen one name against every enabled screening source (statement counterparties).
+        A source that is down or still loading is skipped; the others still answer."""
+        hits: list[ScreeningHit] = []
+        for conn in self.registry.enabled(kind="screening"):
+            try:
+                hits += conn.screen(entity)
+            except ConnectorError:
+                continue
+        return apply_triage(hits, {entity.id: entity})
+
     def investigate(self, req: InvestigationRequest, memory: bool = True) -> Investigation:
         """Investigation with the analysts' memory applied: hits already ruled out as
         namesakes (in any case) are marked as dismissed and leave the score."""
@@ -253,7 +273,8 @@ class KbcService:
             timeline=build_timeline(net),
             brief=build_brief(net, risk, get_jurisdictions().name),
             requests=build_requests(net, risk, get_jurisdictions().name),
-            ownership=analyse_ownership(net, risk.level),
+            ownership=(ownership := analyse_ownership(net, risk.level)),
+            legal=legal_basis(risk, ownership),
             queries=net.queries,
             merges=net.merges,
             warnings=group_warnings(net.warnings),

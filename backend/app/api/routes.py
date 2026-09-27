@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Literal
 
-from fastapi import APIRouter, Header, HTTPException, Query
+from fastapi import APIRouter, File, Form, Header, HTTPException, Query, UploadFile
 from fastapi.responses import Response
 from pydantic import BaseModel, Field
 from unidecode import unidecode
@@ -95,6 +95,35 @@ def quick_checks(req: ChecksRequest) -> dict:
     if not any((req.iban, req.email, req.website, req.wallet)):
         raise HTTPException(status_code=422, detail="Nothing to check")
     return run_checks(req.model_dump())
+
+
+@router.post("/transactions/analyze")
+async def analyze_transactions(
+    file: UploadFile = File(...),
+    profile: str = Form(default="{}"),
+    screen: bool = Form(default=True),
+) -> dict:
+    """Bank statement analysis (CSV / Excel). The file is read in memory and never stored."""
+    import json
+
+    from app.transactions import MAX_BYTES, analyse
+
+    data = await file.read(MAX_BYTES + 1)
+    try:
+        prof = json.loads(profile or "{}")
+    except ValueError:
+        prof = {}
+    try:
+        return analyse(
+            data,
+            file.filename or "statement.csv",
+            prof if isinstance(prof, dict) else {},
+            service().screen_entity if screen else None,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    finally:
+        del data
 
 
 @router.post("/reports/pdf")

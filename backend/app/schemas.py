@@ -70,3 +70,5 @@ class Investigation(BaseModel):
     brief: Brief | None = None
     requests: list[DocRequest] = Field(default_factory=list)
     ownership: OwnershipAnalysis | None = None
+    #: legal basis and justification of each red flag (config/legal_basis.yaml)
+    legal: list[dict[str, Any]] = Field(default_factory=list)

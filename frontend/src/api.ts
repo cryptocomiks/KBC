@@ -1,4 +1,5 @@
 import type {
+  StatementAnalysis,
   CaseChange,
   CaseRecord,
   CaseView,
@@ -165,6 +166,16 @@ export const api = {
     const body = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(body?.detail ?? `Import failed (${res.status})`);
     return body as ImportStatus & { batch: string; created: number; warnings: string[] };
+  },
+
+  async analyzeStatement(file: File, profile: Record<string, unknown>) {
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("profile", JSON.stringify(profile));
+    const res = await fetch(`${BASE}/transactions/analyze`, { method: "POST", body: fd });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body?.detail ?? `Analysis failed (${res.status})`);
+    return body as StatementAnalysis;
   },
 
   async extractDocument(file: File) {

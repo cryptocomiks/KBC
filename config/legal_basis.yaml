@@ -1,0 +1,249 @@
+# Legal basis of each red flag, and the justification text an analyst pastes in the file.
+#
+# An operational map to the main texts (Switzerland, EU, FATF, US OFAC). It is not legal
+# advice: check the current version of each text and the institution's own directives.
+# References are listed per signal in the order an analyst cites them.
+
+as_of: "2026-09"
+
+refs:
+  # Switzerland
+  lba_2a: {short: "LBA art. 2a", title: "Politically exposed persons (definitions)", jurisdiction: CH, url: "https://www.fedlex.admin.ch/eli/cc/1998/892_892_892/fr"}
+  lba_3: {short: "LBA art. 3", title: "Verification of the identity of the contracting party", jurisdiction: CH, url: "https://www.fedlex.admin.ch/eli/cc/1998/892_892_892/fr"}
+  lba_4: {short: "LBA art. 4", title: "Establishing the identity of the beneficial owner", jurisdiction: CH, url: "https://www.fedlex.admin.ch/eli/cc/1998/892_892_892/fr"}
+  lba_6: {short: "LBA art. 6", title: "Special duty of clarification (unusual transactions, indications of criminal origin, PEPs)", jurisdiction: CH, url: "https://www.fedlex.admin.ch/eli/cc/1998/892_892_892/fr"}
+  lba_7: {short: "LBA art. 7", title: "Duty to keep records", jurisdiction: CH, url: "https://www.fedlex.admin.ch/eli/cc/1998/892_892_892/fr"}
+  lba_9: {short: "LBA art. 9", title: "Duty to report to MROS", jurisdiction: CH, url: "https://www.fedlex.admin.ch/eli/cc/1998/892_892_892/fr"}
+  lba_10: {short: "LBA art. 10", title: "Asset freeze", jurisdiction: CH, url: "https://www.fedlex.admin.ch/eli/cc/1998/892_892_892/fr"}
+  lba_10a: {short: "LBA art. 10a", title: "Prohibition of information (tipping-off)", jurisdiction: CH, url: "https://www.fedlex.admin.ch/eli/cc/1998/892_892_892/fr"}
+  oba_13: {short: "OBA-FINMA art. 13", title: "Business relationships with increased risks", jurisdiction: CH, url: "https://www.fedlex.admin.ch/eli/cc/2015/390/fr"}
+  oba_14: {short: "OBA-FINMA art. 14", title: "Transactions with increased risks", jurisdiction: CH, url: "https://www.fedlex.admin.ch/eli/cc/2015/390/fr"}
+  oba_15: {short: "OBA-FINMA art. 15", title: "Additional clarifications in case of increased risks", jurisdiction: CH, url: "https://www.fedlex.admin.ch/eli/cc/2015/390/fr"}
+  oba_20: {short: "OBA-FINMA art. 20", title: "Monitoring of business relationships and transactions", jurisdiction: CH, url: "https://www.fedlex.admin.ch/eli/cc/2015/390/fr"}
+  cdb_20: {short: "CDB 20", title: "Agreement on the Swiss banks' code of conduct with regard to the exercise of due diligence (forms A, K, S, T)", jurisdiction: CH, url: null}
+  lemb: {short: "LEmb + SECO ordinances", title: "Embargo Act: freezing and reporting of assets to SECO", jurisdiction: CH, url: "https://www.fedlex.admin.ch/eli/cc/2002/564/fr"}
+  # European Union
+  amld_3_6: {short: "AMLD art. 3(6)", title: "Beneficial owner (25 % indication; senior managing official as fallback)", jurisdiction: EU, url: "https://eur-lex.europa.eu/eli/dir/2015/849/oj"}
+  amld_3_9: {short: "AMLD art. 3(9)", title: "Politically exposed person", jurisdiction: EU, url: "https://eur-lex.europa.eu/eli/dir/2015/849/oj"}
+  amld_13: {short: "AMLD art. 13", title: "Customer due diligence measures", jurisdiction: EU, url: "https://eur-lex.europa.eu/eli/dir/2015/849/oj"}
+  amld_18: {short: "AMLD art. 18", title: "Enhanced due diligence; complex or unusually large transactions", jurisdiction: EU, url: "https://eur-lex.europa.eu/eli/dir/2015/849/oj"}
+  amld_18a: {short: "AMLD art. 18a", title: "High-risk third countries", jurisdiction: EU, url: "https://eur-lex.europa.eu/eli/dir/2015/849/oj"}
+  amld_20: {short: "AMLD art. 20", title: "Politically exposed persons: senior approval, source of wealth, ongoing monitoring", jurisdiction: EU, url: "https://eur-lex.europa.eu/eli/dir/2015/849/oj"}
+  amld_30: {short: "AMLD art. 30", title: "Beneficial ownership information and registers (discrepancy reporting)", jurisdiction: EU, url: "https://eur-lex.europa.eu/eli/dir/2015/849/oj"}
+  amld_33: {short: "AMLD art. 33", title: "Suspicious transaction reporting", jurisdiction: EU, url: "https://eur-lex.europa.eu/eli/dir/2015/849/oj"}
+  amld_39: {short: "AMLD art. 39", title: "Prohibition of disclosure (tipping-off)", jurisdiction: EU, url: "https://eur-lex.europa.eu/eli/dir/2015/849/oj"}
+  reg_269: {short: "Reg. (EU) 269/2014 art. 2", title: "Freezing of funds of listed persons (Ukraine / Russia regime; other regimes have the same structure)", jurisdiction: EU, url: "https://eur-lex.europa.eu/eli/reg/2014/269/oj"}
+  eu_ownership: {short: "EU best practices (ownership & control)", title: "Council best practices on restrictive measures: owned more than 50 % or controlled by a listed person", jurisdiction: EU, url: null}
+  # United States
+  ofac_50: {short: "OFAC 50 % rule", title: "Guidance on entities owned by blocked persons (2014): 50 % or more in aggregate", jurisdiction: US, url: "https://ofac.treasury.gov"}
+  # FATF
+  fatf_r1: {short: "FATF R.1", title: "Assessing risks and applying a risk-based approach", jurisdiction: FATF, url: "https://www.fatf-gafi.org/en/publications/Fatfrecommendations/Fatf-recommendations.html"}
+  fatf_r6: {short: "FATF R.6", title: "Targeted financial sanctions related to terrorism and terrorist financing", jurisdiction: FATF, url: "https://www.fatf-gafi.org/en/publications/Fatfrecommendations/Fatf-recommendations.html"}
+  fatf_r10: {short: "FATF R.10", title: "Customer due diligence", jurisdiction: FATF, url: "https://www.fatf-gafi.org/en/publications/Fatfrecommendations/Fatf-recommendations.html"}
+  fatf_r12: {short: "FATF R.12", title: "Politically exposed persons", jurisdiction: FATF, url: "https://www.fatf-gafi.org/en/publications/Fatfrecommendations/Fatf-recommendations.html"}
+  fatf_r15: {short: "FATF R.15", title: "New technologies (virtual assets and their service providers)", jurisdiction: FATF, url: "https://www.fatf-gafi.org/en/publications/Fatfrecommendations/Fatf-recommendations.html"}
+  fatf_r19: {short: "FATF R.19", title: "Higher-risk countries", jurisdiction: FATF, url: "https://www.fatf-gafi.org/en/publications/Fatfrecommendations/Fatf-recommendations.html"}
+  fatf_r20: {short: "FATF R.20", title: "Reporting of suspicious transactions", jurisdiction: FATF, url: "https://www.fatf-gafi.org/en/publications/Fatfrecommendations/Fatf-recommendations.html"}
+  fatf_r24: {short: "FATF R.24", title: "Transparency and beneficial ownership of legal persons", jurisdiction: FATF, url: "https://www.fatf-gafi.org/en/publications/Fatfrecommendations/Fatf-recommendations.html"}
+  fatf_r25: {short: "FATF R.25", title: "Transparency and beneficial ownership of legal arrangements", jurisdiction: FATF, url: "https://www.fatf-gafi.org/en/publications/Fatfrecommendations/Fatf-recommendations.html"}
+
+# Signal -> references and the measure, in English and French ("{evidence}" is replaced by
+# what the tool found).
+signals:
+  sanctions_match:
+    refs: [lemb, lba_10, reg_269, ofac_50, fatf_r6]
+    en: "Name match on a sanctions list ({evidence}). The match is being confirmed with identification documents; until then no funds are made available and the case is escalated to sanctions compliance."
+    fr: "Correspondance avec une liste de sanctions ({evidence}). La correspondance est vérifiée sur pièces d'identité ; dans l'intervalle, aucun fonds n'est mis à disposition et le dossier est transmis à la conformité sanctions."
+  sanctions_possible_match:
+    refs: [lemb, reg_269, fatf_r6]
+    en: "Possible match on a sanctions list ({evidence}), to be ruled out with the date of birth, nationality or registration number before onboarding."
+    fr: "Correspondance possible avec une liste de sanctions ({evidence}), à écarter au moyen de la date de naissance, de la nationalité ou du numéro d'immatriculation avant l'entrée en relation."
+  sanctions_ownership:
+    refs: [ofac_50, eu_ownership, reg_269, lemb, lba_10]
+    en: "Entity owned 50 % or more in aggregate by sanctioned persons ({evidence}): treated as blocked; no funds or economic resources are made available; escalation and report to the competent authority."
+    fr: "Entité détenue à 50 % ou plus, au total, par des personnes sanctionnées ({evidence}) : traitée comme gelée ; aucun fonds ni ressource économique n'est mis à disposition ; escalade et annonce à l'autorité compétente."
+  sanctions_minority_or_control:
+    refs: [eu_ownership, ofac_50, lemb]
+    en: "Sanctioned minority owner or officer ({evidence}). Control by the listed person is assessed against the EU criteria (board, voting rights, influence) and the conclusion is documented."
+    fr: "Actionnaire minoritaire ou dirigeant sanctionné ({evidence}). Le contrôle par la personne listée est évalué selon les critères de l'UE (conseil, droits de vote, influence) et la conclusion est documentée."
+  sanctioned_counterparty:
+    refs: [lemb, reg_269, fatf_r15, oba_14]
+    en: "Crypto flows with a sanctioned wallet ({evidence}): the relationship is escalated; the origin of the crypto-assets is documented."
+    fr: "Flux crypto avec un portefeuille sanctionné ({evidence}) : la relation est escaladée ; l'origine des cryptoactifs est documentée."
+  watchlist_match:
+    refs: [lba_6, oba_15, amld_18, fatf_r10]
+    en: "Watchlist match (debarment, wanted notice, enforcement: {evidence}). Additional clarifications are made and their result recorded."
+    fr: "Correspondance sur une liste de surveillance (exclusion, avis de recherche, sanction administrative : {evidence}). Des clarifications complémentaires sont effectuées et leur résultat consigné."
+  pep_match:
+    refs: [lba_2a, lba_6, oba_13, amld_3_9, amld_20, fatf_r12]
+    en: "Politically exposed person ({evidence}): increased-risk relationship; senior management approval, source of wealth and source of funds established, enhanced ongoing monitoring."
+    fr: "Personne politiquement exposée ({evidence}) : relation à risques accrus ; approbation de la direction, origine de la fortune et des fonds établie, surveillance renforcée."
+  pep_possible_match:
+    refs: [lba_2a, amld_3_9, fatf_r12]
+    en: "Possible PEP match ({evidence}), to be confirmed or ruled out with the function held and the dates."
+    fr: "Correspondance PPE possible ({evidence}), à confirmer ou écarter au moyen de la fonction exercée et des dates."
+  pep_relative:
+    refs: [lba_2a, oba_13, amld_20, fatf_r12]
+    en: "Family member or close associate of a PEP ({evidence}): same measures as for the PEP where the risk warrants it."
+    fr: "Membre de la famille ou proche d'une PPE ({evidence}) : mêmes mesures que pour la PPE lorsque le risque le justifie."
+  leak_appearance:
+    refs: [lba_6, oba_13, amld_18, fatf_r24]
+    en: "Named in leaked offshore data ({evidence}). Appearing in a leak is not wrongdoing: the purpose of the structure and its beneficial owners are documented."
+    fr: "Mentionné dans des données offshore divulguées ({evidence}). Y figurer n'est pas une infraction : le but de la structure et ses ayants droit économiques sont documentés."
+  fatf_blacklist:
+    refs: [amld_18a, fatf_r19, oba_13]
+    en: "Link with a country subject to a FATF call for action ({evidence}): enhanced measures and counter-measures, senior approval."
+    fr: "Lien avec un pays faisant l'objet d'un appel à l'action du GAFI ({evidence}) : mesures renforcées et contre-mesures, approbation de la direction."
+  fatf_greylist:
+    refs: [amld_18a, fatf_r19, oba_13]
+    en: "Link with a country under FATF increased monitoring ({evidence}): geographic risk documented, enhanced due diligence."
+    fr: "Lien avec un pays sous surveillance renforcée du GAFI ({evidence}) : risque géographique documenté, diligence renforcée."
+  eu_tax_blacklist:
+    refs: [oba_13, amld_18]
+    en: "Link with an EU non-cooperative tax jurisdiction ({evidence}): the tax rationale of the structure is documented."
+    fr: "Lien avec une juridiction fiscale non coopérative de l'UE ({evidence}) : la justification fiscale de la structure est documentée."
+  high_risk_country:
+    refs: [oba_13, amld_18, fatf_r1]
+    en: "Company in a high-risk country (Basel AML Index / corruption: {evidence}): geographic risk weighted in the assessment."
+    fr: "Société dans un pays à risque élevé (indice de Bâle / corruption : {evidence}) : risque géographique pondéré dans l'évaluation."
+  offshore_jurisdiction:
+    refs: [oba_13, cdb_20, amld_18, fatf_r24]
+    en: "Offshore entity in the structure ({evidence}): register extract, beneficial owner declaration and economic purpose obtained."
+    fr: "Entité offshore dans la structure ({evidence}) : extrait du registre, déclaration d'ayant droit économique et but économique obtenus."
+  circular_ownership:
+    refs: [lba_4, oba_13, fatf_r24]
+    en: "Circular shareholding ({evidence}): signed group chart and explanation obtained."
+    fr: "Participation circulaire ({evidence}) : organigramme signé et explication obtenus."
+  long_ownership_chain:
+    refs: [lba_4, oba_13, amld_3_6, fatf_r24]
+    en: "Long ownership chain ({evidence}): beneficial owner identified through every layer."
+    fr: "Longue chaîne de détention ({evidence}) : ayant droit économique identifié à travers chaque niveau."
+  ubo_discrepancy:
+    refs: [lba_4, cdb_20, amld_3_6, amld_30, fatf_r24]
+    en: "Computed beneficial owner not declared ({evidence}): declaration updated with the client; discrepancy reported to the register where required."
+    fr: "Ayant droit économique calculé mais non déclaré ({evidence}) : déclaration mise à jour avec le client ; divergence signalée au registre lorsque requis."
+  shared_domiciliation:
+    refs: [oba_13, amld_18]
+    en: "Address shared with many companies ({evidence}): domiciliation checked and real presence documented."
+    fr: "Adresse partagée avec de nombreuses sociétés ({evidence}) : domiciliation vérifiée et présence réelle documentée."
+  nominee_director:
+    refs: [lba_4, oba_13, fatf_r24]
+    en: "Possible nominee director ({evidence}): the person on whose behalf the director acts is identified."
+    fr: "Possible administrateur de façade ({evidence}) : la personne pour le compte de laquelle il agit est identifiée."
+  shell_company_indicators:
+    refs: [oba_13, oba_15, amld_18]
+    en: "Shell-company indicators ({evidence}): economic rationale and evidence of real activity obtained."
+    fr: "Indices de société écran ({evidence}) : justification économique et preuves d'activité réelle obtenues."
+  formation_agent:
+    refs: [oba_13, fatf_r24]
+    en: "Corporate service provider in the structure ({evidence}): the persons behind it are identified."
+    fr: "Prestataire de domiciliation dans la structure ({evidence}) : les personnes derrière elle sont identifiées."
+  corporate_director:
+    refs: [lba_4, fatf_r24]
+    en: "Company acting as director ({evidence}): the natural persons controlling it are identified."
+    fr: "Société agissant comme administrateur ({evidence}) : les personnes physiques qui la contrôlent sont identifiées."
+  recent_incorporation:
+    refs: [oba_13]
+    en: "Recently incorporated ({evidence}): business substance verified (premises, staff, first contracts)."
+    fr: "Constitution récente ({evidence}) : substance vérifiée (locaux, personnel, premiers contrats)."
+  missing_accounts:
+    refs: [oba_15]
+    en: "No recent accounts ({evidence}): latest financial statements requested."
+    fr: "Pas de comptes récents ({evidence}) : derniers états financiers demandés."
+  insolvency_proceedings:
+    refs: [oba_15]
+    en: "Insolvency proceedings ({evidence}): status and effect on the relationship documented."
+    fr: "Procédure d'insolvabilité ({evidence}) : état et effet sur la relation documentés."
+  adverse_media:
+    refs: [lba_6, oba_15, amld_18]
+    en: "Adverse media ({evidence}): articles read, relevant ones kept in the file, namesakes dismissed."
+    fr: "Presse négative ({evidence}) : articles lus, articles pertinents conservés au dossier, homonymes écartés."
+  ubo_smo_fallback:
+    refs: [amld_3_6, lba_4, cdb_20]
+    en: "No natural person identified by ownership ({evidence}): the senior managing official is recorded as beneficial owner, with the steps taken."
+    fr: "Aucune personne physique identifiée par la détention ({evidence}) : le dirigeant principal est enregistré comme ayant droit économique, avec les démarches effectuées."
+  # Bank statement red flags
+  structuring:
+    refs: [oba_14, lba_6, amld_18, fatf_r20]
+    en: "Amounts just below the identification threshold ({evidence}): possible structuring; clarified with the client and, if unexplained, assessed for reporting."
+    fr: "Montants juste inférieurs au seuil d'identification ({evidence}) : possible fractionnement ; clarifié avec le client et, faute d'explication, examiné en vue d'une communication."
+  split_payments:
+    refs: [oba_14, lba_6, fatf_r20]
+    en: "Payments split within a week ({evidence}): business reason requested."
+    fr: "Paiements fractionnés sur une semaine ({evidence}) : raison commerciale demandée."
+  cash:
+    refs: [oba_14, lba_6, amld_18]
+    en: "Cash operations ({evidence}): origin of deposits and use of withdrawals documented."
+    fr: "Opérations en espèces ({evidence}) : origine des versements et usage des retraits documentés."
+  round_amounts:
+    refs: [oba_14, oba_20]
+    en: "Many round-amount transfers ({evidence}): underlying contracts and invoices checked."
+    fr: "Nombreux virements à montants ronds ({evidence}) : contrats et factures sous-jacents vérifiés."
+  pass_through:
+    refs: [oba_14, lba_6, amld_18, fatf_r20]
+    en: "Funds leaving within days of arriving ({evidence}): possible transit account; economic purpose of the flows clarified."
+    fr: "Fonds ressortis quelques jours après leur arrivée ({evidence}) : possible compte de transit ; but économique des flux clarifié."
+  crypto:
+    refs: [fatf_r15, oba_14]
+    en: "Transfers with crypto-asset platforms ({evidence}): wallet addresses and origin of the crypto-assets obtained."
+    fr: "Virements avec des plateformes de cryptoactifs ({evidence}) : adresses de portefeuilles et origine des cryptoactifs obtenues."
+  activity_spike:
+    refs: [oba_14, oba_20]
+    en: "Sudden rise in activity ({evidence}): explanation and supporting documents requested."
+    fr: "Hausse soudaine d'activité ({evidence}) : explication et justificatifs demandés."
+  profile_mismatch:
+    refs: [oba_14, oba_20, lba_6, amld_13]
+    en: "Activity above the declared profile ({evidence}): profile updated and reason documented."
+    fr: "Activité supérieure au profil déclaré ({evidence}) : profil mis à jour et raison documentée."
+  funnel:
+    refs: [oba_14, lba_6, fatf_r20]
+    en: "Funnel pattern ({evidence}): possible money-mule or collection account; relationship reviewed."
+    fr: "Schéma d'entonnoir ({evidence}) : possible compte de mule ou de collecte ; relation réexaminée."
+  counterparty_screening:
+    refs: [lemb, reg_269, lba_10, fatf_r6]
+    en: "Counterparty matching a list ({evidence}): payments suspended until the match is ruled out."
+    fr: "Contrepartie correspondant à une liste ({evidence}) : paiements suspendus jusqu'à exclusion de la correspondance."
+  high_risk_geography:
+    refs: [oba_14, amld_18a, fatf_r19]
+    en: "Counterparties in higher-risk countries ({evidence}): business reason and goods or services documented."
+    fr: "Contreparties dans des pays à risque accru ({evidence}) : raison commerciale et biens ou services documentés."
+  dissolved_company:
+    refs: [oba_15]
+    en: "Dissolved company in the network ({evidence}): checked that it no longer plays a role (contracts, accounts, flows)."
+    fr: "Société dissoute dans le réseau ({evidence}) : vérifié qu'elle ne joue plus de rôle (contrats, comptes, flux)."
+  authorisation_withdrawn:
+    refs: [oba_13, oba_15]
+    en: "Financial authorisation withdrawn ({evidence}): regulator's decision read and its effect on the relationship documented."
+    fr: "Autorisation financière retirée ({evidence}) : décision du régulateur lue et effet sur la relation documenté."
+  multi_jurisdiction_officer:
+    refs: [oba_13, fatf_r24]
+    en: "Officer with positions in many countries ({evidence}): role and independence clarified."
+    fr: "Dirigeant présent dans de nombreux pays ({evidence}) : rôle et indépendance clarifiés."
+  possible_same_person:
+    refs: [lba_3, fatf_r10]
+    en: "Possibly the same person in two registers ({evidence}): identity confirmed or ruled out with documents."
+    fr: "Possiblement la même personne dans deux registres ({evidence}) : identité confirmée ou écartée sur pièces."
+  batch_incorporation:
+    refs: [oba_13, fatf_r24]
+    en: "Companies incorporated in a batch ({evidence}): purpose of the group of companies documented."
+    fr: "Sociétés constituées en série ({evidence}) : but de l'ensemble de sociétés documenté."
+  pre_event_resignation:
+    refs: [oba_15, lba_6]
+    en: "Officer left shortly before an insolvency ({evidence}): circumstances clarified."
+    fr: "Dirigeant parti peu avant une insolvabilité ({evidence}) : circonstances clarifiées."
+  officer_turnover:
+    refs: [oba_15]
+    en: "High officer turnover ({evidence}): reasons for the changes requested."
+    fr: "Rotation élevée des dirigeants ({evidence}) : raisons des changements demandées."
+  vat_invalid:
+    refs: [lba_3, oba_15]
+    en: "VAT number not active ({evidence}): explanation requested and invoices checked."
+    fr: "Numéro de TVA inactif ({evidence}) : explication demandée et factures vérifiées."
+  young_domain:
+    refs: [oba_15]
+    en: "Very recent website domain ({evidence}): real activity checked."
+    fr: "Nom de domaine très récent ({evidence}) : activité réelle vérifiée."
+  register_warning:
+    refs: [lba_3, oba_15]
+    en: "Warning in the company register ({evidence}): register entry read, regularisation requested."
+    fr: "Avertissement au registre du commerce ({evidence}) : inscription lue, régularisation demandée."

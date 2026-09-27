@@ -170,6 +170,7 @@ export interface Investigation {
   brief: Brief | null;
   requests?: DocRequest[];
   ownership?: OwnershipAnalysis | null;
+  legal?: LegalItem[];
 }
 
 export interface DocRequest {
@@ -787,4 +788,61 @@ export interface OwnershipAnalysis {
   actions?: string[];
   depth_limited: boolean;
   max_depth: number;
+}
+
+export interface LegalRef {
+  id: string;
+  short: string;
+  title: string;
+  jurisdiction: string;
+  url?: string | null;
+}
+
+export interface StatementAlert {
+  rule: string;
+  severity: "critical" | "high" | "medium" | "low";
+  title: string;
+  detail: string;
+  count: number;
+  amount: number;
+  rows: number[];
+  legal?: LegalRef[];
+  justification_en?: string | null;
+  justification_fr?: string | null;
+}
+
+export interface StatementAnalysis {
+  filename: string;
+  mapping: Record<string, string>;
+  warnings: string[];
+  threshold: number;
+  summary: {
+    transactions: number;
+    period_from: string;
+    period_to: string;
+    currency: string | null;
+    currencies: Record<string, number>;
+    inflow: number;
+    outflow: number;
+    count_in: number;
+    count_out: number;
+    annualised_inflow: number;
+    counterparties: number;
+    screened: number;
+    flagged_transactions: number;
+  };
+  monthly: { month: string; in: number; out: number }[];
+  countries: { iso: string; name: string; amount: number; count: number; risk: string[] }[];
+  counterparties: { name: string; in: number; out: number; count: number; country: string | null; hits: { dataset: string; matched_name: string; score: number; list_type: string }[] }[];
+  alerts: StatementAlert[];
+  transactions: { idx: number; date: string; amount: number; direction: "in" | "out"; currency: string | null; counterparty: string | null; country: string | null; description: string | null; flags: string[] }[];
+}
+
+export interface LegalItem {
+  key: string;
+  label: string;
+  points: number;
+  refs: LegalRef[];
+  en: string | null;
+  fr: string | null;
 }

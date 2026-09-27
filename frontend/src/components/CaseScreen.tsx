@@ -20,6 +20,7 @@ import InvestigationView from "./InvestigationView";
 import KycQuestionnaire from "./KycQuestionnaire";
 import PasswordGate from "./PasswordGate";
 import PeriodicReview from "./PeriodicReview";
+import TransactionAnalysis from "./TransactionAnalysis";
 import QuickChecks from "./QuickChecks";
 import SourceOfWealth from "./SourceOfWealth";
 
@@ -82,6 +83,20 @@ export default function CaseScreen({ caseId, tab, onTab, theme, onBack, onInvest
       {tab === "alerts" && <CaseAlerts caseId={caseId} />}
       {tab === "cdb" && <CdbForms caseId={caseId} />}
       {tab === "sow" && <SourceOfWealth caseId={caseId} subjectName={q.data.case.subject_name as string} />}
+      {tab === "transactions" && (
+        <TransactionAnalysis
+          subjectName={q.data.case.subject_name as string}
+          profile={(() => {
+            const subject = inv.entities.find((e) => e.id === inv.subject_id);
+            const a = q.data.questionnaire.answers ?? {};
+            return {
+              country: subject?.jurisdiction ?? subject?.nationalities?.[0] ?? undefined,
+              volume: typeof a.volume === "string" ? a.volume : undefined,
+              cash: typeof a.cash === "string" ? a.cash : undefined,
+            };
+          })()}
+        />
+      )}
       {tab === "checks" && (
         <QuickChecks
           company={q.data.case.subject_type === "company" ? (q.data.case.subject_name as string) : undefined}
