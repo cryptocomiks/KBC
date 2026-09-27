@@ -193,7 +193,7 @@ def test_uk_case_law_keeps_cases_naming_the_party():
         return_value=httpx.Response(200, text=ATOM_FEED)
     )
     [doc] = fs.UkCaseLawConnector(LIVE).get_documents(_company("Carillion PLC", "GB"))
-    assert route.calls[0].request.url.params["query"] == '"Carillion PLC"'
+    assert route.calls[0].request.url.params["party"] == "Carillion"
     assert (
         doc.title.startswith("Carillion")
         and doc.flags == ["court"]

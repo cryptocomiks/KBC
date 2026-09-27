@@ -41,20 +41,25 @@ from app.settings import CONFIG_DIR
 log = logging.getLogger(__name__)
 
 
+LEGAL_WORDS = {
+    "ag", "sa", "sarl", "gmbh", "ltd", "limited", "plc", "inc", "llc", "srl", "spa",
+    "sas", "bv", "nv", "the", "in", "liquidation", "liq", "dac", "clg", "uc", "co",
+    "company", "kg", "se", "oy", "ab", "as", "sagl", "und", "et", "cie",
+}  # fmt: skip
+
+
 def _norm(name: str) -> str:
     """Lower-case, no accents, no punctuation, no legal-form words: for name matching."""
     s = re.sub(r"[^a-z0-9 ]+", " ", unidecode(name or "").lower())
-    words = [
-        w
-        for w in s.split()
-        if w
-        not in {
-            "ag", "sa", "sarl", "gmbh", "ltd", "limited", "plc", "inc", "llc", "srl", "spa",
-            "sas", "bv", "nv", "the", "in", "liquidation", "liq", "dac", "clg", "uc", "co",
-            "company", "kg", "se", "oy", "ab", "as", "sagl", "und", "et", "cie",
-        }
-    ]  # fmt: skip
-    return " ".join(words)
+    return " ".join(w for w in s.split() if w not in LEGAL_WORDS)
+
+
+def core_name(name: str) -> str:
+    """The name as written, without the trailing legal form ("Carillion PLC" -> "Carillion")."""
+    words = re.sub(r",", " ", name or "").replace(".", "").split()
+    while words and unidecode(words[-1]).lower() in LEGAL_WORDS:
+        words.pop()
+    return " ".join(words) or (name or "").strip()
 
 
 def _day(value: Any) -> date | None:
@@ -348,7 +353,8 @@ class UkCaseLawConnector(BaseConnector):
     def get_documents(self, entity: Entity) -> list[Document]:
         if not may_query(entity) or len(_norm(entity.name)) < 4:
             return []
-        xml = self.http_get_text(CASELAW_ATOM, params={"query": f'"{entity.name}"'})
+        # "party" filters on the parties of the case; it needs the name without legal form.
+        xml = self.http_get_text(CASELAW_ATOM, params={"party": core_name(entity.name)})
         try:
             root = ET.fromstring(xml)
         except ET.ParseError as exc:
