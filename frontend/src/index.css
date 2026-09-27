@@ -3,38 +3,39 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ---------------------------------------------------------------------------
-   Dark product style: near-black canvas with a faint green glow, neon-green
-   accent with soft light, pill buttons, bold tight headlines, bracketed section
-   tags, glowing charts. Risk colours stay red / amber / green for meaning.
-   Light mode remains available (theme toggle). Respects reduced motion /
+   Apple-like product style: light by default (#f5f5f7 canvas, white surfaces,
+   near-black #1d1d1f text), system SF font, Apple blue #0071e3 accent, generous
+   white space, large tight headlines, pill buttons, soft shadows instead of
+   borders, translucent navigation. Dark mode mirrors apple.com's black pages.
+   Risk colours stay red / amber / green for meaning. Respects reduced motion /
    transparency / contrast preferences.
    --------------------------------------------------------------------------- */
 @theme {
-  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, Roboto, "Helvetica Neue", sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Inter", "Helvetica Neue", "Segoe UI", system-ui, Roboto, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", SFMono-Regular, "JetBrains Mono", Menlo, Consolas, monospace;
 
-  /* Neutrals: cool graphite (dark mode) and soft greys (light mode) */
-  --color-slate-50: #f5f7f8;
-  --color-slate-100: #eceff2;
-  --color-slate-200: #dde2e7;
-  --color-slate-300: #c3cad2;
-  --color-slate-400: #8f99a4;
-  --color-slate-500: #69737e;
-  --color-slate-600: #4b545e;
-  --color-slate-700: #2b3139;
-  --color-slate-800: #181c21;
-  --color-slate-900: #0f1216;
-  --color-slate-950: #07090b;
+  /* Neutrals: Apple greys (light) and Apple's near-black ramp (dark) */
+  --color-slate-50: #f5f5f7;
+  --color-slate-100: #ededf0;
+  --color-slate-200: #e0e0e5;
+  --color-slate-300: #d2d2d7;
+  --color-slate-400: #86868b;
+  --color-slate-500: #6e6e73;
+  --color-slate-600: #515154;
+  --color-slate-700: #3a3a3c;
+  --color-slate-800: #2c2c2e;
+  --color-slate-900: #1d1d1f;
+  --color-slate-950: #000000;
 
-  /* Accent: deep emerald — calm, trustworthy, readable on dark and light */
-  --color-brand-50: #ecfbf4;
-  --color-brand-100: #d2f5e4;
-  --color-brand-300: #7fdcb0;
-  --color-brand-500: #2fb67f;
-  --color-brand-600: #1f9467;
-  --color-brand-700: #177350;
+  /* Accent: Apple blue (links and primary actions) */
+  --color-brand-50: #eaf3fe;
+  --color-brand-100: #d3e6fc;
+  --color-brand-300: #6bb4ff;
+  --color-brand-500: #0071e3;
+  --color-brand-600: #0066cc;
+  --color-brand-700: #004f9e;
 
-  --radius-card: 16px;
+  --radius-card: 18px;
   --ease-fluid: cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 
@@ -46,15 +47,11 @@ body,
 html {
   -webkit-text-size-adjust: 100%;
 }
-.dark body {
-  background-image: radial-gradient(1100px 480px at 50% -200px, rgb(47 182 127 / 0.06), transparent 70%);
-  background-attachment: fixed;
-}
 body {
-  @apply bg-slate-50 text-[#101828] antialiased dark:bg-slate-950 dark:text-[#e6eaee];
+  @apply bg-slate-50 text-[#1d1d1f] antialiased dark:bg-black dark:text-[#f5f5f7];
   font-size: 0.875rem; /* 14px — dense, readable body */
-  line-height: 1.5;
-  letter-spacing: 0;
+  line-height: 1.47;
+  letter-spacing: -0.01em; /* SF Text tracking */
   font-feature-settings: "tnum" 1, "cv11" 1; /* tabular figures: amounts and scores line up */
   font-optical-sizing: auto;
   /* Ease light <-> dark instead of an abrupt brightness jump */
@@ -65,12 +62,12 @@ body {
 
 /* Size-specific tracking: large type tighter, small type slightly open */
 h1 {
-  letter-spacing: -0.01em;
-  line-height: 1.2;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
 }
 h2,
 h3 {
-  letter-spacing: -0.015em;
+  letter-spacing: -0.02em;
 }
 .text-xs,
 .text-\[11px\],
@@ -89,13 +86,13 @@ h3 {
 }
 
 @utility card {
-  @apply border border-slate-200 bg-white dark:border-white/[0.07] dark:bg-[#0e1115]/95;
+  @apply border border-black/[0.04] bg-white dark:border-white/[0.06] dark:bg-[#1c1c1e];
   border-radius: var(--radius-card);
-  box-shadow: 0 1px 2px rgb(16 24 40 / 0.05);
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 0.04),
+    0 8px 24px -12px rgb(0 0 0 / 0.08);
   :where(.dark) & {
-    box-shadow:
-      0 1px 0 rgb(255 255 255 / 0.04) inset,
-      0 20px 40px -24px rgb(0 0 0 / 0.8);
+    box-shadow: none;
   }
   animation: fade 200ms ease-out both;
 }
@@ -135,7 +132,7 @@ h3 {
     border-radius: inherit;
     padding: 1px;
     pointer-events: none;
-    background: linear-gradient(150deg, rgb(255 255 255 / 0.95), rgb(255 255 255 / 0) 38%, rgb(255 255 255 / 0) 62%, rgb(47 182 127 / 0.35));
+    background: linear-gradient(150deg, rgb(255 255 255 / 0.95), rgb(255 255 255 / 0) 38%, rgb(255 255 255 / 0) 62%, rgb(0 113 227 / 0.18));
     -webkit-mask:
       linear-gradient(#000 0 0) content-box,
       linear-gradient(#000 0 0);
@@ -154,7 +151,7 @@ h3 {
     background: radial-gradient(520px circle at var(--mx, 18%) var(--my, -30%), rgb(255 255 255 / 0.075), transparent 45%);
   }
   :where(.dark) &::after {
-    background: linear-gradient(150deg, rgb(255 255 255 / 0.28), rgb(255 255 255 / 0) 35%, rgb(255 255 255 / 0) 65%, rgb(47 182 127 / 0.4));
+    background: linear-gradient(150deg, rgb(255 255 255 / 0.28), rgb(255 255 255 / 0) 35%, rgb(255 255 255 / 0) 65%, rgb(255 255 255 / 0.12));
   }
 }
 /* Denser glass for overlays that carry a lot of text (palette, drawer, menus) */
@@ -185,7 +182,7 @@ h3 {
     border-radius: inherit;
     pointer-events: none;
     opacity: 0;
-    background: radial-gradient(240px circle at var(--mx, 50%) var(--my, 0%), rgb(47 182 127 / 0.1), transparent 60%);
+    background: radial-gradient(240px circle at var(--mx, 50%) var(--my, 0%), rgb(0 113 227 / 0.07), transparent 60%);
     transition: opacity 240ms var(--ease-fluid);
   }
   &:hover::before {
@@ -199,7 +196,7 @@ h3 {
       0 12px 24px -18px rgb(0 0 0 / 0.9);
   }
   :where(.dark) &::before {
-    background: radial-gradient(240px circle at var(--mx, 50%) var(--my, 0%), rgb(47 182 127 / 0.14), transparent 60%);
+    background: radial-gradient(240px circle at var(--mx, 50%) var(--my, 0%), rgb(41 151 255 / 0.12), transparent 60%);
   }
 }
 /* Top bar and sticky tab bar: a thin sheet of glass */
@@ -297,64 +294,64 @@ h3 {
   }
 }
 @utility btn-primary {
-  @apply btn font-semibold text-white;
-  background: linear-gradient(180deg, #25a472 0%, #1c8c61 100%);
-  box-shadow:
-    0 0 0 1px rgb(255 255 255 / 0.08) inset,
-    0 1px 2px rgb(0 0 0 / 0.3);
+  @apply btn text-white;
+  background: #0071e3;
   &:hover:not(:disabled) {
-    background: linear-gradient(180deg, #2ab27c 0%, #1f9467 100%);
+    background: #0077ed;
+  }
+  &:active:not(:disabled) {
+    background: #006edb;
   }
 }
 @utility btn-ghost {
   @apply btn text-slate-600 hover:bg-black/[0.05] dark:text-slate-300 dark:hover:bg-white/[0.08];
 }
 @utility btn-outline {
-  @apply btn border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-white/20 dark:bg-transparent dark:text-slate-100 dark:hover:border-white/35 dark:hover:bg-white/[0.04];
+  @apply btn border border-brand-500 bg-transparent text-brand-600 hover:bg-brand-500 hover:text-white dark:border-[#2997ff] dark:text-[#2997ff] dark:hover:bg-[#2997ff] dark:hover:text-black;
 }
 @utility input {
-  @apply rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none placeholder:text-slate-400 dark:border-white/10 dark:bg-white/[0.04];
+  @apply rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none placeholder:text-slate-400 dark:border-white/[0.12] dark:bg-[#1c1c1e];
   transition:
     box-shadow 160ms ease,
     background-color 160ms ease;
   &:focus {
-    @apply bg-white dark:bg-slate-900;
-    box-shadow: 0 0 0 3px rgb(47 182 127 / 0.22);
-    border-color: rgb(47 182 127 / 0.7);
+    @apply bg-white dark:bg-[#1c1c1e];
+    box-shadow: 0 0 0 4px rgb(0 113 227 / 0.18);
+    border-color: #0071e3;
   }
 }
 @utility label {
-  @apply text-[11px] font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400;
+  @apply text-[12px] font-semibold text-slate-500 dark:text-slate-400;
 }
 
 /* Segmented control (Ownership chart / Network view…) */
 @utility segmented {
-  @apply inline-flex rounded-full border border-slate-200 bg-slate-100 p-0.5 dark:border-white/10 dark:bg-white/[0.04];
+  @apply inline-flex rounded-full bg-black/[0.05] p-0.5 dark:bg-white/[0.08];
 }
 
-/* Bracketed section tag, e.g. [ OVERVIEW ] */
+/* Small heading above a block (neutral, like Apple's grouped lists) */
 @utility tag {
-  @apply font-mono text-[11px] tracking-[0.12em] text-slate-500 uppercase dark:text-slate-400;
-  &::before {
-    content: "[ ";
-    @apply text-brand-600 dark:text-brand-500;
-  }
-  &::after {
-    content: " ]";
-    @apply text-brand-600 dark:text-brand-500;
-  }
+  @apply text-[13px] font-semibold tracking-[-0.01em] text-[#6e6e73] dark:text-[#a1a1a6];
+}
+/* Eyebrow above a product-page headline (apple.com orange) */
+@utility eyebrow {
+  @apply text-[clamp(0.9rem,1.3vw,1.05rem)] font-semibold tracking-[-0.01em] text-[#bf4800] dark:text-[#f56300];
 }
 /* Feature chip: outlined pill with an icon */
 @utility chip {
-  @apply inline-flex items-center gap-2 rounded-full border border-slate-300 px-3.5 py-1.5 text-[13px] font-medium text-slate-700 dark:border-white/15 dark:bg-white/[0.02] dark:text-slate-100;
+  @apply inline-flex items-center gap-2 rounded-full bg-black/[0.04] px-3.5 py-1.5 text-[13px] font-medium text-slate-700 dark:bg-white/[0.08] dark:text-slate-100;
 }
 /* Big product headline */
 @utility display {
-  @apply font-bold tracking-[-0.045em] text-slate-900 dark:text-[#f2f4f2];
-  line-height: 0.98;
+  @apply font-semibold tracking-[-0.03em] text-[#1d1d1f] dark:text-[#f5f5f7];
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", "Helvetica Neue", sans-serif;
+  line-height: 1.05;
 }
 .text-glow {
-  color: var(--color-brand-500);
+  background: linear-gradient(90deg, #0071e3, #7a5af8 55%, #e3336d);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 /* ------------------------------------------------------------ motion */
@@ -444,6 +441,47 @@ details[open] > summary ~ * {
   animation: fade 240ms var(--ease-fluid);
 }
 
+/* ------------------------------------------------------------ Apple-style page blocks */
+html,
+body {
+  overflow-x: clip; /* full-bleed sections never cause a horizontal scroll */
+}
+/* Full-width band inside the centred layout */
+.bleed {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+}
+/* Scroll entrance (lib/reveal.ts) */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 900ms cubic-bezier(0.25, 0.1, 0.25, 1),
+    transform 900ms cubic-bezier(0.25, 0.1, 0.25, 1);
+  transition-delay: calc(var(--d, 0) * 90ms);
+}
+.reveal.in {
+  opacity: 1;
+  transform: none;
+}
+/* Apple headline sizes */
+.headline {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", "Helvetica Neue", sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.028em;
+  line-height: 1.07;
+}
+.subhead {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", "Helvetica Neue", sans-serif;
+  font-weight: 400;
+  letter-spacing: -0.012em;
+  line-height: 1.33;
+}
+/* Blue text link with chevron, as on apple.com */
+.link-more {
+  @apply inline-flex items-center gap-0.5 text-brand-600 hover:underline dark:text-[#2997ff];
+}
+
 /* ------------------------------------------------------------ accessibility */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -457,6 +495,10 @@ details[open] > summary ~ * {
   }
   .ambient > i {
     animation: none !important;
+  }
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
   }
 }
 @media (prefers-reduced-transparency: reduce) {
@@ -515,10 +557,10 @@ details[open] > summary ~ * {
   --status-serious: #ea580c;
   --status-critical: #e5484d;
   --status-neutral: #8f99a4;
-  --viz-grid: #e6e9ec;
+  --viz-grid: #e8e8ed;
   --viz-axis: #c3cad2;
-  --viz-track: #eceff2;
-  --viz-accent: #1f9467;
+  --viz-track: #ededf0;
+  --viz-accent: #0071e3;
 }
 html.dark {
   --series-1: #3987e5;
@@ -529,8 +571,8 @@ html.dark {
   --series-6: #008300;
   --series-7: #9085e9;
   --series-8: #e66767;
-  --viz-grid: #1d2229;
-  --viz-axis: #2b3139;
-  --viz-track: #1a1f25;
-  --viz-accent: #2fb67f;
+  --viz-grid: #2c2c2e;
+  --viz-axis: #3a3a3c;
+  --viz-track: #2c2c2e;
+  --viz-accent: #2997ff;
 }

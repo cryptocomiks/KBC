@@ -96,10 +96,10 @@ export default function Dashboard({ status, onOpenCase }: Props) {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-end justify-between gap-2">
+      <div className="flex flex-wrap items-end justify-between gap-2 pt-4 pb-2">
         <div>
-          <h1 className="text-xl font-bold tracking-tight">Cases</h1>
-          <p className="text-xs text-slate-500">
+          <h1 className="headline text-[40px]">Cases</h1>
+          <p className="mt-1 text-[15px] text-slate-500">
             Your client portfolio, re-checked daily when monitoring is on. Storage: {status?.storage ?? "—"}
             {status?.message && <span className="ml-1 text-amber-600">· {status.message}</span>}
           </p>

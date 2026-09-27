@@ -122,11 +122,6 @@ export default function App() {
 
   return (
     <div className="flex min-h-full flex-col">
-      <div className="ambient" aria-hidden>
-        <i />
-        <i />
-        <i />
-      </div>
       <Header
         meta={meta.data}
         theme={theme}

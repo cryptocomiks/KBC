@@ -48,7 +48,7 @@ export default function SearchPanel({ initial, demo, live, onSearch, compact }: 
   );
 
   return (
-    <form onSubmit={submit} className={compact ? "" : "glass rounded-[22px] p-5"}>
+    <form onSubmit={submit} className={compact ? "" : "rounded-[28px] bg-white p-5 shadow-[0_2px_6px_rgb(0_0_0/0.04),0_18px_50px_-18px_rgb(0_0_0/0.18)] ring-1 ring-black/[0.05] sm:p-7 dark:bg-[#1c1c1e] dark:shadow-none dark:ring-white/[0.08]"}>
       <div className="flex flex-wrap items-end gap-3">
         <div className="min-w-[280px] flex-1">
           <label className="label mb-1 block" htmlFor="q">

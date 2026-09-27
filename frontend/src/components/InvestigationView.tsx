@@ -151,7 +151,7 @@ export default function InvestigationView({
               <ArrowLeft className="h-3 w-3" /> {trail.length ? `Back to ${trail[trail.length - 1]}` : "Back to candidates"}
             </button>
           )}
-          <h1 className="flex items-center gap-2 text-xl font-bold tracking-tight">
+          <h1 className="headline flex items-center gap-2 text-[26px]">
             {subject.name}
             <span
               className={`rounded px-1.5 py-0.5 text-[10px] font-bold uppercase ${

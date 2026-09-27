@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CheckCircle2, Database, FolderOpen, Moon, Plug, Search, Sun, Trash2, XCircle } from "lucide-react";
+import { CheckCircle2, FolderOpen, Moon, Plug, Search, Sun, Trash2, XCircle } from "lucide-react";
 import { useState } from "react";
 import { api } from "../api";
 import Logo from "./Logo";
@@ -35,45 +35,25 @@ export default function Header({ meta, theme, onToggleTheme, onHome, onCases, ca
   const live = connectors.data?.some((c) => c.enabled && !c.demo);
 
   return (
-    <header className="sticky top-0 z-30 border-b border-white/[0.06] bg-[#07090b]/70 text-white backdrop-blur-2xl backdrop-saturate-[1.8] shadow-[inset_0_1px_0_rgb(255_255_255/0.06),0_12px_32px_-20px_rgb(0_0_0/0.9)] [&_.btn-ghost]:text-slate-300 [&_.btn-ghost:hover]:bg-white/[0.06] [&_.btn-ghost:hover]:text-white">
-      <div className="mx-auto flex h-14 max-w-[1600px] items-center gap-3 px-4">
-        <button onClick={onHome} className="flex items-center gap-2.5" aria-label="Home">
-          <Logo className="h-8 w-8" />
-          <div className="hidden text-left leading-tight sm:block">
-            <div className="text-[14px] font-bold tracking-[0.06em]">
-              KYC <span className="text-glow">1</span> CLICK
-            </div>
-            <div className="text-[10.5px] tracking-wide text-slate-400">Due diligence & AML/KYC</div>
-          </div>
+    <header className="sticky top-0 z-30 border-b border-black/[0.08] bg-[rgb(251_251_253/0.8)] text-[#1d1d1f] backdrop-blur-xl backdrop-saturate-[1.8] dark:border-white/[0.08] dark:bg-[rgb(22_22_23/0.8)] dark:text-[#f5f5f7]">
+      <div className="mx-auto flex h-12 max-w-[1100px] items-center gap-1 px-4 text-[13px] xl:max-w-[1400px]">
+        <button onClick={onHome} className="mr-2 flex items-center gap-2 opacity-90 transition-opacity hover:opacity-100" aria-label="Home">
+          <Logo className="h-[22px] w-[22px]" />
+          <span className="hidden text-[15px] font-semibold tracking-[-0.02em] sm:inline">
+            KYC <span className="text-brand-500 dark:text-[#2997ff]">1</span> CLICK
+          </span>
         </button>
         {meta?.demo_mode && (
-          <span className="hidden rounded md:inline bg-amber-400/15 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-amber-200 ring-1 ring-amber-300/30">
-            {live ? "Demo + live public sources" : "Demo mode · fictitious data"}
+          <span className="hidden rounded-full bg-black/[0.05] px-2.5 py-0.5 text-[11px] text-[#6e6e73] md:inline dark:bg-white/[0.08] dark:text-[#a1a1a6]">
+            {live ? "Demo + live public sources" : "Demo · fictitious data"}
           </span>
         )}
-        <button
-          onClick={onQuickOpen}
-          className="ml-auto flex h-9 items-center gap-2 rounded-full border border-white/12 bg-gradient-to-b from-white/[0.09] to-white/[0.03] px-3 shadow-[inset_0_1px_0_rgb(255_255_255/0.12)] backdrop-blur-xl text-[13px] text-slate-400 transition-colors hover:border-white/20 hover:text-slate-200 md:ml-6 md:w-72"
-          aria-label="Quick open"
-        >
-          <Search className="h-4 w-4" />
-          <span className="hidden md:inline">Search or open a case…</span>
-          <kbd className="ml-auto hidden rounded border border-white/15 px-1.5 font-mono text-[10px] md:inline">{mac ? "⌘K" : "Ctrl K"}</kbd>
-        </button>
-        <div className="flex items-center gap-1 md:ml-auto">
-          {notice && <span className="mr-2 text-xs text-emerald-300">{notice}</span>}
-          <button className={`btn-ghost ${casesActive ? "bg-white/10 !text-white" : ""}`} onClick={onCases}>
-            <FolderOpen className="h-4 w-4" /> <span className="hidden sm:inline">Cases</span>
-          </button>
+        <nav className="ml-auto flex items-center gap-0.5">
+          <NavLink active={casesActive} onClick={onCases} Icon={FolderOpen} label="Cases" />
           <div className="relative">
-            <button className="btn-ghost" onClick={() => setOpen((o) => !o)} aria-expanded={open}>
-              <Plug className="h-4 w-4" /> <span className="hidden sm:inline">Sources</span>
-              <span className="rounded bg-white/15 px-1.5 text-[11px]">
-                {enabled}/{connectors.data?.length ?? 0}
-              </span>
-            </button>
+            <NavLink active={open} onClick={() => setOpen((o) => !o)} Icon={Plug} label="Sources" badge={`${enabled}/${connectors.data?.length ?? 0}`} />
             {open && (
-              <div className="glass-panel absolute right-0 mt-2 rounded-2xl text-slate-800 dark:text-slate-100 max-h-[70vh] w-[min(420px,calc(100vw-2rem))] overflow-y-auto p-3 shadow-lg" onMouseLeave={() => setOpen(false)}>
+              <div className="glass-panel absolute right-0 mt-3 rounded-2xl text-slate-800 dark:text-slate-100 max-h-[70vh] w-[min(420px,calc(100vw-2rem))] overflow-y-auto p-3 shadow-lg" onMouseLeave={() => setOpen(false)}>
                 <div className="label mb-2">Data sources (connectors)</div>
                 <ul className="space-y-2">
                   {[...(connectors.data ?? [])].sort((a, b) => Number(b.enabled) - Number(a.enabled)).map((c) => (
@@ -95,21 +75,49 @@ export default function Header({ meta, theme, onToggleTheme, onHome, onCases, ca
               </div>
             )}
           </div>
-          <button
-            className="btn-ghost"
-            title="Delete all cached API responses and investigations"
+          <NavIcon
+            title="Clear the local cache (API responses and investigations)"
             onClick={() => {
               if (confirm("Clear the local cache? All cached API responses and investigations will be deleted.")) clear.mutate();
             }}
             disabled={clear.isPending}
-          >
-            <Trash2 className="h-4 w-4" /> <Database className="-ml-1 hidden h-3.5 w-3.5 sm:inline" /> <span className="hidden sm:inline">Clear cache</span>
-          </button>
-          <button className="btn-ghost" onClick={onToggleTheme} aria-label="Toggle theme">
-            {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-          </button>
-        </div>
+            Icon={Trash2}
+          />
+          <NavIcon title="Search or open a case" onClick={onQuickOpen} Icon={Search} kbd={mac ? "⌘K" : "Ctrl K"} />
+          <NavIcon title={theme === "dark" ? "Light appearance" : "Dark appearance"} onClick={onToggleTheme} Icon={theme === "dark" ? Sun : Moon} />
+        </nav>
+        {notice && <span className="ml-2 hidden text-xs text-[#6e6e73] md:inline">{notice}</span>}
       </div>
     </header>
+  );
+}
+
+function NavLink({ active, onClick, Icon, label, badge }: { active: boolean; onClick: () => void; Icon: typeof Search; label: string; badge?: string }) {
+  return (
+    <button
+      onClick={onClick}
+      aria-expanded={badge ? active : undefined}
+      className={`flex h-8 items-center gap-1.5 rounded-full px-3 transition-colors ${
+        active ? "bg-black/[0.06] text-[#1d1d1f] dark:bg-white/[0.12] dark:text-white" : "text-[#1d1d1f]/80 hover:text-[#1d1d1f] dark:text-[#f5f5f7]/80 dark:hover:text-white"
+      }`}
+    >
+      <Icon className="h-[15px] w-[15px] sm:hidden" />
+      <span className="hidden sm:inline">{label}</span>
+      {badge && <span className="text-[11px] text-[#6e6e73] tabular-nums dark:text-[#a1a1a6]">{badge}</span>}
+    </button>
+  );
+}
+
+function NavIcon({ title, onClick, Icon, disabled, kbd }: { title: string; onClick: () => void; Icon: typeof Search; disabled?: boolean; kbd?: string }) {
+  return (
+    <button
+      title={kbd ? `${title} (${kbd})` : title}
+      aria-label={title}
+      onClick={onClick}
+      disabled={disabled}
+      className="flex h-8 w-8 items-center justify-center rounded-full text-[#1d1d1f]/80 transition-colors hover:bg-black/[0.05] hover:text-[#1d1d1f] disabled:opacity-40 dark:text-[#f5f5f7]/80 dark:hover:bg-white/[0.1] dark:hover:text-white"
+    >
+      <Icon className="h-[15px] w-[15px]" />
+    </button>
   );
 }

@@ -76,7 +76,7 @@ export default function CaseHeader({ view, tab, onTab, onBack }: Props) {
             <ArrowLeft className="h-4 w-4" />
           </button>
           <div className="min-w-0 flex-1">
-            <h1 className="truncate text-[19px] font-semibold tracking-tight">{c.title}</h1>
+            <h1 className="headline truncate text-[26px]">{c.title}</h1>
             <div className="truncate text-[11px] text-slate-500">
               {c.subject_name !== c.title && `${c.subject_name} · `}Created {fmtDate(c.created_at)} · last checked {c.last_run_at ? fmtDate(c.last_run_at) : "never"}
               {c.demo && " · demo data"}
