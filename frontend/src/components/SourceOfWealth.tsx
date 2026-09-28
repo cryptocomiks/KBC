@@ -73,7 +73,7 @@ export default function SourceOfWealth({ caseId, subjectName }: { caseId: string
             <select className="input w-full mt-0.5 text-sm" value={form.person_id} onChange={(e) => set({ person_id: e.target.value })}>
               {a.people.map((p) => (
                 <option key={p.id} value={p.id}>
-                  {p.name} — {p.why}
+                  {p.name}: {p.why}
                 </option>
               ))}
             </select>
@@ -128,7 +128,7 @@ export default function SourceOfWealth({ caseId, subjectName }: { caseId: string
                         value={s.rate == null ? "" : Math.round(s.rate * 100)}
                         onChange={(e) => setSrc(i, { rate: e.target.value === "" ? null : Math.min(100, Number(e.target.value) || 0) / 100 })}
                       />
-                      <span>% — a salary is not saved in full (taxes, living costs)</span>
+                      <span>%: a salary is not saved in full (taxes, living costs)</span>
                     </label>
                   )}
                 </div>
@@ -159,15 +159,15 @@ export default function SourceOfWealth({ caseId, subjectName }: { caseId: string
           table={{
             head: ["Source", "Explained", "Share of declared"],
             rows: [
-              ...a.sources.map((x) => [x.label, money(x.explained, a.currency), a.declared_total ? `${Math.round((100 * x.explained) / a.declared_total)} %` : "—"]),
-              ["Unexplained gap", a.gap == null ? "—" : money(a.gap, a.currency), a.declared_total && a.gap != null ? `${Math.round((100 * a.gap) / a.declared_total)} %` : "—"],
+              ...a.sources.map((x) => [x.label, money(x.explained, a.currency), a.declared_total ? `${Math.round((100 * x.explained) / a.declared_total)} %` : "-"]),
+              ["Unexplained gap", a.gap == null ? "-" : money(a.gap, a.currency), a.declared_total && a.gap != null ? `${Math.round((100 * a.gap) / a.declared_total)} %` : "-"],
             ],
           }}
         >
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             <Tile label="Declared" value={compactMoney(a.declared_total)} sub={a.currency} />
             <Tile label="Explained" tone="accent" value={compactMoney(a.explained_total)} sub={a.coverage != null ? `${pct}% of declared` : a.currency} />
-            <Tile label="Unexplained" tone={a.gap ? (a.verdict === "gap" ? "critical" : "warning") : "good"} value={a.gap == null ? "—" : compactMoney(a.gap)} sub={a.currency} />
+            <Tile label="Unexplained" tone={a.gap ? (a.verdict === "gap" ? "critical" : "warning") : "good"} value={a.gap == null ? "-" : compactMoney(a.gap)} sub={a.currency} />
             <Tile
               label="Corroborated"
               tone={a.sources.every((x) => x.corroborated) ? "good" : "warning"}
@@ -225,7 +225,7 @@ export default function SourceOfWealth({ caseId, subjectName }: { caseId: string
                 className="btn-outline mt-3 py-1.5 text-xs"
                 onClick={() => {
                   const r = documentRequest(subjectName, a.to_request);
-                  openEmail(r.subject.replace("Documents required", "Source of wealth — documents required"), r.body);
+                  openEmail(r.subject.replace("Documents required", "Source of wealth: documents required"), r.body);
                 }}
               >
                 <Mail className="h-3.5 w-3.5" /> Ask the client for {a.to_request.length} document(s)
@@ -260,7 +260,7 @@ export default function SourceOfWealth({ caseId, subjectName }: { caseId: string
             <ul className="mt-2 space-y-1 text-[12px]">
               {a.roles.map((r, i) => (
                 <li key={i} className="text-slate-600 dark:text-slate-400">
-                  <b className="text-slate-800 dark:text-slate-200">{r.company}</b> — {r.role}
+                  <b className="text-slate-800 dark:text-slate-200">{r.company}</b>: {r.role}
                   {r.share_pct != null && ` ${r.share_pct} %`} · {(r.start ?? "?").slice(0, 4)}–{r.end ? r.end.slice(0, 4) : r.dissolved ? `${r.dissolved.slice(0, 4)} (dissolved)` : "today"}
                 </li>
               ))}

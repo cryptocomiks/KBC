@@ -228,7 +228,7 @@ def test_sec_profile_financials_owners_and_filings():
     assert owners["Founder Holdings LLC"].entity.type == EntityType.COMPANY
 
     docs = sec.get_documents(company)
-    assert {d.title.split(" —")[0] for d in docs} >= {"SEC 10-K", "SEC 8-K", "SEC SCHEDULE 13G/A"}
+    assert {d.title.split(":")[0] for d in docs} >= {"SEC 10-K", "SEC 8-K", "SEC SCHEDULE 13G/A"}
     assert any(d.kind == "accounts" for d in docs)
 
 

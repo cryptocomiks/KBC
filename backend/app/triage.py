@@ -3,15 +3,15 @@
 In screening, most alerts are false positives. The analyst's time goes to the
 few that can be true, so every hit gets a triage label with the reasons behind
 it, derived from the evidence the matcher already produced (date of birth,
-nationality, jurisdiction, identifiers) — never from the name alone.
+nationality, jurisdiction, identifiers): never from the name alone.
 
 Labels:
-* ``likely``    — strong, corroborated match: same identifier, same date of birth, or an
+* ``likely``   : strong, corroborated match: same identifier, same date of birth, or an
                   exact name backed by a matching country / website.
-* ``verify``    — plausible but not corroborated (typically: no date of birth to compare).
-* ``namesake``  — contradicted by the evidence (different date of birth, nationality or
+* ``verify``   : plausible but not corroborated (typically: no date of birth to compare).
+* ``namesake`` : contradicted by the evidence (different date of birth, nationality or
                   jurisdiction), or a weak name match: very probably another person/company.
-* ``dismissed`` — the same hit was already ruled out by an analyst (memory of decisions).
+* ``dismissed``: the same hit was already ruled out by an analyst (memory of decisions).
 """
 
 from __future__ import annotations

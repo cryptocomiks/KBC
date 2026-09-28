@@ -114,7 +114,7 @@ def build_requests(
             for eid in ids[:3]:
                 add(
                     _identity_evidence(ents.get(eid), name(eid)),
-                    f"Confirm or rule out the {f.label.lower()} — {f.evidence[0][:120]}",
+                    f"Confirm or rule out the {f.label.lower()}: {f.evidence[0][:120]}",
                     "required",
                     [eid],
                 )

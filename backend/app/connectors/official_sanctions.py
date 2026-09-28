@@ -1,8 +1,8 @@
 """Official sanctions lists, downloaded from the issuing authorities (no key).
 
-* OFAC SDN list (US Treasury) — sdn.csv + alt.csv (aliases)
+* OFAC SDN list (US Treasury): sdn.csv + alt.csv (aliases)
   https://ofac.treasury.gov/specially-designated-nationals-and-blocked-persons-list-sdn-human-readable-lists
-* UN Security Council Consolidated List — consolidated.xml
+* UN Security Council Consolidated List: consolidated.xml
   https://www.un.org/securitycouncil/content/un-sc-consolidated-list
 * EU consolidated list of financial sanctions (European Commission, FSF)
 * UK Sanctions List (Foreign, Commonwealth & Development Office)
@@ -405,7 +405,7 @@ def _uk_dob(raw: str) -> str | None:
 
 
 def _load_uk(index: _Index, timeout: float) -> None:
-    """UK Sanctions List (FCDO) — the single UK list since OFSI's consolidated list closed."""
+    """UK Sanctions List (FCDO): the single UK list since OFSI's consolidated list closed."""
     data = _download_bytes(UK_XML, timeout)
     added = 0
     for _, el in ET.iterparse(io.BytesIO(data), events=("end",)):
@@ -586,7 +586,7 @@ CRYPTO_LISTS = (
     ("il_mod_crypto", IL_CRYPTO_LABEL, "Wallet listed by Israel's NBCTF"),
     (
         "us_fbi_lazarus_crypto",
-        "US FBI — Lazarus Group (North Korea) crypto wallets",
+        "US FBI: Lazarus Group (North Korea) crypto wallets",
         "Lazarus Group (DPRK)",
     ),
     ("ransomwhere", "Ransomware payment addresses (ransomwhe.re)", "Ransomware operator"),
@@ -632,7 +632,7 @@ def _load_il_crypto(index: _Index, timeout: float) -> None:
 
 class OfficialSanctionsConnector(BaseConnector):
     name = "official_sanctions"
-    label = "Official sanctions lists — OFAC SDN (US), UN Security Council, crypto wallets"
+    label = "Official sanctions lists: OFAC SDN (US), UN Security Council, crypto wallets"
     kind = "screening"
     homepage = "https://ofac.treasury.gov"
 
@@ -810,7 +810,7 @@ class EuropeanSanctionsConnector(OfficialSanctionsConnector):
     screening waits a little, then says so instead of blocking the OFAC / UN screening."""
 
     name = "official_sanctions_europe"
-    label = "Official sanctions lists — EU (European Commission), UK (FCDO), Switzerland (SECO)"
+    label = "Official sanctions lists: EU (European Commission), UK (FCDO), Switzerland (SECO)"
     homepage = EU_UI
     #: seconds a screening waits for the lists on a cold server before reporting them as loading
     wait_seconds = 30.0
@@ -867,7 +867,7 @@ class EuropeanSanctionsConnector(OfficialSanctionsConnector):
                 time.sleep(0.5)
             if not state.entries and getattr(state, "loading", False):
                 raise ConnectorError(
-                    f"{self.label}: still loading on this server — included from the next check"
+                    f"{self.label}: still loading on this server: included from the next check"
                 )
         return super().screen(entity)
 

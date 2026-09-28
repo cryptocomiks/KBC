@@ -1,16 +1,16 @@
 """More free registers and enforcement sources (no key).
 
-* RPO — Slovak register of legal entities (Statistical Office): all legal entities,
+* RPO: Slovak register of legal entities (Statistical Office): all legal entities,
   statutory bodies and partners with their stakes.
-* EGRUL — Russian Unified State Register of Legal Entities (Federal Tax Service): legal
+* EGRUL: Russian Unified State Register of Legal Entities (Federal Tax Service): legal
   entities only (individual entrepreneurs are private persons and are skipped), director,
   INN / OGRN, registration and liquidation dates. Searched by name (Latin names are
   transliterated to Cyrillic) or by OGRN / INN.
-* BrasilAPI — Brazilian company by CNPJ (Receita Federal open data): partners and
+* BrasilAPI: Brazilian company by CNPJ (Receita Federal open data): partners and
   directors (QSA), legal nature, capital, registration status.
-* FINRA BrokerCheck — US broker-dealers and investment advisers: registration status
+* FINRA BrokerCheck: US broker-dealers and investment advisers: registration status
   and disclosures (regulatory events, arbitrations, civil and criminal matters).
-* CourtListener RECAP — US federal court dockets (lawsuits), where the entity is a party.
+* CourtListener RECAP: US federal court dockets (lawsuits), where the entity is a party.
 """
 
 from __future__ import annotations
@@ -82,7 +82,7 @@ def _rpo_address(a: dict[str, Any] | None) -> str | None:
 
 class RpoConnector(BaseConnector):
     name = "sk_rpo"
-    label = "RPO — Slovak register of legal entities (Statistical Office)"
+    label = "RPO: Slovak register of legal entities (Statistical Office)"
     kind = "registry"
     homepage = "https://rpo.statistics.sk"
     jurisdictions = {"SK"}
@@ -172,7 +172,7 @@ class RpoConnector(BaseConnector):
                     sources=[self.provenance(oid, url)],
                 )
                 if stakes.get(name):
-                    role += f" — deposit EUR {stakes[name]}"
+                    role += f": deposit EUR {stakes[name]}"
                 out.append(
                     LinkedEntity(
                         relationship=Relationship(
@@ -237,7 +237,7 @@ def to_cyrillic(latin: str) -> str:
 
 class EgrulConnector(BaseConnector):
     name = "ru_egrul"
-    label = "EGRUL — Russian register of legal entities (Federal Tax Service)"
+    label = "EGRUL: Russian register of legal entities (Federal Tax Service)"
     kind = "registry"
     homepage = EGRUL
     jurisdictions = {"RU"}
@@ -378,7 +378,7 @@ BR_ROLES = {
 
 class BrasilApiConnector(BaseConnector):
     name = "br_cnpj"
-    label = "Receita Federal — Brazilian companies by CNPJ (via BrasilAPI)"
+    label = "Receita Federal: Brazilian companies by CNPJ (via BrasilAPI)"
     kind = "registry"
     homepage = "https://brasilapi.com.br"
     jurisdictions = {"BR"}
@@ -482,7 +482,7 @@ BROKERCHECK_UI = "https://brokercheck.finra.org/firm/summary/{id}"
 class BrokerCheckConnector(BaseConnector):
     name = "finra_brokercheck"
     label = (
-        "FINRA BrokerCheck — US broker-dealers and investment advisers (registration, disclosures)"
+        "FINRA BrokerCheck: US broker-dealers and investment advisers (registration, disclosures)"
     )
     kind = "documents"
     homepage = "https://brokercheck.finra.org"
@@ -544,7 +544,7 @@ class BrokerCheckConnector(BaseConnector):
             )
             docs.append(
                 Document(
-                    title=f"FINRA BrokerCheck — {name} (CRD {fid})",
+                    title=f"FINRA BrokerCheck: {name} (CRD {fid})",
                     kind="register",
                     date=_mdy(basic.get("finraLastApprovalDate")),
                     url=BROKERCHECK_UI.format(id=fid),
@@ -562,7 +562,7 @@ RECAP = "https://www.courtlistener.com/api/rest/v4/search/"
 
 class RecapDocketsConnector(BaseConnector):
     name = "recap_dockets"
-    label = "US federal court dockets — CourtListener RECAP (lawsuits, PACER)"
+    label = "US federal court dockets: CourtListener RECAP (lawsuits, PACER)"
     kind = "documents"
     homepage = "https://www.courtlistener.com/recap/"
     document_types = {"company", "person"}

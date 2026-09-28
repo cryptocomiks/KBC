@@ -305,7 +305,7 @@ def test_new_signals_feed_the_risk_score():
     )
     c.documents = [
         Document(
-            title="EU VAT number IE1 — NOT VALID (VIES)",
+            title="EU VAT number IE1: NOT VALID (VIES)",
             kind="register",
             source="VIES",
             flags=["vat_invalid"],

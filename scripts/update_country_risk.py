@@ -1,10 +1,10 @@
 """Build config/country_risk.json from three public country-risk indicators.
 
-* Basel AML Index (Basel Institute on Governance) — money laundering and
+* Basel AML Index (Basel Institute on Governance): money laundering and
   terrorist financing risk, 0 (low) to 10 (high). Public ranking page.
-* Corruption Perceptions Index (Transparency International) — 0 (highly
+* Corruption Perceptions Index (Transparency International): 0 (highly
   corrupt) to 100 (very clean). Via Our World in Data (CC BY).
-* Worldwide Governance Indicators, Control of Corruption (World Bank) —
+* Worldwide Governance Indicators, Control of Corruption (World Bank):
   about -2.5 (weak) to +2.5 (strong). World Bank API (CC BY 4.0).
 
 Run by the "Country risk data" GitHub workflow (monthly), which commits the
@@ -227,7 +227,7 @@ def main() -> None:
                 "scale": "0 highly corrupt – 100 very clean",
             },
             "wgi": {
-                "label": "World Bank Worldwide Governance Indicators — Control of Corruption",
+                "label": "World Bank Worldwide Governance Indicators: Control of Corruption",
                 "url": "https://www.worldbank.org/en/publication/worldwide-governance-indicators",
                 "scale": "-2.5 weak – +2.5 strong",
             },

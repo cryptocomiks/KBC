@@ -23,7 +23,7 @@
    ],
    "dataset": "Consolidated Financial Sanctions List (DEMO)",
    "details": {
-    "program": "Fictitious Regulation 2099/001 — asset freeze",
+    "program": "Fictitious Regulation 2099/001: asset freeze",
     "listed_on": "2022-04-08",
     "authority": "Demo Sanctions Authority",
     "reason": "Fictitious designation created for demonstration purposes"
@@ -113,7 +113,7 @@
     }
    ],
    "details": {
-    "program": "Fictitious Regulation 2099/001 — virtual asset service provider facilitating sanctions evasion",
+    "program": "Fictitious Regulation 2099/001: virtual asset service provider facilitating sanctions evasion",
     "listed_on": "2022-04-08"
    }
   }

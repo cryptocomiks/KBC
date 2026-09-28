@@ -5,17 +5,17 @@ nothing is stored. Columns are recognised from their headers in English, French,
 and Italian; amounts in Swiss (1'234.50), French (1 234,50) and German (1.234,50) formats.
 
 Detectors (each alert lists the transactions behind it):
-* structuring — amounts just below the identification threshold, or split over a few days;
-* cash — deposits / withdrawals in cash, and cash declared as "none" in the KYC profile;
-* round amounts — a large share of round transfers;
-* pass-through — money that leaves within days of arriving, for about the same amount;
-* geography — counterparties in FATF black / grey list, EU tax list, offshore, broadly
+* structuring: amounts just below the identification threshold, or split over a few days;
+* cash: deposits / withdrawals in cash, and cash declared as "none" in the KYC profile;
+* round amounts: a large share of round transfers;
+* pass-through: money that leaves within days of arriving, for about the same amount;
+* geography: counterparties in FATF black / grey list, EU tax list, offshore, broadly
   sanctioned or high Basel AML Index countries (from the IBAN or the country column);
-* sanctions / watchlists — counterparty names screened against the enabled lists;
-* crypto — transfers to or from crypto-asset platforms;
-* spikes — months far above the usual activity;
-* profile — annualised volume above the amount declared in the KYC questionnaire;
-* funnel — many different senders, money leaving to very few beneficiaries.
+* sanctions / watchlists: counterparty names screened against the enabled lists;
+* crypto: transfers to or from crypto-asset platforms;
+* spikes: months far above the usual activity;
+* profile: annualised volume above the amount declared in the KYC questionnaire;
+* funnel: many different senders, money leaving to very few beneficiaries.
 """
 
 from __future__ import annotations

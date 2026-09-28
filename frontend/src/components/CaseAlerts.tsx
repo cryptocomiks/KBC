@@ -47,7 +47,7 @@ function AlertItem({ a, onDecide, busy }: { a: AlertRow; onDecide: (a: AlertRow,
           onChange={(e) => onDecide(a, e.target.value as DecisionValue | "none")}
           aria-label="Analyst decision"
         >
-          <option value="none">— undecided</option>
+          <option value="none">undecided</option>
           <option value="confirmed">Confirmed match</option>
           <option value="false_positive">False positive</option>
           <option value="to_review">To review</option>
@@ -61,8 +61,8 @@ function AlertItem({ a, onDecide, busy }: { a: AlertRow; onDecide: (a: AlertRow,
       {!a.realert && a.reasons.length > 0 && <p className="mt-1.5 text-[12px] text-slate-500">{a.reasons.join(" · ")}</p>}
       {d && (
         <p className="mt-1.5 text-[12px] text-slate-600 dark:text-slate-400">
-          <b>{DECISION_LABEL[d.decision]}</b> by {d.author || "—"} on {fmtDate(d.decided_at)}
-          {d.comment && <> — “{d.comment}”</>}
+          <b>{DECISION_LABEL[d.decision]}</b> by {d.author || "-"} on {fmtDate(d.decided_at)}
+          {d.comment && <>: “{d.comment}”</>}
         </p>
       )}
       {a.proposed && !d && (
@@ -94,7 +94,7 @@ function MemoryRegister() {
       <button className="flex w-full items-center gap-2 text-left" onClick={() => setOpen(!open)}>
         <BrainCircuit className="h-5 w-5 text-brand-600" />
         <span className="tag">Alert memory</span>
-        <span className="text-xs text-slate-500">every namesake ruled out, in every case — it stays silent until its evidence changes</span>
+        <span className="text-xs text-slate-500">every namesake ruled out, in every case: it stays silent until its evidence changes</span>
         <ChevronDown className={`ml-auto h-4 w-4 text-slate-400 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
       {open && (
@@ -110,7 +110,7 @@ function MemoryRegister() {
                 <div className="min-w-0 flex-1">
                   <div className="font-medium">{m.item_label || m.item_key}</div>
                   <div className="text-slate-500">
-                    {fmtDate(m.decided_at)} · {m.author || "—"}
+                    {fmtDate(m.decided_at)} · {m.author || "-"}
                     {m.case_title && <> · case “{m.case_title}”</>}
                     {" · "}
                     {m.tracked ? (
@@ -214,7 +214,7 @@ export default function CaseAlerts({ caseId }: { caseId: string }) {
         {groups.namesakes.length > 0 && (
           <div className="mt-4 flex flex-wrap items-center gap-3 rounded-xl bg-brand-500/8 px-4 py-3 ring-1 ring-brand-500/25">
             <p className="min-w-0 flex-1 text-[13px]">
-              <b>{groups.namesakes.length} alert(s)</b> are contradicted by the evidence and already left out of the score. Rule them out in one go — each gets a written
+              <b>{groups.namesakes.length} alert(s)</b> are contradicted by the evidence and already left out of the score. Rule them out in one go: each gets a written
               justification (shown below each alert) and is remembered for every other case.
             </p>
             <button
@@ -273,7 +273,7 @@ export default function CaseAlerts({ caseId }: { caseId: string }) {
       {groups.namesakes.length > 0 && (
         <section className="card p-4">
           <button className="flex w-full items-center gap-2 text-left text-[13px] font-semibold" onClick={() => setShowNamesakes(!showNamesakes)}>
-            Set aside automatically — probable namesakes <span className="font-mono text-xs text-slate-400">{groups.namesakes.length}</span>
+            Set aside automatically: probable namesakes <span className="font-mono text-xs text-slate-400">{groups.namesakes.length}</span>
             <span className="text-[11px] font-normal text-slate-500">contradicted by the evidence, not counted in the score</span>
             <ChevronDown className={`ml-auto h-4 w-4 text-slate-400 transition-transform ${showNamesakes ? "rotate-180" : ""}`} />
           </button>

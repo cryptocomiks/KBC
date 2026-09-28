@@ -21,7 +21,7 @@ export default function KeyFindings({ investigation: inv, onSelect }: Props) {
     <div className="card p-4">
       <h2 className="mb-2 flex items-center gap-2 text-sm font-semibold">
         <Sparkles className="h-4 w-4 text-brand-600" /> Key findings
-        <span className="text-[11px] font-normal text-slate-500">generated from the sources below — verify before relying on it</span>
+        <span className="text-[11px] font-normal text-slate-500">generated from the sources below: verify before relying on it</span>
       </h2>
       <ul className="space-y-1.5">
         {inv.summary.map((f: Finding, i) => {

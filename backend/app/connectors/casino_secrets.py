@@ -1,6 +1,6 @@
-"""Casino Secrets — Curaçao Gaming Authority leak (2026).
+"""Casino Secrets: Curaçao Gaming Authority leak (2026).
 
-https://casinosecrets.lol — an investigation by Lilith Wittmann with Follow
+https://casinosecrets.lol: an investigation by Lilith Wittmann with Follow
 the Money, NDR, NRK and SVT into the offshore online gambling industry. The
 consortium published a search over the companies and casino domains found in
 84,000+ documents of the Curaçao Gaming Authority (licence applications),
@@ -26,7 +26,7 @@ from app.models import Document, Entity, EntityType, ListType, ScreeningHit
 
 BASE = "https://casinosecrets.lol"
 SEARCH = f"{BASE}/api/search.json"
-DATASET = "Casino Secrets — Curaçao Gaming Authority leak (2026)"
+DATASET = "Casino Secrets: Curaçao Gaming Authority leak (2026)"
 DISCLAIMER = (
     "Leak of the Curaçao Gaming Authority published by journalists (casinosecrets.lol). "
     "Appearing in it does not imply wrongdoing."
@@ -73,7 +73,7 @@ class CasinoSecretsConnector(_Client):
     """Licence holders as searchable companies (name search, domains, link to the case file)."""
 
     name = "casino_secrets"
-    label = "Casino Secrets — Curaçao gaming licence leak (companies & domains)"
+    label = "Casino Secrets: Curaçao gaming licence leak (companies & domains)"
     kind = "registry"
     crossref_max_depth = 1
     documents_max_depth = 2
@@ -88,7 +88,7 @@ class CasinoSecretsConnector(_Client):
             record_ids=[rid],
             type=EntityType.COMPANY,
             name=company,
-            activity=f"Online gambling — {own[0].get('businessType') or 'licence file'} (Curaçao licensing)",
+            activity=f"Online gambling: {own[0].get('businessType') or 'licence file'} (Curaçao licensing)",
             sources=[self.provenance(rid, f"{BASE}/casinos/{slug}")],
             extra={
                 k: v
@@ -150,7 +150,7 @@ class CasinoSecretsLeakConnector(_Client):
     """Screens every company of the network (name and official website) against the leak."""
 
     name = "casino_secrets_screening"
-    label = "Casino Secrets — Curaçao gaming licence leak (screening)"
+    label = "Casino Secrets: Curaçao gaming licence leak (screening)"
     kind = "leaks"
 
     def screen(self, entity: Entity) -> list[ScreeningHit]:

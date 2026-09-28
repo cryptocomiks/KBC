@@ -40,7 +40,7 @@ export default function QuickChecks({ company, country }: { company?: string; co
             <div className="tag">Quick checks</div>
             <h2 className="mt-1 text-lg font-semibold tracking-tight">Payment and contact details given by the client</h2>
           </div>
-          <p className="max-w-md text-xs text-slate-500">Checked live against public sources. Nothing is stored — copy the result into the file if needed.</p>
+          <p className="max-w-md text-xs text-slate-500">Checked live against public sources. Nothing is stored: copy the result into the file if needed.</p>
         </div>
         <div className="mt-4 grid gap-3 md:grid-cols-2">
           {FIELDS.map((f) => (
@@ -131,7 +131,7 @@ function Result({ title, Icon, block, children }: { title: string; Icon: typeof 
               <s.Icon className={`mt-0.5 h-4 w-4 shrink-0 ${s.cls}`} aria-label={s.label} />
               <div className="min-w-0">
                 <span className="font-medium">{c.label}</span>
-                <span className="text-slate-600 dark:text-slate-300"> — {c.detail}</span>
+                <span className="text-slate-600 dark:text-slate-300">: {c.detail}</span>
                 {c.source && <div className="text-[11px] text-slate-500">Source: {c.source}</div>}
               </div>
             </li>

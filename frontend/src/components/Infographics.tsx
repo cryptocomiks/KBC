@@ -81,8 +81,8 @@ export function OwnershipChart({ investigation: inv, onSelect }: Props) {
       {owners.length === 0 ? (
         <p className="text-sm text-slate-500">
           {company
-            ? "No owner found in the sources — ask the client for the UBO declaration and a group structure chart."
-            : "No shareholding found — see the officer roles in Linked companies."}
+            ? "No owner found in the sources: ask the client for the UBO declaration and a group structure chart."
+            : "No shareholding found: see the officer roles in Linked companies."}
         </p>
       ) : (
         <div className="flex flex-col items-center gap-5 sm:flex-row sm:items-start">
@@ -156,7 +156,7 @@ export function FinancialsChart({ investigation: inv, onSelect }: Props) {
     return (
       <Card icon={Landmark} tag="Financials" title="Financials">
         <p className="text-sm text-slate-500">
-          No published accounts in the sources queried — request the latest audited financial statements (small companies may legally opt out of
+          No published accounts in the sources queried: request the latest audited financial statements (small companies may legally opt out of
           publication).
         </p>
       </Card>
@@ -280,7 +280,7 @@ function KeyNumber({ label, value, color, growth }: { label: string; value: numb
       <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-500">
         <span className="h-1.5 w-1.5 rounded-full" style={{ background: color }} /> {label}
       </div>
-      <div className="text-[20px] font-semibold tracking-[-0.01em] tabular-nums">{value === null ? "—" : compact(v)}</div>
+      <div className="text-[20px] font-semibold tracking-[-0.01em] tabular-nums">{value === null ? "-" : compact(v)}</div>
       {growth !== null && (
         <div className={`text-[11px] font-medium ${growth >= 0 ? "text-[#067647] dark:text-[#47cd89]" : "text-[#b42318] dark:text-[#fda29b]"}`}>
           {growth >= 0 ? "▲" : "▼"} {Math.abs(growth).toFixed(1)}% vs previous year
@@ -315,7 +315,7 @@ export function CountryExposure({ investigation: inv }: Props) {
                 <span>{flag(String(r.code))}</span>
                 <span className="truncate font-medium">{countryName(String(r.code))}</span>
                 <span className="ml-auto shrink-0 text-[11px] text-slate-500 tabular-nums">
-                  {score !== null ? `Basel ${score.toFixed(1)}` : "Basel —"}
+                  {score !== null ? `Basel ${score.toFixed(1)}` : "Basel:"}
                   {r.cpi_score != null && ` · CPI ${String(r.cpi_score)}`}
                 </span>
               </div>

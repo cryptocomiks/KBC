@@ -5,7 +5,7 @@ by hand, the review repeats the whole onboarding and asks the client again for d
 the bank already holds. The pack does the comparison instead:
 
 * what changed since the last validation (screening hits, owners, officers, registers,
-  risk score) — from the monitoring history;
+  risk score): from the monitoring history;
 * screening alerts still open;
 * documents that are expired or too old to rely on (register extracts over 12 months,
   identity documents past their expiry date, statements over 12 months) and those never
@@ -145,7 +145,7 @@ def build_pack(
             {
                 "severity": "critical",
                 "tab": "history",
-                "text": f"{len(by_sev['critical'])} critical change(s) since the last validation — review them first.",
+                "text": f"{len(by_sev['critical'])} critical change(s) since the last validation: review them first.",
             }
         )
     if open_alerts:
@@ -262,7 +262,7 @@ def email(
         "- the purpose and intended nature of our business relationship;",
         "- the beneficial owner(s) / controlling person(s)"
         + (
-            " — our records show changes in the ownership, a new declaration will be needed;"
+            ": our records show changes in the ownership, a new declaration will be needed;"
             if own
             else ";"
         ),
@@ -277,4 +277,4 @@ def email(
         "Thank you in advance.",
         "Kind regards,",
     ]
-    return {"subject": f"Periodic review of your file — {case['title']}", "body": "\n".join(lines)}
+    return {"subject": f"Periodic review of your file: {case['title']}", "body": "\n".join(lines)}

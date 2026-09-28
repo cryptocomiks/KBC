@@ -1,4 +1,4 @@
-"""Zefix — Swiss central business name index (Federal Office of Justice).
+"""Zefix: Swiss central business name index (Federal Office of Justice).
 
 Public data, no key: the JSON service behind www.zefix.admin.ch. For every
 company registered in a Swiss cantonal commercial register it gives the UID,
@@ -175,7 +175,7 @@ def translate_role(role: str | None) -> str | None:
 
 class ZefixConnector(BaseConnector):
     name = "zefix"
-    label = "Zefix — Swiss commercial register (SOGC publications)"
+    label = "Zefix: Swiss commercial register (SOGC publications)"
     kind = "registry"
     jurisdictions = {"CH"}
     crossref_max_depth = 1

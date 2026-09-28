@@ -12,7 +12,7 @@
    "scale": "0 highly corrupt – 100 very clean"
   },
   "wgi": {
-   "label": "World Bank Worldwide Governance Indicators — Control of Corruption",
+   "label": "World Bank Worldwide Governance Indicators: Control of Corruption",
    "url": "https://www.worldbank.org/en/publication/worldwide-governance-indicators",
    "scale": "-2.5 weak – +2.5 strong"
   }

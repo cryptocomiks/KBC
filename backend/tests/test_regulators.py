@@ -57,7 +57,7 @@ def test_esma_and_regafi_authorisations():
     docs = RegulatorsConnector(LIVE).get_documents(company("Revolut Securities Europe UAB"))
     esma, regafi = docs
     assert (
-        esma.title == "Investment firm — Bank of Lithuania (LSC) (active)"
+        esma.title == "Investment firm: Bank of Lithuania (LSC) (active)"
         and "regulated" in esma.flags
     )
     assert str(esma.date) == "2021-11-22" and "LEI 9845001DE7E84FF54124" in esma.summary

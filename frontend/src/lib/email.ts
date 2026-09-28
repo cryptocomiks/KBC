@@ -7,7 +7,7 @@ export function openEmail(subject: string, body: string, to = "") {
 
 /** The standard document request sent to a client. */
 export function documentRequest(subjectName: string | undefined, documents: string[]) {
-  const subject = `Documents required — ${subjectName ?? "your file"}`;
+  const subject = `Documents required: ${subjectName ?? "your file"}`;
   const body = [
     "Dear client,",
     "",

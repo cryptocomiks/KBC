@@ -8,7 +8,7 @@ reopened, or automatically when the monitoring finds a new sanctions / PEP /
 leak hit. Every step is kept (who, when, comment) for the audit trail.
 
 Checklist: the documents the findings call for, ticked when received, and the
-additional diligences suggested by the vigilance level and the red flags —
+additional diligences suggested by the vigilance level and the red flags:
 optional controls the analyst ticks when done, plus their own.
 """
 

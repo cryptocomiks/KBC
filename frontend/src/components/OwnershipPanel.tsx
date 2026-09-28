@@ -4,7 +4,7 @@ import { toast } from "../lib/toast";
 import type { Investigation, OwnershipAnalysis, OwnershipOwner, OwnershipRoute } from "../types";
 import { Meter, Tile, type Tone } from "./viz";
 
-const pct = (v: number | null | undefined) => (v == null ? "—" : `${Number(v.toFixed(2))} %`);
+const pct = (v: number | null | undefined) => (v == null ? "-" : `${Number(v.toFixed(2))} %`);
 
 const STATUS: Record<OwnershipOwner["status"], { label: string; tone: string }> = {
   ubo_both: { label: "UBO · declared", tone: "bg-[#248a3d]/10 text-[#248a3d] dark:text-[#30d158]" },
@@ -195,7 +195,7 @@ export default function OwnershipPanel({ investigation: inv, onSelect }: { inves
         <section className="card flex items-start gap-3 p-5">
           <UserX className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
           <div>
-            <h3 className="text-[15px] font-semibold">No beneficial owner by ownership — senior managing official</h3>
+            <h3 className="text-[15px] font-semibold">No beneficial owner by ownership: senior managing official</h3>
             <p className="mt-1 text-[13px] text-slate-600 dark:text-slate-300">{a.smo_reason}</p>
             {a.smo.length > 0 ? (
               <ul className="mt-2 flex flex-wrap gap-2">
@@ -239,7 +239,7 @@ export default function OwnershipPanel({ investigation: inv, onSelect }: { inves
           <h2 className="flex items-center gap-2 text-[19px] font-semibold tracking-[-0.02em]">
             <Layers className="h-4 w-4 text-slate-400" /> Ownership coverage, level by level
           </h2>
-          <p className="text-[13px] text-slate-500">Share capital of each company in the chain accounted for by the shareholders identified — where the chain goes dark.</p>
+          <p className="text-[13px] text-slate-500">Share capital of each company in the chain accounted for by the shareholders identified: where the chain goes dark.</p>
         </header>
         <ul className="mt-3 divide-y divide-slate-200/70 dark:divide-white/[0.06]">
           {a.coverage.map((c) => (
@@ -255,7 +255,7 @@ export default function OwnershipPanel({ investigation: inv, onSelect }: { inves
                 </div>
                 {c.reason && (
                   <div className={`mt-0.5 text-[12px] ${c.depth_limited ? "text-slate-500" : "text-amber-700 dark:text-amber-300"}`}>
-                    {c.dead_end && !c.depth_limited ? "Dead end — " : ""}
+                    {c.dead_end && !c.depth_limited ? "Dead end: " : ""}
                     {c.reason}
                   </div>
                 )}

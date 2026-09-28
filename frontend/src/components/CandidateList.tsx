@@ -77,9 +77,9 @@ export default function CandidateList({ data, onPick }: Props) {
                 ) : e.type === "person" ? (
                   <>
                     <dt className="text-slate-500">Date of birth</dt>
-                    <dd className="font-medium">{e.birth_date ?? "—"}</dd>
+                    <dd className="font-medium">{e.birth_date ?? "-"}</dd>
                     <dt className="text-slate-500">Nationality</dt>
-                    <dd>{e.nationalities.map((n) => `${flag(n)} ${countryName(n)}`).join(", ") || "—"}</dd>
+                    <dd>{e.nationalities.map((n) => `${flag(n)} ${countryName(n)}`).join(", ") || "-"}</dd>
                   </>
                 ) : (
                   <>
@@ -88,13 +88,13 @@ export default function CandidateList({ data, onPick }: Props) {
                       {flag(e.jurisdiction)} {countryName(e.jurisdiction)}
                     </dd>
                     <dt className="text-slate-500">Registration</dt>
-                    <dd className="font-mono">{e.registration_number ?? "—"}</dd>
+                    <dd className="font-mono">{e.registration_number ?? "-"}</dd>
                     <dt className="text-slate-500">Status</dt>
-                    <dd>{e.status ?? "—"}</dd>
+                    <dd>{e.status ?? "-"}</dd>
                   </>
                 )}
                 <dt className="text-slate-500">{e.type === "person" ? "Companies" : e.type === "wallet" ? "Attributed to" : "Linked parties"}</dt>
-                <dd>{c.linked_companies.length ? c.linked_companies.join(" · ") : "—"}</dd>
+                <dd>{c.linked_companies.length ? c.linked_companies.join(" · ") : "-"}</dd>
                 <dt className="text-slate-500">Sources</dt>
                 <dd className="text-slate-600 dark:text-slate-400">{[...new Set(e.sources.map((s) => s.source_label))].join(" · ")}</dd>
               </dl>

@@ -126,7 +126,7 @@ def test_monitoring_records_changes():
 def test_diff_first_run_is_silent():
     assert diff({}, {"hits": {"a": "x"}}) == []
     changes = diff(
-        {"hits": {}, "links": {"l": "A — owner — B"}, "score": 20, "level": "medium"},
+        {"hits": {}, "links": {"l": "A, owner, B"}, "score": 20, "level": "medium"},
         {"hits": {"h": "B ≈ B (EU list)"}, "links": {}, "score": 60, "level": "high"},
     )
     assert [c["kind"] for c in changes] == ["new_hit", "ended_link", "score"]

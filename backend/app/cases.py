@@ -38,7 +38,7 @@ from app.store import IMPORT_ACTIVE, Store, get_store, now
 
 DECISIONS = {"confirmed", "false_positive", "to_review"}
 STRONG = 85.0
-# Name search: the best candidate is picked automatically only when there is no real doubt —
+# Name search: the best candidate is picked automatically only when there is no real doubt:
 # a near-exact name ahead of the rest, or a good match with no other plausible company.
 # Anything else is left to the analyst (a wrong company in a KYC file is worse than a click).
 IMPORT_EXACT_SCORE = 97.0
@@ -73,7 +73,7 @@ def snapshot(inv: Investigation) -> dict[str, Any]:
             label = r.role or r.type.value
             pct = f" ({r.share_pct:g}%)" if r.share_pct is not None else ""
             links[f"link|{r.type.value}|{n(r.source_id)}>{n(r.target_id)}"] = (
-                f"{n(r.source_id)} — {label}{pct} — {n(r.target_id)}"
+                f"{n(r.source_id)}, {label}{pct}, {n(r.target_id)}"
             )
     documents = {
         f"doc|{e.name}|{d.title}|{d.date}": f"{e.name}: {d.title} ({d.date})"

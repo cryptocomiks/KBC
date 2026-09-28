@@ -1,4 +1,4 @@
-"""EU public procurement — TED (Tenders Electronic Daily), contracts awarded.
+"""EU public procurement: TED (Tenders Electronic Daily), contracts awarded.
 
 Public API, no key. Contract award notices in which the company is named as
 winner (tenderer awarded the contract): who buys from the company, where, for
@@ -82,7 +82,7 @@ def _link(notice: dict) -> str | None:
 
 class TedConnector(BaseConnector):
     name = "ted"
-    label = "EU public procurement — TED (contracts awarded)"
+    label = "EU public procurement: TED (contracts awarded)"
     kind = "documents"
     homepage = "https://ted.europa.eu"
     document_types = {"company"}
@@ -137,6 +137,6 @@ class TedConnector(BaseConnector):
             date=_day(n.get("publication-date")),
             url=_link(n),
             summary=" · ".join(parts) or None,
-            source="TED — EU public procurement (winner name match, verify the company)",
+            source="TED: EU public procurement (winner name match, verify the company)",
             flags=["public_contract"],
         )

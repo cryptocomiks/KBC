@@ -38,9 +38,9 @@ function financials(value: unknown): React.ReactNode {
         {rows.slice(0, 4).map((r) => (
           <tr key={String(r.year)}>
             <td>{r.year}</td>
-            <td className="text-right font-mono">{r.revenue ?? "—"}</td>
-            <td className="text-right font-mono">{r.net_income ?? "—"}</td>
-            <td className="text-right font-mono">{r.total_assets ?? "—"}</td>
+            <td className="text-right font-mono">{r.revenue ?? "-"}</td>
+            <td className="text-right font-mono">{r.net_income ?? "-"}</td>
+            <td className="text-right font-mono">{r.total_assets ?? "-"}</td>
           </tr>
         ))}
       </tbody>
@@ -264,7 +264,7 @@ export default function EntityPanel({ investigation: inv, entityId, onSelect }: 
             {e.documents.some((d) => d.flags.includes("set_aside")) && (
               <details className="mt-2 text-xs">
                 <summary className="cursor-pointer text-slate-500">
-                  Set aside automatically ({e.documents.filter((d) => d.flags.includes("set_aside")).length}) — name only cited, not scored
+                  Set aside automatically ({e.documents.filter((d) => d.flags.includes("set_aside")).length}): name only cited, not scored
                 </summary>
                 <ul className="mt-1.5 space-y-1.5 opacity-75">
                   {e.documents.filter((d) => d.flags.includes("set_aside")).map((d, i) => (

@@ -3,8 +3,8 @@
 The analyst answers a short set of client-risk questions (relationship, activity,
 structure, beneficial owners, PEP, countries, channel, volumes, cash, source of
 funds, behaviour). The answers are combined with the automatic screening of the
-case (risk level and factors) into a vigilance level — simplified, standard or
-enhanced — with the measures that level calls for and the next review date.
+case (risk level and factors) into a vigilance level: simplified, standard or
+enhanced: with the measures that level calls for and the next review date.
 
 The questions follow the client risk factors of the EU AML directives (Annexes
 II and III of Directive 2015/849) and the French Monetary and Financial Code
@@ -238,7 +238,7 @@ TRIGGER_MEASURES = {
     "source of funds not documented": "Ask for the documents supporting the origin of the "
     "funds (deeds, contracts, bank statements, tax returns).",
     "high-risk third country": "High-risk third country: enhanced measures required "
-    "(art. L561-10 CMF) — document every transaction with this country.",
+    "(art. L561-10 CMF): document every transaction with this country.",
     "sanctions match in the screening": "Sanctions match: do not make funds available before "
     "the hit is cleared; if confirmed, freeze and report to the Treasury (DG Trésor).",
 }

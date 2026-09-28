@@ -88,7 +88,7 @@ function Question({
         {q.label}
         {suggested && (
           <span className="inline-flex items-center gap-1 rounded-full bg-brand-500/10 px-2 py-0.5 text-[10px] font-semibold text-brand-700 dark:text-brand-400">
-            <Sparkles className="h-3 w-3" /> from the screening — confirm
+            <Sparkles className="h-3 w-3" /> from the screening: confirm
           </span>
         )}
       </div>
@@ -251,7 +251,7 @@ export default function KycQuestionnaire({ caseId, data }: Props) {
                         {a.reasons.map((r, i) => (
                           <li key={i} className="flex justify-between gap-2">
                             <span>
-                              <b>{r.item}</b> — {r.detail}
+                              <b>{r.item}</b>: {r.detail}
                             </span>
                             {r.points > 0 && <span className="font-mono text-slate-500">+{r.points}</span>}
                           </li>

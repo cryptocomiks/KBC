@@ -1,4 +1,4 @@
-"""Internet Archive — Wayback Machine.
+"""Internet Archive: Wayback Machine.
 
 Public service, no key. For every official website found for a company of
 the network (Wikidata, registries), the first and last archived captures and
@@ -59,7 +59,7 @@ def _ts_date(ts: str) -> date | None:
 
 class WaybackConnector(BaseConnector):
     name = "wayback"
-    label = "Internet Archive — Wayback Machine (website history)"
+    label = "Internet Archive: Wayback Machine (website history)"
     kind = "archive"
     homepage = "https://web.archive.org"
     timeout_seconds = 8.0
@@ -86,7 +86,7 @@ class WaybackConnector(BaseConnector):
             if not first:
                 docs.append(
                     Document(
-                        title=f"Website archive: {domain} — never captured",
+                        title=f"Website archive: {domain}: never captured",
                         kind="archive",
                         url=HISTORY.format(domain=domain),
                         source=self.label,
@@ -96,7 +96,7 @@ class WaybackConnector(BaseConnector):
             first_d, last_d = _ts_date(first[0]), _ts_date(last[0]) if last else None
             docs.append(
                 Document(
-                    title=f"Website archive: {domain} — first captured {first_d}",
+                    title=f"Website archive: {domain}: first captured {first_d}",
                     kind="archive",
                     date=first_d,
                     url=SNAPSHOT.format(ts=first[0], url=first[1]),
@@ -107,7 +107,7 @@ class WaybackConnector(BaseConnector):
             if last and last_d and last_d != first_d:
                 docs.append(
                     Document(
-                        title=f"Website archive: {domain} — latest capture",
+                        title=f"Website archive: {domain}: latest capture",
                         kind="archive",
                         date=last_d,
                         url=SNAPSHOT.format(ts=last[0], url=last[1]),

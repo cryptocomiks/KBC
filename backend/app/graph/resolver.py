@@ -6,7 +6,7 @@ when there is enough evidence they describe the same real-world entity:
 * companies: identical registration number in the same jurisdiction, or a
   near-identical name (>= 95) in the same jurisdiction;
 * persons: very close name (>= 90) AND a compatible date of birth. Two
-  persons are never merged on the name alone — homonyms are the norm;
+  persons are never merged on the name alone: homonyms are the norm;
 * addresses: token-set similarity >= 92 on the normalised address.
 
 Every merge is logged with its score and explanation (audit trail).

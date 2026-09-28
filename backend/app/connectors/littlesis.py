@@ -1,4 +1,4 @@
-"""LittleSis — power networks (boards, donors, lobbying; mostly US).
+"""LittleSis: power networks (boards, donors, lobbying; mostly US).
 
 Public API, no key (CC BY-SA). The profile of the entity when LittleSis has
 an exact name match of the right type, plus its documented relationships
@@ -25,7 +25,7 @@ PROFILE = "https://littlesis.org/entities/{id}"
 MAX_RELATIONSHIPS = 12
 MIN_SCORE = 95
 EXT = {EntityType.COMPANY: "Org", EntityType.PERSON: "Person"}
-SOURCE = "LittleSis — power networks (CC BY-SA)"
+SOURCE = "LittleSis: power networks (CC BY-SA)"
 
 
 def _norm(name: str) -> str:
@@ -45,7 +45,7 @@ def _day(value: Any) -> date | None:
 
 class LittleSisConnector(BaseConnector):
     name = "littlesis"
-    label = "LittleSis — power networks (boards, donors, lobbying; mostly US)"
+    label = "LittleSis: power networks (boards, donors, lobbying; mostly US)"
     kind = "documents"
     homepage = "https://littlesis.org"
     document_types = {"company", "person"}

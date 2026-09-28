@@ -7,7 +7,7 @@ wealth was made, check it adds up, corroborate each source and write it down. Th
    inheritance...) with amounts and years;
 2. computes what each source can plausibly explain (a salary is not saved in full) and the
    gap against the declared total;
-3. looks for corroboration in the public records already gathered — board mandates for a
+3. looks for corroboration in the public records already gathered: board mandates for a
    career, a shareholding that ended for a company sale, current holdings for dividends;
 4. lists the documents to request for what the registers cannot prove, raises the red flags
    (PEP, cash, crypto, high-risk countries, age, unexplained gap);
@@ -232,7 +232,7 @@ def _matches(s: dict[str, Any], roles: list[dict[str, Any]]) -> list[str]:
         span = f"{(r['start'] or '?')[:4]}–{end[:4] if end else 'today'}"
         pct = f" {r['share_pct']:g} %" if r["share_pct"] is not None else ""
         gone = ", company dissolved" if r["dissolved"] and not r["end"] else ""
-        return f"{r['role']}{pct} of {r['company']} ({span}{gone}) — {r['source']}"
+        return f"{r['role']}{pct} of {r['company']} ({span}{gone}): {r['source']}"
 
     t = s["type"]
     y0, y1 = s["year_from"], s["year_to"]
@@ -320,7 +320,7 @@ def assess(inv: Investigation, saved: dict[str, Any]) -> dict[str, Any]:
             flags.append(
                 {
                     "severity": "warning",
-                    "text": f"{spec['label']}: higher-risk source — corroborate with independent documents.",
+                    "text": f"{spec['label']}: higher-risk source: corroborate with independent documents.",
                 }
             )
         if s["country"] and (
@@ -456,7 +456,7 @@ def narrative(a: dict[str, Any]) -> str:
     if corr:
         lines.append(
             "Public records corroborate: "
-            + "; ".join(f"{s['label'].lower()} — {s['public'][0]}" for s in corr)
+            + "; ".join(f"{s['label'].lower()}: {s['public'][0]}" for s in corr)
             + "."
         )
     docs = [

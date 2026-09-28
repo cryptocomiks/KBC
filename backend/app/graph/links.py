@@ -23,7 +23,7 @@ AFRICAN_REGISTERS = {
     ),
     "KE": ("Business Registration Service, Kenya (BRS)", "https://brs.go.ke/"),
     "GH": ("Office of the Registrar of Companies, Ghana (ORC)", "https://orc.gov.gh/"),
-    "MA": ("Registre du commerce, Morocco (OMPIC — directinfo)", "https://www.directinfo.ma/"),
+    "MA": ("Registre du commerce, Morocco (OMPIC: directinfo)", "https://www.directinfo.ma/"),
     "TN": (
         "Registre national des entreprises, Tunisia (RNE)",
         "https://www.registre-entreprises.tn/rne-public/",
@@ -33,7 +33,7 @@ AFRICAN_REGISTERS = {
         "Corporate and Business Registration Department, Mauritius (CBRD)",
         "https://onlinesearch.mns.mu/",
     ),
-    "RW": ("Rwanda Development Board — company registry", "https://org.rdb.rw/"),
+    "RW": ("Rwanda Development Board: company registry", "https://org.rdb.rw/"),
     "UG": ("Uganda Registration Services Bureau (URSB)", "https://ursb.go.ug/"),
     "TZ": (
         "Business Registrations and Licensing Agency, Tanzania (BRELA)",
@@ -60,7 +60,7 @@ def register_links(entity: Entity) -> list[Document]:
     if jur == "FR" and re.fullmatch(r"\d{9}", number):
         docs += [
             Document(
-                title="Deeds, articles of association & filed accounts (INPI — RNE)",
+                title="Deeds, articles of association & filed accounts (INPI: RNE)",
                 kind="deeds",
                 url=f"https://data.inpi.fr/entreprises/{number}",
                 source=SOURCE,
@@ -103,7 +103,7 @@ def register_links(entity: Entity) -> list[Document]:
     elif jur == "LU":
         docs.append(
             Document(
-                title="Luxembourg Business Registers (RCS / RBE) — search",
+                title="Luxembourg Business Registers (RCS / RBE): search",
                 kind="register",
                 url="https://www.lbr.lu",
                 source=SOURCE,
@@ -124,7 +124,7 @@ def register_links(entity: Entity) -> list[Document]:
         label, url = AFRICAN_REGISTERS[jur]
         docs.append(
             Document(
-                title=f"{label} — company search",
+                title=f"{label}: company search",
                 kind="register",
                 url=url,
                 source=SOURCE,
@@ -135,7 +135,7 @@ def register_links(entity: Entity) -> list[Document]:
     if jur in AFRICAN_REGISTERS or jur in ("CI", "SN", "CM"):
         docs.append(
             Document(
-                title="Court judgments (AfricanLII) — search",
+                title="Court judgments (AfricanLII): search",
                 kind="court",
                 url="https://africanlii.org/search/?q=" + quote_plus(f'"{entity.name}"'),
                 source=SOURCE,
@@ -146,7 +146,7 @@ def register_links(entity: Entity) -> list[Document]:
         # The Gazette blocks automated requests: the analyst opens the search.
         docs.append(
             Document(
-                title="Insolvency and strike-off notices (The Gazette) — search",
+                title="Insolvency and strike-off notices (The Gazette): search",
                 kind="legal_notice",
                 url="https://www.thegazette.co.uk/insolvency/notice?text="
                 + quote_plus(f'"{entity.name}"'),

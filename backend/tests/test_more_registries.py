@@ -96,7 +96,7 @@ def test_rpo_search_details_officers_and_partners():
         ("Miroslav Kohút", RelationType.OFFICER),
         ("Anna Vrtelová", RelationType.SHAREHOLDER),
     ]  # the former director is left out
-    assert links[1].relationship.role == "Spoločník — deposit EUR 995.82"
+    assert links[1].relationship.role == "Spoločník: deposit EUR 995.82"
 
 
 @respx.mock

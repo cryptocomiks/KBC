@@ -3,14 +3,14 @@
 Swiss banks identify beneficial owners with the forms of the Agreement on the Swiss banks'
 code of conduct with regard to the exercise of due diligence (CDB 20 / VSB 20):
 
-* Form K — controlling persons of an *operating* legal entity or partnership: persons
+* Form K: controlling persons of an *operating* legal entity or partnership: persons
   holding 25 % or more of the capital or votes; failing that, persons controlling it in
   another way; failing that, the managing person (CDB 20, art. 20).
-* Form A — beneficial owner of the assets, required notably for *domiciliary companies*
+* Form A: beneficial owner of the assets, required notably for *domiciliary companies*
   (no operating activity of their own) and whenever the contracting party is not the
   beneficial owner.
-* Form T — trusts (settlor, trustees, protector, beneficiaries).
-* Form S — foundations and similar constructs (founder, board, beneficiaries).
+* Form T: trusts (settlor, trustees, protector, beneficiaries).
+* Form S: foundations and similar constructs (founder, board, beneficiaries).
 
 We choose the form from the structure found in the registers, pre-fill every person we can
 (name, date of birth, nationality, address, stake and chain of ownership, source) and list
@@ -28,10 +28,10 @@ from app.risk.config import get_jurisdictions
 from app.schemas import Investigation
 
 TITLES = {
-    "K": "Form K — Establishment of the controlling person (operating legal entities and partnerships)",
-    "A": "Form A — Establishment of the beneficial owner's identity",
-    "T": "Form T — Trusts",
-    "S": "Form S — Foundations and similar constructs",
+    "K": "Form K: Establishment of the controlling person (operating legal entities and partnerships)",
+    "A": "Form A: Establishment of the beneficial owner's identity",
+    "T": "Form T: Trusts",
+    "S": "Form S: Foundations and similar constructs",
 }
 ROLE_LABEL = {
     "controlling": "Controlling person",
@@ -259,7 +259,7 @@ def _controlling(net: _Net, form: str) -> tuple[list[dict[str, Any]], list[str]]
             "art. 20). Confirm with the client that nobody controls the company otherwise."
         )
         return [
-            _person(e, role, f"Managing person ({r.role or 'director'}) — default rule", key=e.id)
+            _person(e, role, f"Managing person ({r.role or 'director'}): default rule", key=e.id)
             for r, e in managers[:3]
         ], notes
     notes.append(

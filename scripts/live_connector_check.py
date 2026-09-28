@@ -58,7 +58,7 @@ def section(title: str) -> None:
 
 
 def expect(name: str, ok: bool, detail: str = "") -> None:
-    print(f"{'PASS' if ok else 'FAIL'}  {name}{'  — ' + detail if detail else ''}")
+    print(f"{'PASS' if ok else 'FAIL'}  {name}{' : ' + detail if detail else ''}")
     if not ok:
         failures.append(name)
 
@@ -76,7 +76,7 @@ def guarded(title: str, fn) -> None:
         if isinstance(exc, (ConnectorError, httpx.TimeoutException)) and any(
             k in text.lower() for k in EXTERNAL
         ):
-            print(f"WARN  {title}: source outage, not a code error — {text[:200]}")
+            print(f"WARN  {title}: source outage, not a code error: {text[:200]}")
             return
         traceback.print_exc()
         expect(f"{title}: no exception", False, text)
@@ -411,12 +411,12 @@ def check_zefix() -> None:
     expect(
         "details (address, legal form)",
         bool(detail and detail.address and detail.legal_form),
-        f"{detail.legal_form} — {detail.address}" if detail else "",
+        f"{detail.legal_form}: {detail.address}" if detail else "",
     )
     officers = zefix.get_officers(nestle.id)
     active = [o for o in officers if o.relationship.end_date is None]
     for o in active[:6]:
-        print(f"      {o.entity.name} — {o.relationship.role} (since {o.relationship.start_date})")
+        print(f"      {o.entity.name}: {o.relationship.role} (since {o.relationship.start_date})")
     expect(
         "officers parsed from SOGC notices",
         len(active) >= 5,
@@ -458,7 +458,7 @@ def check_sec() -> None:
     owners = sec.get_shareholders(tesla.id)
     for o in owners[:5]:
         print(
-            f"      {o.entity.name} ({o.entity.type.value}) {o.relationship.share_pct}% — {o.relationship.role}"
+            f"      {o.entity.name} ({o.entity.type.value}) {o.relationship.share_pct}%: {o.relationship.role}"
         )
     expect("13D/13G beneficial owners with %", any(o.relationship.share_pct for o in owners))
     docs = sec.get_documents(detail)
@@ -699,7 +699,7 @@ def check_casino_secrets() -> None:
     expect(
         "licence holder found",
         any(c.name == "Medium Rare N.V." for c in found),
-        "; ".join(f"{c.name} — {c.extra.get('casino_domains', '')}" for c in found[:3]),
+        "; ".join(f"{c.name}: {c.extra.get('casino_domains', '')}" for c in found[:3]),
     )
     stake = Entity(id="t:stake", type=EntityType.COMPANY, name="Medium Rare N.V.")
     hits = CasinoSecretsLeakConnector(settings).screen(stake)
@@ -754,7 +754,7 @@ def check_sanctioned_official() -> None:
     expect(
         "risk level reflects the sanctions",
         inv.risk.level in ("high", "critical"),
-        f"{inv.risk.score:.0f} ({inv.risk.level}) — {inv.brief.headline if inv.brief else ''}",
+        f"{inv.risk.score:.0f} ({inv.risk.level}): {inv.brief.headline if inv.brief else ''}",
     )
 
 
@@ -772,12 +772,12 @@ def check_uk_public_register() -> None:
     officers = conn.get_officers("companies_house_web:00445790")
     for o in officers[:3]:
         print(
-            f"      {o.entity.name} — {o.relationship.role} (from {o.relationship.start_date}, born {o.entity.birth_date})"
+            f"      {o.entity.name}: {o.relationship.role} (from {o.relationship.start_date}, born {o.entity.birth_date})"
         )
     expect("officers parsed from the public page", len(officers) >= 5, f"{len(officers)} officers")
     owners = conn.get_shareholders("companies_house_web:OE000001")
     for o in owners[:3]:
-        print(f"      {o.entity.name} — {o.relationship.role} ({o.relationship.share_pct}%)")
+        print(f"      {o.entity.name}: {o.relationship.role} ({o.relationship.share_pct}%)")
     expect("overseas entity: registrable beneficial owners", len(owners) >= 1)
     people = conn.search_person("Alisher Usmanov")
     roles = conn.get_person_roles(people[0].id) if people else []
@@ -798,12 +798,12 @@ def check_european_registers() -> None:
     )
 
     for label, conn, query, officers_min in (
-        ("Norway (Brønnøysund) — Equinor", BrregConnector(settings), "Equinor", 5),
-        ("Czech Republic (ARES) — Škoda Auto", AresConnector(settings), "Škoda Auto", 3),
-        ("Belgium (CBE/KBO) — Solvay", KboConnector(settings), "Solvay", 0),
-        ("Finland (PRH) — Nokia", PrhConnector(settings), "Nokia Oyj", 0),
+        ("Norway (Brønnøysund): Equinor", BrregConnector(settings), "Equinor", 5),
+        ("Czech Republic (ARES): Škoda Auto", AresConnector(settings), "Škoda Auto", 3),
+        ("Belgium (CBE/KBO): Solvay", KboConnector(settings), "Solvay", 0),
+        ("Finland (PRH): Nokia", PrhConnector(settings), "Nokia Oyj", 0),
         (
-            "Estonia (e-Business Register) — Bolt",
+            "Estonia (e-Business Register): Bolt",
             AriregisterConnector(settings),
             "Bolt Technology",
             0,
@@ -820,7 +820,7 @@ def check_european_registers() -> None:
         top = found[0]
         links = conn.get_officers(top.id) + conn.get_shareholders(top.id)
         for o in links[:3]:
-            print(f"      {o.entity.name} (born {o.entity.birth_date}) — {o.relationship.role}")
+            print(f"      {o.entity.name} (born {o.entity.birth_date}): {o.relationship.role}")
         expect(f"{label}: officers / owners", len(links) >= officers_min, f"{len(links)} links")
     kbo = KboConnector(settings)
     solvay = kbo.get_company_details("kbo:0403091220")
@@ -845,7 +845,7 @@ def check_rpvs() -> None:
     owners = [o for c in found[:3] for o in conn.get_shareholders(c.id)]
     for o in owners[:4]:
         print(
-            f"      {o.entity.name} (born {o.entity.birth_date}) — {o.relationship.role}, until {o.relationship.end_date}"
+            f"      {o.entity.name} (born {o.entity.birth_date}): {o.relationship.role}, until {o.relationship.end_date}"
         )
     expect("verified beneficial owners", len(owners) >= 1)
 
@@ -869,7 +869,7 @@ def check_documents_sources() -> None:
             if "rate limited" not in str(exc):
                 raise
             # Anonymous quota of the source (HTTP 429), not a code error.
-            print(f"WARN  {label}: rate limited by the source — {exc}")
+            print(f"WARN  {label}: rate limited by the source: {exc}")
             continue
         for d in docs[:2]:
             print(f"      {d.date} | {d.title[:90]} | {d.url}")
@@ -885,7 +885,7 @@ def check_documents_sources() -> None:
     # crt.sh is a volunteer-run service that often answers 404 / 502 when overloaded: a warning,
     # not a failure (the connector retries and the rest of the investigation is unaffected).
     print(
-        f"{'PASS' if certs else 'WARN'}  certificate transparency (crt.sh) answers  — {len(certs)} certificates"
+        f"{'PASS' if certs else 'WARN'}  certificate transparency (crt.sh) answers : {len(certs)} certificates"
     )
     ids = (
         web.http_get_text(
@@ -902,7 +902,7 @@ def check_documents_sources() -> None:
     site.extra["website"] = "https://www.glencore.com"
     docs = web.get_documents(site)
     for d in docs:
-        print(f"      {d.title} — {(d.summary or '')[:160]}")
+        print(f"      {d.title}: {(d.summary or '')[:160]}")
     print(f"      linked-website documents for glencore.com: {len(docs)}")
 
 

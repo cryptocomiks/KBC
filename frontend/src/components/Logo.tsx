@@ -1,4 +1,4 @@
-/** KYC 1 CLICK monogram: K and 1 in a rounded square, monochrome like Apple's marks — the "1" in blue. */
+/** KYC 1 CLICK monogram: K and 1 in a rounded square, monochrome like Apple's marks: the "1" in blue. */
 export default function Logo({ className = "h-8 w-8" }: { className?: string }) {
   return (
     <svg viewBox="0 0 32 32" className={className} aria-hidden="true">

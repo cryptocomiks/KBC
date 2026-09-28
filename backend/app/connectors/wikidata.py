@@ -1,13 +1,13 @@
-"""Wikidata — public figures, PEPs, their relatives and associates, official contacts.
+"""Wikidata: public figures, PEPs, their relatives and associates, official contacts.
 
 Open data (CC0), no key: MediaWiki API (wbsearchentities + wbgetentities).
 
 * PEP screening: "position held" (P39) with start/end dates.
 * Relatives and close associates (RCA): spouse, children, parents,
-  siblings, relatives — the people a PEP screening must also cover.
+  siblings, relatives: the people a PEP screening must also cover.
 * Corporate links: chairperson, CEO, director, founder, owner, parent
   organisation, subsidiaries.
-* Official contacts — only for companies and public figures (people notable
+* Official contacts: only for companies and public figures (people notable
   enough to have a Wikidata item): website, published e-mail / phone and
   official social accounts. No data is collected about private individuals.
 """
@@ -286,7 +286,7 @@ def _fmt_position(p: tuple[str, str | None, str | None]) -> str:
 
 class WikidataConnector(_WikidataClient):
     name = "wikidata"
-    label = "Wikidata — public figures, PEPs, relatives, corporate links, official contacts"
+    label = "Wikidata: public figures, PEPs, relatives, corporate links, official contacts"
     kind = "registry"
     homepage = "https://www.wikidata.org"
     crossref_max_depth = 1  # SPARQL is slow: only the subject and its direct neighbours
@@ -439,7 +439,7 @@ class WikidataPepConnector(_WikidataClient):
     a close namesake holding (or having held) a public position is reported."""
 
     name = "wikidata_pep"
-    label = "Wikidata — politically exposed persons (positions held)"
+    label = "Wikidata: politically exposed persons (positions held)"
     kind = "screening"
     homepage = "https://www.wikidata.org/wiki/Property:P39"
 
@@ -471,7 +471,7 @@ class WikidataPepConnector(_WikidataClient):
                     ScreeningHit(
                         entity_id=person.id,
                         list_type=ListType.PEP,
-                        dataset="Wikidata — positions held",
+                        dataset="Wikidata: positions held",
                         matched_name=d["label"],
                         score=result.score,
                         explanation=result.explanation,

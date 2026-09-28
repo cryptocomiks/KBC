@@ -193,7 +193,7 @@ class KbcService:
         )
 
     def _linked_summary(self, ent: Entity, warnings: list[str]) -> tuple[list[str], int]:
-        """Companies linked to a candidate — the key hint to tell homonyms apart."""
+        """Companies linked to a candidate: the key hint to tell homonyms apart."""
         names: dict[str, None] = {}
         for rid in ent.record_ids:
             conn = self.registry.for_record(rid)
@@ -330,7 +330,7 @@ def _hit_status(score: float) -> str:
         return "match"
     if score >= t["possible_match_score"]:
         return "possible match"
-    return "weak — likely false positive"
+    return "weak: likely false positive"
 
 
 def build_tables(net: Network, risk: RiskAssessment) -> dict[str, list[dict[str, Any]]]:

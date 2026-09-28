@@ -25,7 +25,7 @@ const KINDS: Record<string, string> = {
   chain: "Blockchains",
 };
 
-/** Every data source with its status and reuse terms — what a compliance buyer checks first. */
+/** Every data source with its status and reuse terms: what a compliance buyer checks first. */
 export default function SourcesPage({ meta }: { meta?: Meta }) {
   const q = useQuery({ queryKey: ["connectors"], queryFn: api.connectors });
   const [cat, setCat] = useState<Category | "all">("all");

@@ -235,7 +235,7 @@ def build_brief(net: Network, risk: RiskAssessment, jur_name=lambda c: c or "?")
         )
     elif net.unscreened:
         headline += f" {len(net.unscreened)} linked parties could not be screened in time (rerun to complete)."
-    headline = f"{risk.level.upper()} — {headline}"
+    headline = f"{risk.level.upper()}: {headline}"
 
     # --- Key figures
     countries = {

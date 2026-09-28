@@ -1,13 +1,13 @@
 """Public blockchain explorers (no API key): Bitcoin, Ethereum, TRON.
 
-* Bitcoin — mempool.space REST API (address stats + recent transactions)
-* Ethereum — Blockscout API v2 (ETH transfers + ERC-20 token transfers)
-* TRON — TronGrid API (TRC-20 transfers, i.e. mostly USDT)
+* Bitcoin: mempool.space REST API (address stats + recent transactions)
+* Ethereum: Blockscout API v2 (ETH transfers + ERC-20 token transfers)
+* TRON: TronGrid API (TRC-20 transfers, i.e. mostly USDT)
 
 Each wallet's recent activity is aggregated per counterparty (one edge per
 counterparty and currency, with total amount and number of transactions):
 one hop of flows, as used for sanctions-exposure screening. Only the most
-recent transactions returned by the free APIs are analysed — this is a
+recent transactions returned by the free APIs are analysed: this is a
 screening aid, not a full blockchain forensic trace.
 """
 
@@ -109,7 +109,7 @@ class ChainConnector(BaseConnector):
 
 class BitcoinConnector(ChainConnector):
     name = "chain_btc"
-    label = "Bitcoin — mempool.space explorer"
+    label = "Bitcoin: mempool.space explorer"
     chain = "BTC"
     homepage = "https://mempool.space"
     explorer = "https://mempool.space/address/{address}"
@@ -165,7 +165,7 @@ class BitcoinConnector(ChainConnector):
 
 class EthereumConnector(ChainConnector):
     name = "chain_eth"
-    label = "Ethereum — Blockscout explorer (ETH + ERC-20)"
+    label = "Ethereum: Blockscout explorer (ETH + ERC-20)"
     chain = "ETH"
     homepage = "https://eth.blockscout.com"
     explorer = "https://eth.blockscout.com/address/{address}"
@@ -234,7 +234,7 @@ class EthereumConnector(ChainConnector):
 
 class TronConnector(ChainConnector):
     name = "chain_tron"
-    label = "TRON — TronGrid (TRC-20 / USDT transfers)"
+    label = "TRON: TronGrid (TRC-20 / USDT transfers)"
     chain = "TRON"
     homepage = "https://tronscan.org"
     explorer = "https://tronscan.org/#/address/{address}"

@@ -3,7 +3,7 @@
 * ESMA registers (EU/EEA): investment firms and their national supervisor
   (Solr service behind registers.esma.europa.eu), searched by LEI or by name.
 * REGAFI (ACPR, France): credit institutions, payment and e-money institutions,
-  passported branches, and the insurance register — open data (Opendatasoft).
+  passported branches, and the insurance register: open data (Opendatasoft).
 
 Each authorisation found becomes a document of the company, flagged
 ``regulated`` (or ``authorisation_withdrawn``). Companies only.
@@ -49,7 +49,7 @@ def _solr_phrase(text: str) -> str:
 
 class RegulatorsConnector(BaseConnector):
     name = "regulators"
-    label = "Financial regulators — ESMA registers (EU/EEA) and REGAFI (ACPR, France)"
+    label = "Financial regulators: ESMA registers (EU/EEA) and REGAFI (ACPR, France)"
     kind = "documents"
     homepage = "https://registers.esma.europa.eu"
     document_types = {"company"}
@@ -88,7 +88,7 @@ class RegulatorsConnector(BaseConnector):
             since = parse_date((doc.get("ae_authorisationNotificationDate") or "")[:10])
             out.append(
                 Document(
-                    title=f"{doc.get('ae_entityTypeLabel') or 'Authorised entity'} — "
+                    title=f"{doc.get('ae_entityTypeLabel') or 'Authorised entity'}: "
                     f"{doc.get('ae_competentAuthority') or 'national supervisor'} ({status.lower()})",
                     kind="authorisation",
                     date=since,
@@ -104,7 +104,7 @@ class RegulatorsConnector(BaseConnector):
                         )
                         if p
                     ),
-                    source="ESMA register of investment firms (MiFID) — national competent authorities",
+                    source="ESMA register of investment firms (MiFID): national competent authorities",
                     flags=["authorisation_withdrawn"] if withdrawn else ["regulated"],
                 )
             )
@@ -142,7 +142,7 @@ class RegulatorsConnector(BaseConnector):
                 authority = row.get("libelle_autorite_surveillance") or "ACPR (Banque de France)"
                 out.append(
                     Document(
-                        title=f"{category or row.get('type_entite') or 'Regulated entity'} — {authority}",
+                        title=f"{category or row.get('type_entite') or 'Regulated entity'}: {authority}",
                         kind="authorisation",
                         date=parse_date(row.get("date_creation")),
                         url=REGAFI_UI,
@@ -161,7 +161,7 @@ class RegulatorsConnector(BaseConnector):
                             )
                             if p
                         ),
-                        source=f"REGAFI — ACPR register of authorised {sector} entities (France)",
+                        source=f"REGAFI: ACPR register of authorised {sector} entities (France)",
                         flags=["authorisation_withdrawn"] if withdrawn else ["regulated"],
                     )
                 )

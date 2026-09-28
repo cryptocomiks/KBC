@@ -45,7 +45,7 @@ export default function BriefCard({ investigation: inv, onSelect, onOpenTab, hid
   const b: Brief | null = inv.brief;
   const [showAll, setShowAll] = useState(false);
   if (!b) return null;
-  const [level, ...rest] = b.headline.split(" — ");
+  const [level, ...rest] = b.headline.split(": ");
   const flags = showAll ? b.flags : b.flags.slice(0, 4);
   const Verdict = b.level === "low" ? ShieldCheck : b.level === "medium" ? AlertTriangle : AlertOctagon;
 
@@ -62,7 +62,7 @@ export default function BriefCard({ investigation: inv, onSelect, onOpenTab, hid
         </div>
         <div className="px-5 py-4">
           <div className="tag">Summary</div>
-          <p className="mt-0.5 text-[16px] leading-snug font-semibold text-slate-900 dark:text-white">{rest.join(" — ")}</p>
+          <p className="mt-0.5 text-[16px] leading-snug font-semibold text-slate-900 dark:text-white">{rest.join(": ")}</p>
           {b.action && (
             <p className="mt-2 flex gap-2 text-[13px] text-slate-700 dark:text-slate-300">
               <span className="shrink-0 font-semibold text-slate-900 dark:text-white">Recommended action:</span>
@@ -105,7 +105,7 @@ export default function BriefCard({ investigation: inv, onSelect, onOpenTab, hid
           {b.owners.length === 0 ? (
             <p className="text-sm text-slate-500">
               {b.subject_type === "company"
-                ? "No ultimate owner identified in the sources queried — to be obtained from the client (UBO register, KYC documents)."
+                ? "No ultimate owner identified in the sources queried: to be obtained from the client (UBO register, KYC documents)."
                 : b.subject_type === "person"
                   ? "No shareholding found in the sources queried: see the mandates (officer roles) below."
                   : "Not applicable."}

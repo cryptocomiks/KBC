@@ -53,7 +53,7 @@ export default function CaseHeader({ view, tab, onTab, onBack }: Props) {
   const refresh = useMutation({
     mutationFn: () => api.refreshCase(c.id),
     onSuccess: (r) => {
-      setLast(r.changes.length ? `${r.changes.length} change(s) found — see History` : "Checked just now: nothing changed");
+      setLast(r.changes.length ? `${r.changes.length} change(s) found: see History` : "Checked just now: nothing changed");
       invalidate();
     },
   });
@@ -120,7 +120,7 @@ export default function CaseHeader({ view, tab, onTab, onBack }: Props) {
             value={
               <span>
                 {(o?.risk.score ?? c.risk_score ?? 0).toFixed(0)}
-                <span className="ml-1 text-xs font-medium text-slate-500">/ 100 · {o?.risk.level ?? c.risk_level ?? "—"}</span>
+                <span className="ml-1 text-xs font-medium text-slate-500">/ 100 · {o?.risk.level ?? c.risk_level ?? "-"}</span>
               </span>
             }
             meter={{ value: o?.risk.score ?? c.risk_score ?? 0, max: 100, tone: riskTone }}
@@ -134,7 +134,7 @@ export default function CaseHeader({ view, tab, onTab, onBack }: Props) {
           />
           <div className="glass-tile col-span-2 flex flex-col justify-between rounded-xl p-3">
             <span className="text-[11px] font-medium text-slate-500">
-              Validation · {workflow?.state === "rejected" ? "sent back" : (workflow?.label ?? "—")}
+              Validation · {workflow?.state === "rejected" ? "sent back" : (workflow?.label ?? "-")}
             </span>
             <div className="mt-2 overflow-x-auto">
               <Steps steps={WF_STEPS} current={WF_INDEX[workflow?.state ?? "to_complete"] ?? 0} />
@@ -149,14 +149,14 @@ export default function CaseHeader({ view, tab, onTab, onBack }: Props) {
           <Tile
             label="Open alerts"
             tone={o?.alerts.open ? "critical" : "good"}
-            value={o?.alerts.open ?? "—"}
+            value={o?.alerts.open ?? "-"}
             sub={o ? `${o.alerts.total} hit(s) · ${o.alerts.triage.dismissed ?? 0} silenced` : undefined}
             onClick={() => onTab("alerts")}
           />
           <Tile
             label="Next review"
             tone={review?.status === "overdue" ? "critical" : review?.status === "due" ? "warning" : review?.status === "not_due" ? "good" : "neutral"}
-            value={review?.days_left == null ? "—" : review.days_left < 0 ? `${-review.days_left}d late` : `${review.days_left}d`}
+            value={review?.days_left == null ? "-" : review.days_left < 0 ? `${-review.days_left}d late` : `${review.days_left}d`}
             sub={review?.next_review ? fmtDate(review.next_review) : "no date set"}
             onClick={() => onTab("review")}
           />

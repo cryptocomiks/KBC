@@ -37,7 +37,7 @@ const STEPS = [
   {
     Icon: Network,
     title: "Map",
-    text: "Registers are read in every country reached: officers, shareholders, beneficial owners, parent companies — up to three levels, with effective ownership computed through every layer.",
+    text: "Registers are read in every country reached: officers, shareholders, beneficial owners, parent companies: up to three levels, with effective ownership computed through every layer.",
   },
   {
     Icon: ShieldAlert,
@@ -55,7 +55,7 @@ const WHAT = [
   {
     Icon: Fingerprint,
     title: "Know your client",
-    text: "Identity and status from the official register, legal form, address, capital, filings and legal notices — with the source of every fact.",
+    text: "Identity and status from the official register, legal form, address, capital, filings and legal notices: with the source of every fact.",
   },
   {
     Icon: Users,
@@ -141,7 +141,7 @@ export default function Landing({ search, connectors, onCases }: Props) {
             <span className="text-glow">In one click.</span>
           </h1>
           <p className="subhead mx-auto mt-5 max-w-2xl text-[clamp(1.1rem,2vw,1.6rem)] text-[#6e6e73] dark:text-[#a1a1a6]">
-            Who owns the company, who runs it, whether anyone is sanctioned or exposed — and the KYC file, ready.
+            Who owns the company, who runs it, whether anyone is sanctioned or exposed: and the KYC file, ready.
           </p>
           <div className="mt-7 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-[17px]">
             <button className="btn-primary !px-6 !py-2.5 !text-[17px]" onClick={toSearch}>
@@ -177,7 +177,7 @@ export default function Landing({ search, connectors, onCases }: Props) {
       <Section
         tag="How it works"
         title="Four steps. One file."
-        intro="Search, map, screen, decide — every step sourced, every decision recorded."
+        intro="Search, map, screen, decide: every step sourced, every decision recorded."
         className="bg-slate-50 dark:bg-[#0a0a0a]"
       >
         <ol className="grid gap-5 md:grid-cols-2">
@@ -219,7 +219,7 @@ export default function Landing({ search, connectors, onCases }: Props) {
             <span className="tabular-nums">{WATCHLISTS}</span> watchlists. Live.
           </>
         }
-        intro="Registers, sanctions and PEP lists, courts, regulators, leaks and the press — queried as you search."
+        intro="Registers, sanctions and PEP lists, courts, regulators, leaks and the press: queried as you search."
         className="bg-slate-50 dark:bg-[#0a0a0a]"
       >
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">

@@ -98,10 +98,10 @@ export default function PeriodicReview({ caseId, onTab }: { caseId: string; onTa
           <span className="tag">Periodic review</span>
           <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ring-1 ring-inset ${s.cls}`}>{s.label}</span>
           <span className="text-xs text-slate-500">
-            Next review {r.next_review ? fmtDate(r.next_review) : "—"}
+            Next review {r.next_review ? fmtDate(r.next_review) : "-"}
             {r.days_left != null && ` (${r.days_left < 0 ? `${-r.days_left} days late` : `in ${r.days_left} days`})`} ·{" "}
             {r.last_review_basis === "validation" ? "last validation" : "file opened"}{" "}
-            {r.last_review ? fmtDate(r.last_review) : "—"}
+            {r.last_review ? fmtDate(r.last_review) : "-"}
           </span>
           <div className="ml-auto flex items-center gap-2">
             <input className="input w-36 py-1 text-xs" placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)} />
@@ -123,7 +123,7 @@ export default function PeriodicReview({ caseId, onTab }: { caseId: string; onTa
           hero
           label={r.status === "overdue" ? "Review overdue by" : "Next review in"}
           tone={r.status === "overdue" ? "critical" : r.status === "due" ? "warning" : r.status === "not_due" ? "good" : "neutral"}
-          value={r.days_left == null ? "—" : `${Math.abs(r.days_left)} days`}
+          value={r.days_left == null ? "-" : `${Math.abs(r.days_left)} days`}
           sub={s.label}
         />
         <ChartCard title="Review cycle" sub={`the bar fills from the ${r.last_review_basis === "validation" ? "last validation" : "opening of the file"} to the review date`}>
@@ -170,7 +170,7 @@ export default function PeriodicReview({ caseId, onTab }: { caseId: string; onTa
           </ul>
           {r.vigilance.saved && (
             <p className="mt-3 text-[12px] text-slate-500">
-              Vigilance: {r.vigilance.saved} at the last assessment, {r.vigilance.now ?? "—"} with today's answers.
+              Vigilance: {r.vigilance.saved} at the last assessment, {r.vigilance.now ?? "-"} with today's answers.
             </p>
           )}
         </div>
@@ -189,7 +189,7 @@ export default function PeriodicReview({ caseId, onTab }: { caseId: string; onTa
                 <span className={`w-24 shrink-0 text-[10px] font-semibold uppercase ${DOC[d.status]}`}>{d.status.replace("_", " ")}</span>
                 <span className="min-w-0 flex-1">
                   {d.label}
-                  <span className="text-slate-500"> — {d.why}</span>
+                  <span className="text-slate-500">: {d.why}</span>
                 </span>
               </li>
             ))}
@@ -235,7 +235,7 @@ export default function PeriodicReview({ caseId, onTab }: { caseId: string; onTa
           <ul className="mt-3 space-y-1 text-[12.5px]">
             {r.open_alerts.map((a) => (
               <li key={a.label} className="text-amber-800 dark:text-amber-200">
-                Open alert — {a.label} ({a.score.toFixed(0)}%)
+                Open alert: {a.label} ({a.score.toFixed(0)}%)
               </li>
             ))}
             {r.changes.slice(0, 40).map((c) => (
@@ -253,7 +253,7 @@ export default function PeriodicReview({ caseId, onTab }: { caseId: string; onTa
           <ul className="mt-2 space-y-1 text-[12px] text-slate-600 dark:text-slate-400">
             {r.reviews.map((x) => (
               <li key={x.started_at}>
-                {fmtDate(x.started_at)} — started by {x.by} · {x.changes} change(s), {x.actions} action(s)
+                {fmtDate(x.started_at)}: started by {x.by} · {x.changes} change(s), {x.actions} action(s)
                 {x.due && ` · was due ${fmtDate(x.due)}`}
               </li>
             ))}

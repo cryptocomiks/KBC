@@ -80,7 +80,7 @@ export default function CaseWorkflow({ caseId, view }: Props) {
                   }`}
                 >
                   {done && !active ? <Check className="h-3 w-3" /> : <span className="font-mono text-[10px]">{i + 1}</span>}
-                  {active && view.state === "rejected" ? "Sent back — to complete" : s.label}
+                  {active && view.state === "rejected" ? "Sent back: to complete" : s.label}
                 </span>
               </li>
             );
@@ -119,7 +119,7 @@ export default function CaseWorkflow({ caseId, view }: Props) {
             </button>
             <span className="text-xs text-slate-500">
               Sent by <b>{view.submitted_by}</b>
-              {ownSubmission && " — another person must validate (four-eyes principle)"}
+              {ownSubmission && ": another person must validate (four-eyes principle)"}
             </span>
           </>
         )}
@@ -161,7 +161,7 @@ export default function CaseWorkflow({ caseId, view }: Props) {
             <li key={i} className="flex flex-wrap gap-x-2">
               <span className="font-mono text-[10px] text-slate-500">{h.at.slice(0, 16).replace("T", " ")}</span>
               <b>{ACTION_LABEL[h.action] ?? h.action}</b> by {h.by}
-              {h.comment && <span className="text-slate-500">— {h.comment}</span>}
+              {h.comment && <span className="text-slate-500">{h.comment}</span>}
             </li>
           ))}
         </ul>

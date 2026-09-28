@@ -52,8 +52,8 @@ class ConnectorError(RuntimeError):
 
 
 # Circuit breaker: a source that cannot be reached (DNS failure, connection refused,
-# repeated timeouts, rate limit) is skipped for a few minutes instead of being called —
-# and reported — for every entity of the investigation.
+# repeated timeouts, rate limit) is skipped for a few minutes instead of being called:
+# and reported: for every entity of the investigation.
 _DOWN: dict[str, tuple[float, str]] = {}
 _DOWN_GUARD = threading.Lock()
 DOWN_SECONDS = {"unreachable": 300.0, "rate limited": 120.0}
@@ -150,7 +150,7 @@ class BaseConnector(ABC):
 
     @property
     def licence(self) -> tuple[str, str, str]:
-        """(category, licence, note) — see app.licences."""
+        """(category, licence, note): see app.licences."""
         from app.licences import licence_of
 
         return licence_of(self.name, self.is_demo)
@@ -358,7 +358,7 @@ class BaseConnector(ABC):
                 if isinstance(exc, httpx.ConnectError | httpx.ConnectTimeout):
                     _mark_down(self.name, "unreachable")
                     raise ConnectorError(
-                        f"{self.label}: source unreachable ({exc}) — skipped for this investigation"
+                        f"{self.label}: source unreachable ({exc}): skipped for this investigation"
                     ) from exc
                 raise ConnectorError(f"{self.label}: network error ({exc})") from exc
             # Rate limited or transient server error: back off and retry.
@@ -377,7 +377,7 @@ class BaseConnector(ABC):
             data: Any = None
         elif resp.status_code in (401, 403):
             raise ConnectorError(
-                f"{self.label}: access refused (HTTP {resp.status_code}) — check the API key"
+                f"{self.label}: access refused (HTTP {resp.status_code}): check the API key"
             )
         elif resp.status_code == 429:
             _mark_down(self.name, "rate limited")

@@ -84,7 +84,7 @@ function withTransition(update: () => void): void {
   doc.startViewTransition(() => flushSync(update));
 }
 
-/** Current route + navigate(route, {replace}) — the browser's back / forward buttons just work. */
+/** Current route + navigate(route, {replace}): the browser's back / forward buttons just work. */
 export function useRoute(): [Route, (r: Route, opts?: { replace?: boolean }) => void] {
   const [route, setRoute] = useState<Route>(() => parseRoute(window.location.hash));
   useEffect(() => {

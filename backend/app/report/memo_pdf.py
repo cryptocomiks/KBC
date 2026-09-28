@@ -38,7 +38,7 @@ def _kpis(o: dict[str, Any], width: float):
             },
             {
                 "label": "Vigilance",
-                "value": (o.get("vigilance") or "—").capitalize(),
+                "value": (o.get("vigilance") or "-").capitalize(),
                 "tone": {"enhanced": "critical", "standard": "warning", "simplified": "good"}.get(
                     o.get("vigilance") or "", "neutral"
                 ),
@@ -58,7 +58,7 @@ def _kpis(o: dict[str, Any], width: float):
                 "label": "Source of wealth",
                 "value": f"{round((sow['coverage'] or 0) * 100)} %"
                 if sow and sow.get("coverage") is not None
-                else "—",
+                else "-",
                 "tone": {"plausible": "good", "partial": "warning", "gap": "critical"}.get(
                     (sow or {}).get("verdict", ""), "neutral"
                 ),
@@ -93,10 +93,10 @@ def build_memo_pdf(memo: dict[str, Any]) -> bytes:
         _draw_logo(canvas, MARGIN, A4[1] - band + 1.8 * mm, 7.4 * mm)
         canvas.setFillColor(colors.white)
         canvas.setFont("DejaVu-Bold", 8.5)
-        canvas.drawString(MARGIN + 10 * mm, A4[1] - 6.6 * mm, "KYC 1 CLICK — Decision memo")
+        canvas.drawString(MARGIN + 10 * mm, A4[1] - 6.6 * mm, "KYC 1 CLICK: Decision memo")
         canvas.setFont("DejaVu", 7)
         canvas.setFillColor(MUTED)
-        canvas.drawString(MARGIN, 9 * mm, "CONFIDENTIAL — compliance use only")
+        canvas.drawString(MARGIN, 9 * mm, "CONFIDENTIAL: compliance use only")
         canvas.drawRightString(A4[0] - MARGIN, 9 * mm, f"Page {doc.page}")
         canvas.restoreState()
 
@@ -142,7 +142,7 @@ def build_memo_pdf(memo: dict[str, Any]) -> bytes:
         rightMargin=MARGIN,
         topMargin=MARGIN + 6 * mm,
         bottomMargin=MARGIN,
-        title=f"Decision memo — {memo.get('title', '')}",
+        title=f"Decision memo: {memo.get('title', '')}",
         author="KYC 1 CLICK",
     )
     doc.build(story, onFirstPage=chrome, onLaterPages=chrome)

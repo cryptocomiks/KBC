@@ -39,7 +39,7 @@ export default function ImportPanel({ status }: Props) {
         const r = await api.importNext();
         qc.invalidateQueries({ queryKey: ["dashboard"] });
         if (!r.step) break;
-        setCurrent(`${r.step.title} — ${r.step.state.replace("_", " ")}`);
+        setCurrent(`${r.step.title}: ${r.step.state.replace("_", " ")}`);
         if (r.step.state !== "resolved") setDone((n) => n + 1);
         if (r.remaining === 0) break;
       }
@@ -97,8 +97,8 @@ export default function ImportPanel({ status }: Props) {
             <label className="text-xs">
               <span className="label mb-1 block">Depth</span>
               <select className="input py-1.5 text-xs" value={depth} onChange={(e) => setDepth(Number(e.target.value))}>
-                <option value={1}>1 — direct links (fast)</option>
-                <option value={2}>2 — owners of owners</option>
+                <option value={1}>1: direct links (fast)</option>
+                <option value={2}>2: owners of owners</option>
               </select>
             </label>
             <label className="inline-flex items-center gap-1.5 pb-2 text-xs">
@@ -132,7 +132,7 @@ export default function ImportPanel({ status }: Props) {
                 <>
                   <Loader2 className="h-4 w-4 animate-spin text-brand-600" />
                   <span className="min-w-0 flex-1 truncate">
-                    Analysing — {done} processed, {remaining} left{current ? ` · ${current}` : ""}. Keep this page open.
+                    Analysing: {done} processed, {remaining} left{current ? ` · ${current}` : ""}. Keep this page open.
                   </span>
                   <button className="btn-outline py-1 text-xs" onClick={() => (runRef.current = false)}>
                     <Pause className="h-3.5 w-3.5" /> Pause

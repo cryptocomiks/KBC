@@ -1,4 +1,4 @@
-"""Linked websites — domains and sites run by the same operator as a company's website.
+"""Linked websites: domains and sites run by the same operator as a company's website.
 
 Public services, no key; runs in the website pass (after official websites
 are known), like the Wayback Machine connector. Companies only.
@@ -6,7 +6,7 @@ are known), like the Wayback Machine connector. Companies only.
 1. Certificate transparency (crt.sh): domains listed on the same TLS
    certificates as the company's domain ("sister domains").
 2. Shared analytics / tag-manager IDs (HackerTarget): other sites carrying the
-   same Google Analytics / GTM identifier — the OCCRP "shared analytics code"
+   same Google Analytics / GTM identifier: the OCCRP "shared analytics code"
    method to find sites operated by the same people.
 
 Results are leads (shared hosting providers or agencies can explain a link).
@@ -89,7 +89,7 @@ def _is_own(host: str, domain: str) -> bool:
 
 class LinkedWebsitesConnector(BaseConnector):
     name = "websites"
-    label = "Linked websites — shared TLS certificates (crt.sh) and analytics IDs (HackerTarget)"
+    label = "Linked websites: shared TLS certificates (crt.sh) and analytics IDs (HackerTarget)"
     kind = "archive"
     homepage = "https://crt.sh"
     document_types = {"company"}
@@ -140,7 +140,7 @@ class LinkedWebsitesConnector(BaseConnector):
             kind="website",
             url=CRTSH_PAGE.format(domain=domain),
             summary=f"{len(found)} domain(s) on the same certificates: {listed}{more}",
-            source="Certificate transparency (crt.sh) — shared certificates, verify the operator",
+            source="Certificate transparency (crt.sh): shared certificates, verify the operator",
             flags=["linked_websites"],
         )
 
@@ -184,7 +184,7 @@ class LinkedWebsitesConnector(BaseConnector):
                     kind="website",
                     url=f"{ANALYTICS}?q={tracking_id}",
                     summary=f"ID found on {domain}; also used by: {listed}{more}",
-                    source="Shared analytics IDs (HackerTarget) — possible common operator, verify",
+                    source="Shared analytics IDs (HackerTarget): possible common operator, verify",
                     flags=["linked_websites"],
                 )
             )

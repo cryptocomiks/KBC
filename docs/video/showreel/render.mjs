@@ -5,7 +5,7 @@ import { spawn } from "node:child_process";
 import { mkdirSync } from "node:fs";
 import { writeFile } from "node:fs/promises";
 
-// Expects reel.html next to this file, fonts/inter.woff2 + fonts/mono.woff2 (Inter, JetBrains Mono — Google Fonts) and Playwright.
+// Expects reel.html next to this file, fonts/inter.woff2 + fonts/mono.woff2 (Inter, JetBrains Mono: Google Fonts) and Playwright.
 const DIR = new URL("./", import.meta.url).pathname;
 const FFMPEG = "/tmp/claude-0/vid/lib/python3.11/site-packages/imageio_ffmpeg/binaries/ffmpeg-linux-x86_64-v7.0.2";
 const [mode, arg, subArg] = process.argv.slice(2);

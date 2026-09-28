@@ -121,7 +121,7 @@ export default function RiskMap({ caseId, data }: Props) {
           </span>
           {a.override && (
             <span className="text-amber-700 dark:text-amber-300">
-              · adjusted to <b>{VIGILANCE[a.level].label}</b> by {a.override.by} on {fmtDate(a.override.at)} — “{a.override.justification}”
+              · adjusted to <b>{VIGILANCE[a.level].label}</b> by {a.override.by} on {fmtDate(a.override.at)}: “{a.override.justification}”
             </span>
           )}
           {!editing && (
@@ -171,7 +171,7 @@ export default function RiskMap({ caseId, data }: Props) {
             <ul className="mt-1 space-y-0.5">
               {data.override_history.map((h, i) => (
                 <li key={i}>
-                  {h.at.slice(0, 16).replace("T", " ")} — {h.by}: {h.level ? VIGILANCE[h.level].label : "back to computed"} — {h.justification}
+                  {h.at.slice(0, 16).replace("T", " ")}: {h.by}: {h.level ? VIGILANCE[h.level].label : "back to computed"}: {h.justification}
                 </li>
               ))}
             </ul>

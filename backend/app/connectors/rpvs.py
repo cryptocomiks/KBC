@@ -1,4 +1,4 @@
-"""RPVS — Slovak Register of Public Sector Partners (beneficial owners).
+"""RPVS: Slovak Register of Public Sector Partners (beneficial owners).
 
 Every company that contracts with the Slovak state must register its
 beneficial owners (konečný užívateľ výhod), verified by a lawyer, with their
@@ -37,7 +37,7 @@ def _day(value: Any) -> str | None:
 
 class RpvsConnector(BaseConnector):
     name = "rpvs"
-    label = "RPVS — Slovak register of public sector partners (beneficial owners)"
+    label = "RPVS: Slovak register of public sector partners (beneficial owners)"
     kind = "registry"
     jurisdictions = {"SK"}
     homepage = "https://rpvs.gov.sk"
@@ -157,7 +157,7 @@ class RpvsConnector(BaseConnector):
                 source_id=rid,
                 target_id=self.record_id(str(pid)),
                 role="Beneficial owner (verified, RPVS)"
-                + (" — public official" if official else ""),
+                + (": public official" if official else ""),
                 start_date=parse_date(_day(row.get("PlatnostOd"))),
                 end_date=parse_date(_day(row.get("PlatnostDo"))),
                 sources=[self.provenance(self.record_id(str(pid)), url)],
@@ -171,7 +171,7 @@ class RpvsConnector(BaseConnector):
         pid = self.native_id(next(r for r in entity.record_ids if r.startswith(f"{self.name}:")))
         return [
             Document(
-                title="RPVS entry — verified beneficial owners (Slovakia)",
+                title="RPVS entry: verified beneficial owners (Slovakia)",
                 kind="register",
                 url=UI.format(pid=pid),
                 source=self.label,

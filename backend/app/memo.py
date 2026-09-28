@@ -1,9 +1,9 @@
 """Decision memo: the written justification of a KYC decision, drafted from the case.
 
-The memo gathers what a reviewer or a supervisor looks for — who the client is,
+The memo gathers what a reviewer or a supervisor looks for: who the client is,
 who owns it, what the screening found and how each hit was resolved, the risk
 assessment and the vigilance level (with any analyst adjustment), the documents
-received, the diligences performed — and proposes a conclusion. The analyst
+received, the diligences performed: and proposes a conclusion. The analyst
 edits it and signs it; placeholders in [brackets] mark what is still to write.
 
 Plain text with light markup: "# " title, "## " section, "- " bullet.
@@ -41,7 +41,7 @@ def build_memo(
     lines: list[str] = []
     add = lines.append
 
-    add(f"# Decision memo — {case['title']}")
+    add(f"# Decision memo: {case['title']}")
     add(
         f"Case {case['id']} · drafted {datetime.now(UTC):%Y-%m-%d} · prepared by "
         f"{kyc.get('author') or '[analyst]'}"
@@ -78,12 +78,12 @@ def build_memo(
             chain = " → ".join(o.path)
             add(
                 f"- {o.name}: {o.pct:.1f} % effective ({chain})"
-                + (f" — {', '.join(o.flags)}" if o.flags else "")
+                + (f": {', '.join(o.flags)}" if o.flags else "")
             )
     else:
         add(
             "- No beneficial owner above 25 % could be computed from the registers: "
-            "[explain — dispersed ownership, listed company, register gap; senior managing "
+            "[explain: dispersed ownership, listed company, register gap; senior managing "
             "official retained as beneficial owner by default]"
         )
     s = inv.stats
@@ -102,7 +102,7 @@ def build_memo(
         by_triage[h.triage or "verify"] = by_triage.get(h.triage or "verify", 0) + 1
     if hits:
         add(
-            f"- Sanctions / PEP / watchlist matches: {len(hits)} — "
+            f"- Sanctions / PEP / watchlist matches: {len(hits)}: "
             f"{by_triage.get('likely', 0)} likely, {by_triage.get('verify', 0)} to check, "
             f"{by_triage.get('namesake', 0)} probable namesakes, "
             f"{by_triage.get('dismissed', 0)} already ruled out."
@@ -114,7 +114,7 @@ def build_memo(
     if decisions:
         add("- Analyst decisions:")
         for d in decisions:
-            comment = f" — {d['comment']}" if d.get("comment") else ""
+            comment = f": {d['comment']}" if d.get("comment") else ""
             who = (
                 f" ({d['author']}, {_day(d.get('decided_at'))})"
                 if d.get("author")
@@ -201,7 +201,7 @@ def build_memo(
         )
     elif level == "enhanced":
         add(
-            "- Proposal: ACCEPT SUBJECT TO enhanced due diligence — the measures listed in "
+            "- Proposal: ACCEPT SUBJECT TO enhanced due diligence: the measures listed in "
             "section 4, senior management approval and yearly review."
         )
     elif level == "standard":
@@ -219,13 +219,13 @@ def build_memo(
 
     # 7. Sign-off
     add("## 7. Sign-off")
-    add(f"- Prepared by: {kyc.get('author') or '[name]'} — date: [date] — signature: [ ]")
+    add(f"- Prepared by: {kyc.get('author') or '[name]'}: date: [date]: signature: [ ]")
     if workflow.get("validated_by"):
         add(
             f"- Validated by: {workflow['validated_by']} on {_day(workflow.get('validated_at'))} (four-eyes)"
         )
     else:
-        add("- Validated by (four-eyes): [name] — date: [date] — signature: [ ]")
+        add("- Validated by (four-eyes): [name]: date: [date]: signature: [ ]")
     if level == "enhanced":
-        add("- Senior management approval: [name] — date: [date] — signature: [ ]")
+        add("- Senior management approval: [name]: date: [date]: signature: [ ]")
     return "\n".join(lines)

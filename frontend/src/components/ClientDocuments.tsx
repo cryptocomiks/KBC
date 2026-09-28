@@ -75,7 +75,7 @@ export default function ClientDocuments({ investigation: inv, onSelect }: Props)
           </button>
         </div>
         {doc[list].length === 0 ? (
-          <p className="text-xs text-slate-500">None read — add them manually if needed.</p>
+          <p className="text-xs text-slate-500">None read: add them manually if needed.</p>
         ) : (
           <ul className="space-y-1.5">
             {doc[list].map((p, i) => (
@@ -109,7 +109,7 @@ export default function ClientDocuments({ investigation: inv, onSelect }: Props)
       <summary className="flex cursor-pointer items-center gap-2 px-5 py-3">
         <FileSearch className="h-4 w-4 text-brand-600" />
         <span className="text-sm font-semibold">Compare with the client's documents</span>
-        <span className="text-[11px] text-slate-500">register extract (Kbis…), UBO declaration, PSC register — read in memory, never stored</span>
+        <span className="text-[11px] text-slate-500">register extract (Kbis…), UBO declaration, PSC register: read in memory, never stored</span>
       </summary>
       <div className="space-y-4 border-t border-black/[0.06] px-5 py-4 dark:border-white/[0.08]">
         <div className="flex flex-wrap items-center gap-2">
@@ -129,7 +129,7 @@ export default function ClientDocuments({ investigation: inv, onSelect }: Props)
           </button>
           {file && doc && (
             <span className="text-xs text-slate-500">
-              {file} · {doc.kind} · {doc.pages} page(s) — check and correct the rows below, then compare.
+              {file} · {doc.kind} · {doc.pages} page(s): check and correct the rows below, then compare.
             </span>
           )}
         </div>
@@ -190,8 +190,8 @@ export default function ClientDocuments({ investigation: inv, onSelect }: Props)
                       <div className="font-medium">{r.name}</div>
                       <div className="text-[11px] text-slate-500">{r.kind}</div>
                     </td>
-                    <td className="py-1.5 pr-2 text-xs">{r.declared ?? "—"}</td>
-                    <td className="py-1.5 pr-2 text-xs">{r.registry ?? "—"}</td>
+                    <td className="py-1.5 pr-2 text-xs">{r.declared ?? "-"}</td>
+                    <td className="py-1.5 pr-2 text-xs">{r.registry ?? "-"}</td>
                     <td className="py-1.5 pr-2">
                       <span className={`rounded px-2 py-0.5 text-[11px] font-semibold ${STATUS[r.status].cls}`}>{STATUS[r.status].label}</span>
                       {r.note && <div className="mt-0.5 text-[11px] text-slate-500">{r.note}</div>}

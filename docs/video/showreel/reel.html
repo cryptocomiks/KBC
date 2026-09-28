@@ -12,7 +12,7 @@
 <body>
 <canvas id="c" width="1920" height="1080"></canvas>
 <script>
-/* KYC 1 CLICK — 15 s motion piece. Everything is a pure function of time t (seconds),
+/* KYC 1 CLICK: 15 s motion piece. Everything is a pure function of time t (seconds),
    so every frame is deterministic; motion blur = average of sub-frames over a 180° shutter. */
 const W = 1920, H = 1080, CX = W / 2, CY = H / 2, FPS = 60;
 const C = { bg: "#07090b", em: "#2fb67f", em2: "#6ee7b7", cy: "#22d3ee", wh: "#eef2f4", dim: "#8793a0", red: "#f04438", amb: "#f79009", grn: "#17b26a" };
@@ -150,7 +150,7 @@ const WORDS = [
   { w: "WHO", t: 1.5, sub: "// ULTIMATE BENEFICIAL OWNER", st: "fill" },
   { w: "REALLY", t: 2.0, sub: "// BEHIND THREE LAYERS OF HOLDINGS", st: "stroke" },
   { w: "OWNS", t: 2.5, sub: "// 25 %+ EFFECTIVE CONTROL", st: "bar" },
-  { w: "THIS?", t: 3.0, sub: "// MERIDIAN HOLDING S.A. — LUXEMBOURG", st: "em" },
+  { w: "THIS?", t: 3.0, sub: "// MERIDIAN HOLDING S.A.: LUXEMBOURG", st: "em" },
 ];
 function sKinetic(c, t) {
   if (t < 1.5 || t >= 3.5) return;

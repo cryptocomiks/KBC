@@ -96,7 +96,7 @@ export default function Dashboard({ status, onOpenCase }: Props) {
         <div>
           <h1 className="headline text-[40px]">Cases</h1>
           <p className="mt-1 text-[15px] text-slate-500">
-            Your client portfolio, re-checked daily when monitoring is on. Storage: {status?.storage ?? "—"}
+            Your client portfolio, re-checked daily when monitoring is on. Storage: {status?.storage ?? "-"}
             {status?.message && <span className="ml-1 text-amber-600">· {status.message}</span>}
           </p>
         </div>
@@ -118,7 +118,7 @@ export default function Dashboard({ status, onOpenCase }: Props) {
           label="High or critical risk"
           tone={risky ? "critical" : "good"}
           value={risky}
-          sub={analysed.length ? `${Math.round((100 * risky) / analysed.length)}% of the portfolio` : "—"}
+          sub={analysed.length ? `${Math.round((100 * risky) / analysed.length)}% of the portfolio` : "-"}
           meter={{ value: risky, max: Math.max(1, analysed.length), tone: "critical" }}
         />
         <Tile label="Awaiting validation" tone={d.queues?.to_validate ? "serious" : "good"} value={d.queues?.to_validate ?? 0} sub="four-eyes step" onClick={() => setQueue("to_validate")} />
@@ -163,7 +163,7 @@ export default function Dashboard({ status, onOpenCase }: Props) {
           </div>
           <h2 className="headline text-[28px]">No client yet.</h2>
           <p className="mt-2 max-w-md text-[15px] text-slate-500">
-            Search a company or a person, then click <b className="font-semibold text-slate-700 dark:text-slate-200">Save as case</b> — or import your
+            Search a company or a person, then click <b className="font-semibold text-slate-700 dark:text-slate-200">Save as case</b>, or import your
             client list above: each client is found, screened and monitored.
           </p>
           <a href="#/" className="link-more mt-5 text-[15px]">
@@ -271,7 +271,7 @@ export default function Dashboard({ status, onOpenCase }: Props) {
                           <td className="px-3 py-2.5 text-xs">{c.countries.slice(0, 5).map((k) => flag(k)).join(" ")}</td>
                           <td className="px-3 py-2.5 text-xs whitespace-nowrap">
                             {left == null ? (
-                              <span className="text-slate-400">—</span>
+                              <span className="text-slate-400">-</span>
                             ) : (
                               <span className={left < 0 ? "font-semibold text-red-600" : left <= 30 ? "font-semibold text-amber-600" : "text-slate-500"}>
                                 {left < 0 ? `${-left}d late` : `in ${left}d`}
@@ -279,7 +279,7 @@ export default function Dashboard({ status, onOpenCase }: Props) {
                             )}
                           </td>
                           <td className="px-3 py-2.5">
-                            {c.unseen_changes ? <span className="rounded bg-red-600 px-1.5 text-[11px] font-semibold text-white">{c.unseen_changes} new</span> : <span className="text-xs text-slate-400">—</span>}
+                            {c.unseen_changes ? <span className="rounded bg-red-600 px-1.5 text-[11px] font-semibold text-white">{c.unseen_changes} new</span> : <span className="text-xs text-slate-400">-</span>}
                           </td>
                         </tr>
                       );

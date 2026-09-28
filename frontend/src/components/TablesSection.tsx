@@ -49,13 +49,13 @@ const link = (url: unknown) =>
       open <ExternalLink className="h-3 w-3" />
     </a>
   ) : (
-    "—"
+    "-"
   );
-const jur = (r: Row, key = "jurisdiction") => (r[key] ? `${flag(String(r[key]))} ${r[key]}` : "—");
+const jur = (r: Row, key = "jurisdiction") => (r[key] ? `${flag(String(r[key]))} ${r[key]}` : "-");
 const badge = (level: unknown) => {
   const l = ((level as RiskLevel) ?? "none") as RiskLevel;
   return l === "none" ? (
-    "—"
+    "-"
   ) : (
     <span className="rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase text-white" style={{ background: ENTITY_COLORS[l] }}>
       {ENTITY_LEVEL_LABEL[l]}
@@ -71,7 +71,7 @@ const riskTone = (high: boolean, medium: boolean) =>
 const scoreBadge = (r: Row) => <span className={`rounded px-1.5 py-0.5 font-semibold ${scoreClass(Number(r.score))}`}>{Number(r.score).toFixed(0)}%</span>;
 const urls = (r: Row) => {
   const list = (r.urls as string[] | undefined) ?? [];
-  return list.length ? <span className="flex gap-2">{list.map((u) => <span key={u}>{link(u)}</span>)}</span> : "—";
+  return list.length ? <span className="flex gap-2">{list.map((u) => <span key={u}>{link(u)}</span>)}</span> : "-";
 };
 
 export default function TablesSection({ investigation: inv, onSelect, activeTab, onTabChange, decisions, onDecide }: Props) {
@@ -96,7 +96,7 @@ export default function TablesSection({ investigation: inv, onSelect, activeTab,
                   value={d?.decision ?? "none"}
                   onChange={(e) => onDecide(hitKey(r), `${String(r.entity)} ≈ ${String(r.matched_name)} (${String(r.dataset)})`, e.target.value as DecisionValue | "none")}
                 >
-                  <option value="none">— undecided</option>
+                  <option value="none">undecided</option>
                   <option value="confirmed">Confirmed match</option>
                   <option value="false_positive">False positive</option>
                   <option value="to_review">To review</option>
@@ -141,7 +141,7 @@ export default function TablesSection({ investigation: inv, onSelect, activeTab,
       columns: [
         { key: "name", label: "Company" },
         { key: "jurisdiction", label: "Jurisdiction", render: (r) => `${flag(String(r.jurisdiction ?? ""))} ${countryName(String(r.jurisdiction ?? ""))}` },
-        { key: "registration_number", label: "Reg. no.", render: (r) => <span className="font-mono">{String(r.registration_number ?? "—")}</span> },
+        { key: "registration_number", label: "Reg. no.", render: (r) => <span className="font-mono">{String(r.registration_number ?? "-")}</span> },
         { key: "status", label: "Status" },
         { key: "incorporation_date", label: "Incorporated" },
         { key: "last_accounts_date", label: "Last accounts", render: (r) => fmtDate(r.last_accounts_date) },
@@ -230,7 +230,7 @@ export default function TablesSection({ investigation: inv, onSelect, activeTab,
         { key: "from", label: "From", render: (r) => <span className="break-all font-mono text-[11px]">{String(r.from)}</span> },
         { key: "to", label: "To", render: (r) => <span className="break-all font-mono text-[11px]">{String(r.to)}</span> },
         { key: "chain", label: "Chain" },
-        { key: "amount", label: "Amount", render: (r) => (r.amount != null ? Number(r.amount).toLocaleString("en", { maximumFractionDigits: 4 }) : "—") },
+        { key: "amount", label: "Amount", render: (r) => (r.amount != null ? Number(r.amount).toLocaleString("en", { maximumFractionDigits: 4 }) : "-") },
         { key: "currency", label: "Currency" },
         { key: "tx_count", label: "Tx" },
         { key: "since", label: "Since", render: (r) => fmtDate(r.since) },
@@ -288,7 +288,7 @@ export default function TablesSection({ investigation: inv, onSelect, activeTab,
           key: "basel_aml_score",
           label: "Basel AML (0–10)",
           render: (r) =>
-            r.basel_aml_score == null ? "—" : (
+            r.basel_aml_score == null ? "-" : (
               <span className={`rounded px-1.5 py-0.5 font-semibold ${riskTone(Number(r.basel_aml_score) >= 6, Number(r.basel_aml_score) >= 5)}`}>
                 {Number(r.basel_aml_score).toFixed(2)} · #{String(r.basel_aml_rank)}
               </span>
@@ -298,13 +298,13 @@ export default function TablesSection({ investigation: inv, onSelect, activeTab,
           key: "cpi_score",
           label: "CPI (0–100)",
           render: (r) =>
-            r.cpi_score == null ? "—" : (
+            r.cpi_score == null ? "-" : (
               <span className={`rounded px-1.5 py-0.5 font-semibold ${riskTone(Number(r.cpi_score) < 30, Number(r.cpi_score) < 50)}`}>
                 {Number(r.cpi_score).toFixed(0)} ({String(r.cpi_year)})
               </span>
             ),
         },
-        { key: "wgi_control_of_corruption", label: "WGI corruption control", render: (r) => (r.wgi_control_of_corruption == null ? "—" : Number(r.wgi_control_of_corruption).toFixed(2)) },
+        { key: "wgi_control_of_corruption", label: "WGI corruption control", render: (r) => (r.wgi_control_of_corruption == null ? "-" : Number(r.wgi_control_of_corruption).toFixed(2)) },
         { key: "lists", label: "Lists" },
       ],
     },
@@ -380,8 +380,8 @@ export default function TablesSection({ investigation: inv, onSelect, activeTab,
         <label className="mb-2 inline-flex cursor-pointer items-center gap-2 text-xs text-slate-600 dark:text-slate-300">
           <input type="checkbox" className="accent-brand-600" checked={hideNamesakes} onChange={(e) => setHideNamesakes(e.target.checked)} />
           {tab.key === "documents"
-            ? `Hide documents set aside automatically — name only cited, not a party (${hiddenDocs})`
-            : `Hide hits set aside automatically — probable namesakes and ruled-out hits, not scored (${hiddenHits})`}
+            ? `Hide documents set aside automatically: name only cited, not a party (${hiddenDocs})`
+            : `Hide hits set aside automatically: probable namesakes and ruled-out hits, not scored (${hiddenHits})`}
         </label>
       )}
       <DataTable

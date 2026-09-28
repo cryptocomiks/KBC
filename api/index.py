@@ -18,9 +18,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "backend"))
 
 
 def _startup_error_app(error: str, trace: str):
-    body = json.dumps(
-        {"detail": f"Backend failed to start — {error}", "trace": trace}
-    ).encode()
+    body = json.dumps({"detail": f"Backend failed to start: {error}", "trace": trace}).encode()
 
     async def fallback(scope, receive, send):
         if scope["type"] != "http":

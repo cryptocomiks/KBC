@@ -33,7 +33,7 @@ def call(base: str, path: str, body: dict | None = None) -> tuple[int, bytes, st
 
 
 def check(name: str, ok: bool, detail: str = "") -> None:
-    print(f"{'PASS' if ok else 'FAIL'}  {name}{'  — ' + detail if detail else ''}")
+    print(f"{'PASS' if ok else 'FAIL'}  {name}{' : ' + detail if detail else ''}")
     if not ok:
         sys.exit(1)
 

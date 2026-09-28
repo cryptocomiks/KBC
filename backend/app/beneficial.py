@@ -408,7 +408,7 @@ def _questions(a: OwnershipAnalysis, subject: Entity, ents: dict[str, Entity]) -
             continue  # a deeper investigation first, not a question to the client
         if c.dead_end and c.id != subject.id:
             q.append(
-                f"Who owns {c.name} ({c.jurisdiction or '?'})? Provide its register of shareholders and UBO declaration — {c.reason}."
+                f"Who owns {c.name} ({c.jurisdiction or '?'})? Provide its register of shareholders and UBO declaration: {c.reason}."
             )
         elif c.dead_end:
             q.append(

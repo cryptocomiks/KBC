@@ -2,7 +2,7 @@ import { type RefObject, useEffect, useRef, useState } from "react";
 
 const reduced = () => typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
-/** Animates a number from 0 (or its previous value) to `target` — ease-out, ~0.9 s. */
+/** Animates a number from 0 (or its previous value) to `target`: ease-out, ~0.9 s. */
 export function useCountUp(target: number, ms = 900): number {
   const [value, setValue] = useState(reduced() ? target : 0);
   const from = useRef(0);

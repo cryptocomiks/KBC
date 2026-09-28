@@ -1,4 +1,4 @@
-"""Due diligence PDF report (ReportLab — pure Python, runs on serverless hosts).
+"""Due diligence PDF report (ReportLab: pure Python, runs on serverless hosts).
 
 Structure: header & disclaimer, executive summary with the explained score,
 subject profile, ownership graph (PNG exported by the browser), detailed
@@ -126,7 +126,7 @@ def _styles() -> dict[str, ParagraphStyle]:
 
 def _esc(value: Any) -> str:
     if value is None or value == "":
-        return "—"
+        return "-"
     if isinstance(value, float):
         value = f"{value:g}"
     if isinstance(value, datetime):
@@ -299,7 +299,7 @@ def _ownership_analysis(inv: Investigation, st: dict) -> list[Any]:
     if a is None:
         return []
     out: list[Any] = [Paragraph("6a. Beneficial ownership analysis", st["h2"])]
-    fmt = lambda v: "—" if v is None else f"{v:g} %"  # noqa: E731
+    fmt = lambda v: "-" if v is None else f"{v:g} %"  # noqa: E731
     if not a.subject_is_company:
         out.append(Paragraph("Holdings of the subject (direct and indirect).", st["muted"]))
         out.append(
@@ -351,7 +351,7 @@ def _ownership_analysis(inv: Investigation, st: dict) -> list[Any]:
                         "eff": fmt(o.effective_pct),
                         "direct": fmt(o.direct_pct),
                         "declared": fmt(o.declared_pct) if o.declared else "no",
-                        "route": " → ".join(o.countries) or "—",
+                        "route": " → ".join(o.countries) or "-",
                         "layers": str(o.layers),
                     }
                     for o in a.owners
@@ -473,7 +473,7 @@ def build_pdf(
         canvas.setFont("DejaVu", 7.5)
         canvas.setFillColor(colors.HexColor("#aab4be"))
         canvas.drawRightString(
-            PAGE[0] - MARGIN, PAGE[1] - 6.6 * mm, f"{title} — {subject.name}"[:140]
+            PAGE[0] - MARGIN, PAGE[1] - 6.6 * mm, f"{title}: {subject.name}"[:140]
         )
         # Footer
         canvas.setFont("DejaVu", 7)
@@ -481,7 +481,7 @@ def build_pdf(
         canvas.drawString(
             MARGIN,
             8 * mm,
-            f"CONFIDENTIAL — compliance use only — findings require human verification · "
+            f"CONFIDENTIAL, compliance use only, findings require human verification · "
             f"generated {inv.generated_at:%Y-%m-%d %H:%M} UTC",
         )
         if inv.demo:
@@ -489,7 +489,7 @@ def build_pdf(
             canvas.setFillColor(colors.Color(0.8, 0.1, 0.1, alpha=0.06))
             canvas.translate(PAGE[0] / 2, PAGE[1] / 2)
             canvas.rotate(25)
-            canvas.drawCentredString(0, 0, "DEMO — FICTITIOUS DATA")
+            canvas.drawCentredString(0, 0, "DEMO: FICTITIOUS DATA")
         canvas.restoreState()
 
     def on_cover(canvas, doc):
@@ -508,7 +508,7 @@ def build_pdf(
         canvas.setFillColor(colors.HexColor("#aab4be"))
         canvas.drawString(MARGIN + 17 * mm, PAGE[1] - 23.5 * mm, "Due diligence & AML/KYC")
         canvas.drawRightString(
-            PAGE[0] - MARGIN, PAGE[1] - 19 * mm, "CONFIDENTIAL — compliance use only"
+            PAGE[0] - MARGIN, PAGE[1] - 19 * mm, "CONFIDENTIAL: compliance use only"
         )
         canvas.setFillColor(colors.HexColor("#7fdcb0"))
         canvas.setFont("DejaVu-Bold", 10)
@@ -540,13 +540,13 @@ def build_pdf(
         if inv.demo:
             canvas.setFillColor(colors.HexColor("#fec84b"))
             canvas.setFont("DejaVu-Bold", 8)
-            canvas.drawRightString(PAGE[0] - MARGIN, PAGE[1] - 77 * mm, "DEMO — FICTITIOUS DATA")
+            canvas.drawRightString(PAGE[0] - MARGIN, PAGE[1] - 77 * mm, "DEMO: FICTITIOUS DATA")
         canvas.setFont("DejaVu", 7)
         canvas.setFillColor(MUTED)
         canvas.drawString(
             MARGIN,
             8 * mm,
-            "Analytical aid only — automated matches must be verified by a qualified analyst "
+            "Analytical aid only: automated matches must be verified by a qualified analyst "
             "against primary sources before any decision.",
         )
         canvas.restoreState()
@@ -558,7 +558,7 @@ def build_pdf(
         rightMargin=MARGIN,
         topMargin=MARGIN + 6 * mm,
         bottomMargin=MARGIN,
-        title=f"{title} — {subject.name}",
+        title=f"{title}: {subject.name}",
         author=analyst or "KYC 1 CLICK",
     )
     story: list[Any] = []
@@ -642,7 +642,7 @@ def build_pdf(
     disclaimer = inv.disclaimer
     if inv.demo:
         disclaimer = (
-            "DEMO MODE — all persons, companies and list entries in this report are fictitious. "
+            "DEMO MODE: all persons, companies and list entries in this report are fictitious. "
             + disclaimer
         )
     story.append(Paragraph(_esc(disclaimer), st["warn"]))
@@ -668,7 +668,7 @@ def build_pdf(
     if inv.truncated:
         story.append(
             Paragraph(
-                "<font color='#b91c1c'>Network truncated at the node limit — results are partial.</font>",
+                "<font color='#b91c1c'>Network truncated at the node limit: results are partial.</font>",
                 st["small"],
             )
         )
@@ -758,7 +758,7 @@ def build_pdf(
         (
             "Sources",
             "; ".join(
-                f"{p.source_label} ({p.record_id}) — retrieved {p.retrieved_at:%Y-%m-%d %H:%M}"
+                f"{p.source_label} ({p.record_id}): retrieved {p.retrieved_at:%Y-%m-%d %H:%M}"
                 for p in subject.sources
             ),
         )
@@ -827,7 +827,7 @@ def build_pdf(
         story.append(img)
         story.append(
             Paragraph(
-                "Legend — shapes: ● person, ▬ company, ◆ offshore entity, ▸ registered address. "
+                "Legend: shapes: ● person, ▬ company, ◆ offshore entity, ▸ registered address. "
                 "Edges: solid = shareholding (%), dashed violet = declared beneficial owner, dotted = officer. "
                 "Colours: grey = no flag, yellow = minor, amber = medium, orange = high, red = critical. "
                 "Subject outlined in blue.",
@@ -1164,7 +1164,7 @@ def build_pdf(
                     },
                     {
                         "label": "UBO form",
-                        "value": " + ".join(o["cdb"]["forms"]) or "—",
+                        "value": " + ".join(o["cdb"]["forms"]) or "-",
                         "sub": f"{o['cdb']['missing']} field(s) to complete"
                         if o["cdb"]["missing"]
                         else "ready to sign",
@@ -1174,7 +1174,7 @@ def build_pdf(
                         "label": "Source of wealth",
                         "value": f"{round((sow_o['coverage'] or 0) * 100)} %"
                         if sow_o and sow_o.get("coverage") is not None
-                        else "—",
+                        else "-",
                         "sub": sow_o["verdict"] if sow_o else "not documented",
                         "tone": {"plausible": "good", "partial": "warning", "gap": "critical"}.get(
                             (sow_o or {}).get("verdict", ""), "neutral"
@@ -1219,7 +1219,7 @@ def build_pdf(
         story.append(Paragraph("KYC / AML-CFT questionnaire and vigilance level", st["h2"]))
         story.append(
             Paragraph(
-                f"<b>Vigilance level: {vigilance}</b> — {assessment['points']} risk points"
+                f"<b>Vigilance level: {vigilance}</b>: {assessment['points']} risk points"
                 + (
                     f" · triggers: {_esc(', '.join(assessment['triggers']))}"
                     if assessment["triggers"]
@@ -1334,7 +1334,7 @@ def build_pdf(
             Paragraph(
                 f"<b>Status: {_esc(workflow['label'])}</b>"
                 + (
-                    f" — validated by {_esc(workflow['validated_by'])} on "
+                    f": validated by {_esc(workflow['validated_by'])} on "
                     f"{str(workflow['validated_at'])[:10]}"
                     if workflow.get("validated_by")
                     else ""
@@ -1371,7 +1371,7 @@ def build_pdf(
         story.append(CondPageBreak(50 * mm))
         story.append(Paragraph("Beneficial ownership forms (CDB 20)", st["h2"]))
         for f in cdb_data["forms"]:
-            story.append(Paragraph(f"<b>{_esc(f['title'])}</b> — {_esc(f['entity'])}", st["body"]))
+            story.append(Paragraph(f"<b>{_esc(f['title'])}</b>: {_esc(f['entity'])}", st["body"]))
             story.append(Paragraph(_esc(f["why"]), st["muted"]))
             owners = [p for p in f["persons"] if p.get("pct") is not None]
             if owners:
@@ -1433,9 +1433,7 @@ def build_pdf(
         cur = sow_data["currency"]
         money = lambda v: f"{cur} {v:,.0f}".replace(",", "'")  # noqa: E731
         story.append(CondPageBreak(60 * mm))
-        story.append(
-            Paragraph(f"Source of wealth — {_esc(sow_data.get('person') or '')}", st["h2"])
-        )
+        story.append(Paragraph(f"Source of wealth: {_esc(sow_data.get('person') or '')}", st["h2"]))
         story.append(
             charts.kpi_row(
                 [
@@ -1500,7 +1498,7 @@ def build_pdf(
                 [
                     {
                         "src": x["label"]
-                        + (f" — {x['description']}" if x.get("description") else ""),
+                        + (f": {x['description']}" if x.get("description") else ""),
                         "amount": money(x["explained"]),
                         "how": x["how"],
                         "public": "; ".join(x["public"][:2]) or "no public record",

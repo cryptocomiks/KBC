@@ -31,7 +31,7 @@ def justification(signal: str, evidence: str, lang: str = "en") -> str | None:
     sig = _data().get("signals", {}).get(signal)
     if not sig or lang not in sig:
         return None
-    ev = evidence.strip().rstrip(".") or "—"
+    ev = evidence.strip().rstrip(".") or "-"
     if len(ev) > 240:
         ev = ev[:239].rsplit(" ", 1)[0] + "…"
     text = sig[lang].replace("{evidence}", ev)
@@ -60,7 +60,7 @@ def for_investigation(risk: Any, ownership: Any = None) -> list[dict[str, Any]]:
         out.append(
             {
                 "key": "ubo_smo_fallback",
-                "label": "No beneficial owner by ownership — senior managing official",
+                "label": "No beneficial owner by ownership: senior managing official",
                 "points": 0,
                 "refs": refs_for("ubo_smo_fallback"),
                 "en": justification("ubo_smo_fallback", names, "en"),

@@ -6,7 +6,7 @@ import { BlockSkeleton } from "./Skeleton";
 import { CountUp, Meter } from "./viz";
 
 /** How well the match engine separates the same person / company from namesakes, on a
- *  labelled test set — the evidence a compliance auditor asks for. */
+ *  labelled test set: the evidence a compliance auditor asks for. */
 export default function ValidationPage() {
   const q = useQuery({ queryKey: ["validation"], queryFn: api.validation, staleTime: Infinity });
   const [showAll, setShowAll] = useState(false);
@@ -20,7 +20,7 @@ export default function ValidationPage() {
         <div className="eyebrow">Matching validation</div>
         <h1 className="headline mt-2 text-[clamp(2rem,4.4vw,3.2rem)]">Does it catch the right people?</h1>
         <p className="subhead mx-auto mt-3 max-w-2xl text-[17px] text-slate-500">
-          {o.pairs} labelled pairs — transliterations, legal forms, typos, namesakes, generic company names — run through the
+          {o.pairs} labelled pairs, transliterations, legal forms, typos, namesakes, generic company names, run through the
           production engine and its alert triage.
         </p>
       </div>
@@ -73,7 +73,7 @@ export default function ValidationPage() {
           <ul className="mt-3 space-y-2">
             {r.errors.map((e, i) => (
               <li key={i} className="text-[13px]">
-                <b>{e.expected === "match" ? "Missed" : "False alert"}</b> — {e.query} ↔ {e.candidate}: {e.score} ({e.triage}) —{" "}
+                <b>{e.expected === "match" ? "Missed" : "False alert"}</b>: {e.query} ↔ {e.candidate}: {e.score} ({e.triage}):{" "}
                 <span className="text-slate-500">{e.explanation.join("; ")}</span>
               </li>
             ))}

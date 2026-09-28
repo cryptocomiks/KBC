@@ -108,7 +108,7 @@ export default function TransactionAnalysis({ profile, subjectName }: { profile?
                 </button>
               </p>
               <p className="mt-1 text-[12px] text-slate-500">
-                .csv, .xlsx — 5 MB max ·{" "}
+                .csv, .xlsx: 5 MB max ·{" "}
                 <button onClick={sample} className="text-brand-600 hover:underline">
                   try with a sample statement
                 </button>
@@ -144,7 +144,7 @@ function Results({ r, subjectName }: { r: StatementAnalysis; subjectName?: strin
   const worst = r.alerts[0]?.severity;
   const copy = async () => {
     const text = [
-      `Statement analysis${subjectName ? ` — ${subjectName}` : ""} (${s.period_from} to ${s.period_to}, ${s.transactions} transactions, ${ccy ?? ""})`,
+      `Statement analysis${subjectName ? `: ${subjectName}` : ""} (${s.period_from} to ${s.period_to}, ${s.transactions} transactions, ${ccy ?? ""})`,
       `Inflows ${money(s.inflow, ccy)} · outflows ${money(s.outflow, ccy)} · annualised inflows ${money(s.annualised_inflow, ccy)}`,
       ...r.alerts.map((a) => `- [${a.severity.toUpperCase()}] ${a.title}. ${a.detail}`),
     ].join("\n");
@@ -267,7 +267,7 @@ function Results({ r, subjectName }: { r: StatementAnalysis; subjectName?: strin
                 <tr key={t.idx} className="border-b border-slate-200/50 dark:border-white/[0.04]">
                   <td className="px-5 py-1.5 whitespace-nowrap tabular-nums">{t.date}</td>
                   <td className="px-2 py-1.5">
-                    {t.counterparty ?? <span className="text-slate-400">—</span>}
+                    {t.counterparty ?? <span className="text-slate-400">-</span>}
                     {t.country && <span className="ml-1 text-slate-400">{t.country}</span>}
                   </td>
                   <td className="max-w-[260px] truncate px-2 py-1.5 text-slate-500" title={t.description ?? ""}>

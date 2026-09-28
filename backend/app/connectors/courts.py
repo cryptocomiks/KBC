@@ -1,4 +1,4 @@
-"""Court decisions — Swiss (entscheidsuche.ch) and US (CourtListener) case law.
+"""Court decisions: Swiss (entscheidsuche.ch) and US (CourtListener) case law.
 
 Both searches are an exact-phrase match on the name, so results are *leads*:
 the parties must be verified (homonyms; Swiss decisions anonymise private
@@ -49,7 +49,7 @@ def _searchable(entity: Entity) -> bool:
 
 class SwissCourtsConnector(BaseConnector):
     name = "entscheidsuche"
-    label = "Swiss court decisions — entscheidsuche.ch (federal and cantonal courts)"
+    label = "Swiss court decisions: entscheidsuche.ch (federal and cantonal courts)"
     kind = "documents"
     homepage = "https://entscheidsuche.ch"
     document_types = {"company", "person"}
@@ -94,7 +94,7 @@ class SwissCourtsConnector(BaseConnector):
                     date=_day(src.get("date")),
                     url=attachment.get("content_url") if isinstance(attachment, dict) else None,
                     summary=_localized(src.get("abstract")) or (", ".join(refs) or None),
-                    source="Swiss court decisions (entscheidsuche.ch) — name match, verify the parties",
+                    source="Swiss court decisions (entscheidsuche.ch): name match, verify the parties",
                     flags=["court"],
                 )
             )
@@ -103,7 +103,7 @@ class SwissCourtsConnector(BaseConnector):
 
 class CourtListenerConnector(BaseConnector):
     name = "courtlistener"
-    label = "US court opinions — CourtListener (federal and state courts)"
+    label = "US court opinions: CourtListener (federal and state courts)"
     kind = "documents"
     homepage = "https://www.courtlistener.com"
     document_types = {"company", "person"}
@@ -143,7 +143,7 @@ class CourtListenerConnector(BaseConnector):
                 date=_day(r.get("dateFiled")),
                 url=url,
                 summary=summary or None,
-                source="US court opinions (CourtListener) — named as a party, verify identity",
+                source="US court opinions (CourtListener): named as a party, verify identity",
                 flags=["court"],
             )
             if not named_in(entity, case):

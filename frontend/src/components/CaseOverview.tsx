@@ -83,17 +83,17 @@ export default function CaseOverview({ o, onTab }: { o: Overview; onTab: (t: Cas
           </div>
           <button className="block w-full text-left" onClick={() => onTab("cdb")}>
             <div className="flex items-baseline justify-between text-[12px]">
-              <span className="font-medium">UBO forms · {o.cdb.forms.join(" + ") || "—"}</span>
+              <span className="font-medium">UBO forms · {o.cdb.forms.join(" + ") || "-"}</span>
               <span className="font-semibold">{o.cdb.persons} person(s)</span>
             </div>
             <p className={`mt-1 text-[11px] ${o.cdb.missing ? "text-amber-700 dark:text-amber-300" : "text-slate-500"}`}>
-              {o.cdb.missing ? `${o.cdb.missing} field(s) to complete` : "complete — ready to sign"}
+              {o.cdb.missing ? `${o.cdb.missing} field(s) to complete` : "complete: ready to sign"}
             </p>
           </button>
           <button className="block w-full text-left" onClick={() => onTab("sow")}>
             <div className="flex items-baseline justify-between text-[12px]">
               <span className="font-medium">Source of wealth</span>
-              <span className="font-semibold">{o.sow?.coverage != null ? `${Math.round(o.sow.coverage * 100)}% explained` : "—"}</span>
+              <span className="font-semibold">{o.sow?.coverage != null ? `${Math.round(o.sow.coverage * 100)}% explained` : "-"}</span>
             </div>
             {o.sow ? (
               <>

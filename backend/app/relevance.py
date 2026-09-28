@@ -2,7 +2,7 @@
 
 Full-text sources (press, court opinions, gazettes) return anything that mentions the
 name somewhere. A document is kept as evidence only when the entity is *named where it
-matters* — in the headline of an article, among the parties of a case. Otherwise it is
+matters*: in the headline of an article, among the parties of a case. Otherwise it is
 set aside: still listed, folded, with the reason, but never counted in the score.
 """
 
@@ -39,7 +39,7 @@ def set_aside(doc: Document, reason: str) -> Document:
     if SET_ASIDE not in doc.flags:
         doc.flags = [*doc.flags, SET_ASIDE]
         doc.summary = f"Set aside automatically: {reason}" + (
-            f" — {doc.summary}" if doc.summary else ""
+            f": {doc.summary}" if doc.summary else ""
         )
     return doc
 

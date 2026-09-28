@@ -1,4 +1,4 @@
-"""French public company directory — API "Recherche d'entreprises" (data.gouv.fr).
+"""French public company directory: API "Recherche d'entreprises" (data.gouv.fr).
 
 Free, no API key: https://recherche-entreprises.api.gouv.fr/docs/
 Provides legal units (SIREN), registered office, status, officers
@@ -55,7 +55,7 @@ def _addr_key(address: str) -> str:
 
 class AnnuaireEntreprisesConnector(BaseConnector):
     name = "annuaire_fr"
-    label = "Annuaire des Entreprises — data.gouv.fr (FR)"
+    label = "Annuaire des Entreprises: data.gouv.fr (FR)"
     kind = "registry"
     jurisdictions = {"FR"}
     homepage = "https://annuaire-entreprises.data.gouv.fr"

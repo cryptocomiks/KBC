@@ -1,8 +1,8 @@
-"""GLEIF — Global Legal Entity Identifier (LEI) index.
+"""GLEIF: Global Legal Entity Identifier (LEI) index.
 
 Open API, no key: https://api.gleif.org/api/v1 (CC0 data). Every entity that
 trades financial instruments has an LEI, with its registered address, local
-registration number and — "Level 2" data — its direct and ultimate
+registration number and, "Level 2" data, its direct and ultimate
 accounting parents and its children. A worldwide, keyless source of
 corporate ownership structures (percentages are not published: consolidation
 links only).
@@ -38,7 +38,7 @@ def _address(a: dict[str, Any] | None) -> str | None:
 
 class GleifConnector(BaseConnector):
     name = "gleif"
-    label = "GLEIF — Legal Entity Identifiers & parent companies"
+    label = "GLEIF: Legal Entity Identifiers & parent companies"
     kind = "registry"
     homepage = "https://www.gleif.org"
 
@@ -114,11 +114,11 @@ class GleifConnector(BaseConnector):
         for kind, role in (
             (
                 "direct-parent",
-                "Direct parent — accounting consolidation (GLEIF level 2, % not published)",
+                "Direct parent: accounting consolidation (GLEIF level 2, % not published)",
             ),
             (
                 "ultimate-parent",
-                "Ultimate parent (group head) — accounting consolidation (GLEIF level 2)",
+                "Ultimate parent (group head): accounting consolidation (GLEIF level 2)",
             ),
         ):
             data = self._get(f"/lei-records/{lei}/{kind}") or {}
@@ -154,7 +154,7 @@ class GleifConnector(BaseConnector):
                 type=RelationType.SHAREHOLDER,
                 source_id=self.record_id(lei),
                 target_id=other.id,
-                role="Direct parent — accounting consolidation (GLEIF level 2, % not published)",
+                role="Direct parent: accounting consolidation (GLEIF level 2, % not published)",
                 sources=[self.provenance(self.record_id(lei), UI.format(lei=lei))],
             )
             out.append(LinkedEntity(relationship=rel, entity=other))
@@ -193,7 +193,7 @@ class GleifConnector(BaseConnector):
                     summary=", ".join(isins[:12])
                     + (f" … (+{total - 12})" if total > 12 else "")
                     + f" · ISIN prefixes: {', '.join(markets)}",
-                    source="GLEIF — ISIN to LEI mapping (ANNA)",
+                    source="GLEIF: ISIN to LEI mapping (ANNA)",
                     flags=["securities_issuer"],
                 )
             )

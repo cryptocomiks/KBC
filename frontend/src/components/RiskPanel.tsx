@@ -31,7 +31,7 @@ export function RiskGauge({ score: target, level }: { score: number; level: keyo
       <div>
         <div className="label">Risk score</div>
         <span className={`mt-1 inline-block rounded px-2 py-0.5 text-xs font-bold uppercase ${RISK_BADGE[level]}`}>{level}</span>
-        {level === "incomplete" && <div className="mt-1 max-w-[12rem] text-[11px] text-slate-500">Subject not screened in time — rerun</div>}
+        {level === "incomplete" && <div className="mt-1 max-w-[12rem] text-[11px] text-slate-500">Subject not screened in time: rerun</div>}
       </div>
     </div>
   );
@@ -47,7 +47,7 @@ export default function RiskPanel({ investigation: inv, onSelect }: { investigat
     <div className="card p-4">
       <div className="mb-3 flex items-center gap-2">
         <Scale className="h-4 w-4" />
-        <h3 className="font-semibold">Why this score? — explained risk factors</h3>
+        <h3 className="font-semibold">Why this score?: explained risk factors</h3>
         <span className="ml-auto text-xs text-slate-500">
           Σ points = <strong>{inv.risk.score}</strong> / 100
         </span>

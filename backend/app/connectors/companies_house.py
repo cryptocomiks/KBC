@@ -1,4 +1,4 @@
-"""UK Companies House — companies, officers and persons with significant control (PSC).
+"""UK Companies House: companies, officers and persons with significant control (PSC).
 
 API: https://developer.company-information.service.gov.uk (free key:
 COMPANIES_HOUSE_API_KEY, sent as HTTP basic-auth user). Rate limit 600

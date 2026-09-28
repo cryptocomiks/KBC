@@ -2,15 +2,15 @@
 
 Two connectors:
 
-* ``IcijReconcileConnector`` — the public reconciliation API of
+* ``IcijReconcileConnector``: the public reconciliation API of
   offshoreleaks.icij.org (no key, works on serverless hosts). One batched
   request per investigation, so each hit is attributed to its leak.
-* ``IcijLocalConnector`` — a local SQLite built from the bulk CSV download
+* ``IcijLocalConnector``: a local SQLite built from the bulk CSV download
   by ``scripts/import_icij.py`` (full dataset, offline, faster; enabled when
   the file exists).
 
 Data: ICIJ Offshore Leaks Database, licensed under the Open Database License
-(ODbL) — attribution: "International Consortium of Investigative Journalists".
+(ODbL): attribution: "International Consortium of Investigative Journalists".
 Appearing in the database does not imply any wrongdoing.
 """
 
@@ -125,7 +125,7 @@ class IcijLocalConnector(BaseConnector):
     """Offline full-text search over the bulk ICIJ dataset (see scripts/import_icij.py)."""
 
     name = "icij_local"
-    label = "ICIJ Offshore Leaks Database — local bulk import"
+    label = "ICIJ Offshore Leaks Database: local bulk import"
     kind = "leaks"
     homepage = "https://offshoreleaks.icij.org/pages/database"
 

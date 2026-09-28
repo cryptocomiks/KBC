@@ -1,13 +1,13 @@
-"""SEC EDGAR — US Securities and Exchange Commission filings.
+"""SEC EDGAR: US Securities and Exchange Commission filings.
 
 Public data, no key (the SEC only asks for a User-Agent naming a contact).
 For every US-registered filer (listed companies, funds, many foreign issuers):
 
-* company profile — legal name, former names, state of incorporation,
+* company profile: legal name, former names, state of incorporation,
   industry (SIC), business address, exchanges and tickers;
-* financials — revenue, net income, total assets and equity from the XBRL
+* financials: revenue, net income, total assets and equity from the XBRL
   data of the annual reports (10-K / 20-F);
-* significant shareholders — Schedule 13D / 13G: anyone holding more than 5 %
+* significant shareholders: Schedule 13D / 13G: anyone holding more than 5 %
   of a listed class must file one. Since December 2024 these filings are
   structured XML with the exact percentage, the holder type and citizenship;
 * recent filings as linked documents (annual / quarterly reports, 8-K,
@@ -71,7 +71,7 @@ def _money(v: float | None) -> str | None:
 
 class SecEdgarConnector(BaseConnector):
     name = "sec_edgar"
-    label = "SEC EDGAR — US filings, financials and 5 % shareholders (13D/13G)"
+    label = "SEC EDGAR: US filings, financials and 5 % shareholders (13D/13G)"
     kind = "registry"
     jurisdictions = {"US"}
     crossref_max_depth = 1
@@ -302,7 +302,7 @@ class SecEdgarConnector(BaseConnector):
                         source_id=oid,
                         target_id=me,
                         share_pct=h["pct"],
-                        role=f"Beneficial owner — {h['form']} filed {h['filed']}"
+                        role=f"Beneficial owner: {h['form']} filed {h['filed']}"
                         + (" (below 5 %: exit filing)" if ended else ""),
                         start_date=h["event"] if not ended else None,
                         end_date=h["event"] if ended else None,
@@ -339,7 +339,7 @@ class SecEdgarConnector(BaseConnector):
             docs.append(
                 Document(
                     title=f"SEC {form}"
-                    + (f" — period {f['reportDate']}" if f.get("reportDate") else ""),
+                    + (f": period {f['reportDate']}" if f.get("reportDate") else ""),
                     kind=kind,
                     date=parse_date(f["filingDate"]),
                     url=self._url(cik, f),

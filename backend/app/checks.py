@@ -197,7 +197,7 @@ def check_iban(raw: str, client_country: str | None = None) -> dict[str, Any]:
                         "Bank",
                         "ok",
                         f"{bank.get('bankOrInstitutionName')}, {bank.get('townName')}"
-                        + (f" — BIC {bank['bic']}" if bank.get("bic") else ""),
+                        + (f": BIC {bank['bic']}" if bank.get("bic") else ""),
                         "SIX bank master",
                     )
                 )
@@ -268,7 +268,7 @@ def check_domain(domain: str, *, mailbox: bool, company: str | None = None) -> l
                 "Mailbox",
                 "warn" if company else "info",
                 f"{domain} is a free consumer mailbox"
-                + (": unusual for a company — ask for a corporate address" if company else ""),
+                + (": unusual for a company: ask for a corporate address" if company else ""),
             )
         )
     try:
@@ -323,7 +323,7 @@ def check_domain(domain: str, *, mailbox: bool, company: str | None = None) -> l
                         if dmarc and re.search(r"p=(\w+)", dmarc)
                         else "missing"
                     )
-                    + ("" if spf and dmarc else " — e-mails from this domain are easy to spoof"),
+                    + ("" if spf and dmarc else ": e-mails from this domain are easy to spoof"),
                     "DNS",
                 )
             )
@@ -335,7 +335,7 @@ def check_domain(domain: str, *, mailbox: bool, company: str | None = None) -> l
                     "Domain age",
                     "warn" if young else "ok",
                     f"registered {created.isoformat()}"
-                    + (" — less than a year old" if young else "")
+                    + (": less than a year old" if young else "")
                     + (f" · {registrar}" if registrar else ""),
                     "RDAP",
                 )
@@ -438,7 +438,7 @@ def check_wallet(raw: str) -> dict[str, Any]:
     else:
         checks += (
             [
-                _check("Sanctions", "alert", f"{h.dataset} — {h.matched_name}", h.dataset)
+                _check("Sanctions", "alert", f"{h.dataset}: {h.matched_name}", h.dataset)
                 for h in hits
             ]
             if hits

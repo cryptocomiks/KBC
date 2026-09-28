@@ -58,12 +58,12 @@ def build_cdb_pdf(data: dict[str, Any], title: str) -> bytes:
         canvas.drawString(
             MARGIN + 10 * mm,
             A4[1] - 6.6 * mm,
-            "KYC 1 CLICK — CDB 20 beneficial ownership forms (draft)",
+            "KYC 1 CLICK: CDB 20 beneficial ownership forms (draft)",
         )
         canvas.setFont("DejaVu", 7)
         canvas.setFillColor(MUTED)
         canvas.drawString(
-            MARGIN, 9 * mm, "DRAFT — to be verified and signed on the bank's official form"
+            MARGIN, 9 * mm, "DRAFT: to be verified and signed on the bank's official form"
         )
         canvas.drawRightString(A4[0] - MARGIN, 9 * mm, f"Page {doc.page}")
         canvas.restoreState()
@@ -98,7 +98,7 @@ def build_cdb_pdf(data: dict[str, Any], title: str) -> bytes:
             story.append(_grid([(x["label"], x["value"]) for x in form["structure"]], st, width))
         story.append(Paragraph("Persons", st["h2"]))
         for n, p in enumerate(form["persons"], 1):
-            head = f"{n}. {_esc(p['role_label'])} — {_esc(p['basis'])}"
+            head = f"{n}. {_esc(p['role_label'])}: {_esc(p['basis'])}"
             block: list[Any] = [Paragraph(head, st["cell"])]
             block.append(_grid([(FIELD_LABEL[k], p.get(k, "")) for k in PERSON_FIELDS], st, width))
             extra = []
@@ -141,7 +141,7 @@ def build_cdb_pdf(data: dict[str, Any], title: str) -> bytes:
         rightMargin=MARGIN,
         topMargin=MARGIN + 6 * mm,
         bottomMargin=MARGIN,
-        title=f"CDB 20 forms — {title}",
+        title=f"CDB 20 forms: {title}",
         author="KYC 1 CLICK",
     )
     doc.build(story, onFirstPage=chrome, onLaterPages=chrome)
@@ -158,7 +158,7 @@ def _summary(data: dict[str, Any], st: dict[str, ParagraphStyle], width: float) 
     done = need - data["missing_total"]
     party = data["contracting_party"]
     out: list[Any] = [
-        Paragraph("Beneficial ownership — summary", st["title"]),
+        Paragraph("Beneficial ownership: summary", st["title"]),
         Paragraph(
             f"{_esc(party.get('name'))} · {_esc(party.get('legal_form'))} · {_esc(party.get('country'))}",
             st["small"],
@@ -211,7 +211,7 @@ def _summary(data: dict[str, Any], st: dict[str, ParagraphStyle], width: float) 
                 width,
                 100,
                 marker=25,
-                marker_label="25 % — controlling person / beneficial owner threshold",
+                marker_label="25 %: controlling person / beneficial owner threshold",
             ),
             Spacer(1, 10),
         ]
@@ -219,7 +219,7 @@ def _summary(data: dict[str, Any], st: dict[str, ParagraphStyle], width: float) 
     for f in data["forms"]:
         filled = required[f["code"]] * len(f["persons"]) + len(f["structure"]) - f["missing_count"]
         total = required[f["code"]] * len(f["persons"]) + len(f["structure"])
-        out.append(Paragraph(f"<b>{_esc(f['title'])}</b> — {_esc(f['entity'])}", st["cell"]))
+        out.append(Paragraph(f"<b>{_esc(f['title'])}</b>: {_esc(f['entity'])}", st["cell"]))
         out.append(Paragraph(_esc(f["why"]), st["small"]))
         out.append(Spacer(1, 3))
         out.append(

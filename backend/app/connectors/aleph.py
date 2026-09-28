@@ -1,4 +1,4 @@
-"""OCCRP Aleph — investigative data: leaks, registries, court records, gazettes.
+"""OCCRP Aleph: investigative data: leaks, registries, court records, gazettes.
 
 API: https://aleph.occrp.org/api/2 (key: ALEPH_API_KEY, free account).
 Used as a screening source: each network entity is searched by name and the

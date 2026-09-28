@@ -1,15 +1,15 @@
 """More free sources, no key required (The Guardian: free developer key).
 
-* UID register (Swiss Federal Statistical Office) — every Swiss legal unit, including
+* UID register (Swiss Federal Statistical Office): every Swiss legal unit, including
   associations, foundations and sole traders outside the commercial register, with
   VAT status. Public SOAP web service, 20 requests / minute: subject only.
-* German Bundestag Lobbyregister — interest representatives (open JSON search).
-* ESMA interim MiCA register — authorised crypto-asset service providers (CASPs) and the
+* German Bundestag Lobbyregister: interest representatives (open JSON search).
+* ESMA interim MiCA register: authorised crypto-asset service providers (CASPs) and the
   list of **non-compliant** entities providing crypto services without authorisation.
 * ASIC Banned and Disqualified Persons (Australia, data.gov.au, CC BY).
-* Scam lists — crypto phishing domains (MetaMask eth-phishing-detect, ScamSniffer) and
+* Scam lists: crypto phishing domains (MetaMask eth-phishing-detect, ScamSniffer) and
   scam wallet addresses (ScamSniffer): matched on the websites and wallets of the network.
-* The Guardian Open Platform — adverse media, with a free key (GUARDIAN_API_KEY).
+* The Guardian Open Platform: adverse media, with a free key (GUARDIAN_API_KEY).
 
 Privacy: the Guardian is searched for companies and public figures only; the ASIC
 register (a legal register of banned persons, like the UK disqualified directors) is
@@ -159,7 +159,7 @@ def _uid_fmt(num: str) -> str:
 
 class UidRegisterConnector(BaseConnector):
     name = "ch_uid"
-    label = "UID register — Swiss legal units incl. associations, foundations, VAT (FSO)"
+    label = "UID register: Swiss legal units incl. associations, foundations, VAT (FSO)"
     kind = "registry"
     homepage = "https://www.uid.admin.ch"
     jurisdictions = {"CH"}
@@ -268,7 +268,7 @@ class UidRegisterConnector(BaseConnector):
         ]
         return [
             Document(
-                title=f"UID register — {entity.name} ({uid})",
+                title=f"UID register: {entity.name} ({uid})",
                 kind="register",
                 url=UID_UI.format(uid=re.sub(r"\D", "", uid)),
                 summary=" · ".join(p for p in parts if p),
@@ -295,7 +295,7 @@ def _eur_range(d: Any) -> str:
 
 class BundestagLobbyregisterConnector(BaseConnector):
     name = "de_lobbyregister"
-    label = "Lobbyregister — German Bundestag and Federal Government (interest representatives)"
+    label = "Lobbyregister: German Bundestag and Federal Government (interest representatives)"
     kind = "documents"
     homepage = "https://www.lobbyregister.bundestag.de"
     document_types = {"company"}
@@ -335,7 +335,7 @@ class BundestagLobbyregisterConnector(BaseConnector):
                 flags.append("register_warning")
             docs.append(
                 Document(
-                    title=f"Registered interest representative — {name} (Lobbyregister {r.get('registerNumber')})",
+                    title=f"Registered interest representative: {name} (Lobbyregister {r.get('registerNumber')})",
                     kind="register",
                     date=_day((account.get("firstPublicationDate") or "")[:10]),
                     url=details.get("detailsPageUrl"),
@@ -364,7 +364,7 @@ def _host(url: str) -> str:
 class MicaRegisterConnector(BaseConnector):
     name = "esma_mica"
     label = (
-        "ESMA interim MiCA register — authorised and non-compliant crypto-asset service providers"
+        "ESMA interim MiCA register: authorised and non-compliant crypto-asset service providers"
     )
     kind = "screening"
     homepage = MICA_PAGE
@@ -455,7 +455,7 @@ class MicaRegisterConnector(BaseConnector):
                 ScreeningHit(
                     entity_id=entity.id,
                     list_type=ListType.ADVERSE,
-                    dataset="ESMA MiCA — non-compliant entity (crypto services without authorisation)",
+                    dataset="ESMA MiCA: non-compliant entity (crypto services without authorisation)",
                     matched_name=listed,
                     score=score,
                     explanation=why,
@@ -492,7 +492,7 @@ class MicaRegisterConnector(BaseConnector):
             when = row.get("ac_authorisationNotificationDate", "")
             docs.append(
                 Document(
-                    title=f"MiCA authorised crypto-asset service provider — {self._name(row)}",
+                    title=f"MiCA authorised crypto-asset service provider: {self._name(row)}",
                     kind="register",
                     date=_day(_au_date(when)) if when else None,
                     url=MICA_PAGE,
@@ -518,7 +518,7 @@ def _au_date(value: str) -> str | None:
 
 class AsicBannedConnector(BaseConnector):
     name = "asic_banned"
-    label = "ASIC — banned and disqualified persons (Australia)"
+    label = "ASIC: banned and disqualified persons (Australia)"
     kind = "screening"
     homepage = ASIC_UI
     timeout_seconds = 40.0
@@ -623,7 +623,9 @@ _SCAM_ADDRESSES = _Lazy()
 
 class ScamListsConnector(BaseConnector):
     name = "scam_lists"
-    label = "Crypto scam lists — phishing domains (MetaMask, ScamSniffer) and scam wallets (ScamSniffer)"
+    label = (
+        "Crypto scam lists: phishing domains (MetaMask, ScamSniffer) and scam wallets (ScamSniffer)"
+    )
     kind = "screening"
     homepage = "https://github.com/scamsniffer/scam-database"
     timeout_seconds = 60.0
@@ -682,7 +684,7 @@ class ScamListsConnector(BaseConnector):
                     ScreeningHit(
                         entity_id=entity.id,
                         list_type=ListType.ADVERSE,
-                        dataset="ScamSniffer — scam / drainer wallet addresses",
+                        dataset="ScamSniffer: scam / drainer wallet addresses",
                         matched_name=entity.name,
                         score=100.0,
                         explanation=["address listed verbatim"],
@@ -698,7 +700,7 @@ class ScamListsConnector(BaseConnector):
                         ScreeningHit(
                             entity_id=entity.id,
                             list_type=ListType.ADVERSE,
-                            dataset=f"Crypto phishing / scam domain — {source}",
+                            dataset=f"Crypto phishing / scam domain: {source}",
                             matched_name=domain,
                             score=100.0,
                             explanation=[f"website {domain} is on the list"],
@@ -719,7 +721,7 @@ RISK_TERMS = (
 
 class GuardianConnector(BaseConnector):
     name = "guardian"
-    label = "The Guardian — press archive (adverse media)"
+    label = "The Guardian: press archive (adverse media)"
     kind = "documents"
     key_setting = "guardian_api_key"
     homepage = "https://open-platform.theguardian.com"
@@ -785,7 +787,7 @@ def _lw_role(row: dict[str, Any]) -> str:
     role = f"{art} ({fn})" if fn else art
     if row.get("verguetung") not in (None, "", "0"):
         role += f", paid CHF {row['verguetung']}"
-    return role + " — declared interest (Lobbywatch)"
+    return role + ": declared interest (Lobbywatch)"
 
 
 class LobbywatchConnector(BaseConnector):
@@ -794,7 +796,7 @@ class LobbywatchConnector(BaseConnector):
     lobbyists holding Federal Palace access badges are counted, not listed."""
 
     name = "lobbywatch"
-    label = "Lobbywatch.ch — Swiss federal parliamentarians and their declared interests"
+    label = "Lobbywatch.ch: Swiss federal parliamentarians and their declared interests"
     kind = "registry"
     homepage = "https://lobbywatch.ch"
     jurisdictions = {"CH"}
@@ -847,7 +849,7 @@ class LobbywatchConnector(BaseConnector):
         pid = p.get("parlamentarier_id") or p.get("id")
         rid = self.record_id(f"p:{pid}")
         council = LW_COUNCIL.get(p.get("rat") or p.get("ratstyp") or "", p.get("titel") or "")
-        position = " — ".join(
+        position = ": ".join(
             x
             for x in (council or p.get("titel"), p.get("kanton") or p.get("kanton_abkuerzung"))
             if x
@@ -977,7 +979,7 @@ class LobbywatchConnector(BaseConnector):
                 return []
             return [
                 Document(
-                    title=f"Lobbywatch — {entity.name}: links with the Swiss Parliament",
+                    title=f"Lobbywatch: {entity.name}: links with the Swiss Parliament",
                     kind="register",
                     url=LW_ORG_UI.format(id=native[2:]),
                     summary=" · ".join(p for p in parts if p),
@@ -998,7 +1000,7 @@ class LobbywatchConnector(BaseConnector):
             ]
             return [
                 Document(
-                    title=f"Lobbywatch — {entity.name}: parliamentary mandate and declared interests",
+                    title=f"Lobbywatch: {entity.name}: parliamentary mandate and declared interests",
                     kind="register",
                     url=LW_PARL_UI.format(id=native[2:]),
                     summary=" · ".join(p for p in parts if p),
@@ -1037,7 +1039,7 @@ class AfricanLiiConnector(BaseConnector):
     counts only when the entity is a party (named in the case name)."""
 
     name = "africanlii"
-    label = "AfricanLII — court judgments (Uganda, Zambia, Ghana, Nigeria, Tanzania, Namibia, Malawi, Zimbabwe, Kenya…)"
+    label = "AfricanLII: court judgments (Uganda, Zambia, Ghana, Nigeria, Tanzania, Namibia, Malawi, Zimbabwe, Kenya…)"
     kind = "documents"
     homepage = AFRICANLII
     document_types = {"company", "person"}
@@ -1089,7 +1091,7 @@ class AfricanLiiConnector(BaseConnector):
                     kind="court",
                     date=_day(when.group(1)) if when else None,
                     url=(base if href.startswith("/") else "") + href,
-                    summary=f"{country} — court {m.group('court').upper()}",
+                    summary=f"{country}: court {m.group('court').upper()}",
                     source=self.label,
                     flags=["court"],
                 )

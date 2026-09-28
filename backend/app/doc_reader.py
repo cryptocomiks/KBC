@@ -1,6 +1,6 @@
 """Read client documents (register extracts, UBO declarations) and compare them with the registries.
 
-Rules only — no AI, nothing sent to a third party, nothing stored: the file is
+Rules only: no AI, nothing sent to a third party, nothing stored: the file is
 read in memory and forgotten. Supported: text PDFs and plain text (scanned
 PDFs need OCR and are reported as unreadable). Formats recognised by their
 labels: French Kbis / RBE, UK Companies House (officers, PSC), Swiss and

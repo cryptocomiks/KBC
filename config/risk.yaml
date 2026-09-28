@@ -1,5 +1,5 @@
 # ---------------------------------------------------------------------------
-# Risk scoring configuration — fully transparent, EDIT TO MATCH YOUR POLICY.
+# Risk scoring configuration: fully transparent, EDIT TO MATCH YOUR POLICY.
 #
 # Global score = sum over triggered factors of
 #     weight x proximity_multiplier(distance of the closest affected entity)

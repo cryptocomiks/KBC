@@ -42,7 +42,7 @@ export default function DataTable({ rows, columns, csvName, empty = "No data.", 
           const v = c.value ? c.value(row) : row[c.key];
           return v === null || v === undefined ? "" : (v as string | number);
         },
-        cell: (ctx) => (c.render ? c.render(ctx.row.original) : String(ctx.getValue() ?? "") || "—"),
+        cell: (ctx) => (c.render ? c.render(ctx.row.original) : String(ctx.getValue() ?? "") || "-"),
         sortingFn: "alphanumeric",
       })),
     [columns],

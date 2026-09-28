@@ -7,7 +7,7 @@ interface Props {
   investigation: Investigation;
 }
 
-/** What to ask the client for, derived from the findings — tick, then copy as an e-mail. */
+/** What to ask the client for, derived from the findings: tick, then copy as an e-mail. */
 export default function DocRequests({ investigation: inv }: Props) {
   const items = inv.requests ?? [];
   const [done, setDone] = useState<Set<number>>(new Set());

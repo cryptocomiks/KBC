@@ -22,21 +22,21 @@ from app.schemas import Investigation
 FIU = {
     "tracfin": {
         "name": "TRACFIN (France)",
-        "channel": "ERMES portal — https://www.economie.gouv.fr/tracfin",
-        "basis": "Déclaration de soupçon — art. L561-15 du Code monétaire et financier",
-        "tipping_off": "Interdiction de divulgation : art. L561-18 CMF — ne pas informer le client ni des tiers.",
+        "channel": "ERMES portal: https://www.economie.gouv.fr/tracfin",
+        "basis": "Déclaration de soupçon: art. L561-15 du Code monétaire et financier",
+        "tipping_off": "Interdiction de divulgation : art. L561-18 CMF: ne pas informer le client ni des tiers.",
         "lang": "fr",
     },
     "mros": {
-        "name": "MROS — Money Laundering Reporting Office Switzerland",
-        "channel": "goAML — https://www.fedpol.admin.ch/fedpol/en/home/kriminalitaet/geldwaescherei.html",
+        "name": "MROS: Money Laundering Reporting Office Switzerland",
+        "channel": "goAML: https://www.fedpol.admin.ch/fedpol/en/home/kriminalitaet/geldwaescherei.html",
         "basis": "Report under art. 9 AMLA (duty to report) / art. 305ter para. 2 SCC (right to report)",
-        "tipping_off": "Prohibition of information: art. 10a AMLA — do not inform the client or third parties.",
+        "tipping_off": "Prohibition of information: art. 10a AMLA: do not inform the client or third parties.",
         "lang": "en",
     },
     "lu_crf": {
-        "name": "CRF — Cellule de renseignement financier (Luxembourg)",
-        "channel": "goAML — https://justice.public.lu/fr/organisation-justice/crf.html",
+        "name": "CRF: Cellule de renseignement financier (Luxembourg)",
+        "channel": "goAML: https://justice.public.lu/fr/organisation-justice/crf.html",
         "basis": "Report under art. 5 of the law of 12 November 2004 on the fight against money laundering",
         "tipping_off": "Prohibition of disclosure: art. 5(5) of the law of 12 November 2004.",
         "lang": "en",
@@ -46,7 +46,7 @@ FIU = {
 TEXT = {
     "fr": {
         "title": "Projet de déclaration de soupçon",
-        "draft": "BROUILLON — NON TRANSMIS. Document de travail à vérifier et compléter avant toute déclaration.",
+        "draft": "BROUILLON: NON TRANSMIS. Document de travail à vérifier et compléter avant toute déclaration.",
         "s1": "1. Déclarant",
         "s2": "2. Personne ou entité objet de la déclaration",
         "s3": "3. Personnes et entités liées",
@@ -66,10 +66,10 @@ TEXT = {
             "☐ Relation d'affaires suspendue / refusée",
             "☐ Opération non exécutée / reportée",
             "☐ Vigilance renforcée mise en place",
-            "☐ Fonds gelés (sanctions) — information de la DG Trésor",
+            "☐ Fonds gelés (sanctions): information de la DG Trésor",
         ],
         "attachments": [
-            "Rapport de vigilance KYC 1 CLICK (PDF) — mêmes paramètres",
+            "Rapport de vigilance KYC 1 CLICK (PDF): mêmes paramètres",
             "Pièces KYC collectées (identité, extrait Kbis, déclaration des bénéficiaires effectifs…)",
             "Relevés des opérations concernées",
         ],
@@ -77,7 +77,7 @@ TEXT = {
     },
     "en": {
         "title": "Draft suspicious activity report",
-        "draft": "DRAFT — NOT SUBMITTED. Working document to check and complete before any filing.",
+        "draft": "DRAFT: NOT SUBMITTED. Working document to check and complete before any filing.",
         "s1": "1. Reporting entity",
         "s2": "2. Subject of the report",
         "s3": "3. Related persons and entities",
@@ -97,10 +97,10 @@ TEXT = {
             "☐ Business relationship suspended / refused",
             "☐ Transaction not executed / postponed",
             "☐ Enhanced monitoring in place",
-            "☐ Assets frozen (sanctions) — competent authority informed",
+            "☐ Assets frozen (sanctions): competent authority informed",
         ],
         "attachments": [
-            "KYC 1 CLICK due diligence report (PDF) — same parameters",
+            "KYC 1 CLICK due diligence report (PDF): same parameters",
             "KYC documents collected (ID, register extract, UBO declaration…)",
             "Statements of the transactions concerned",
         ],
@@ -142,10 +142,10 @@ def build_sar(
         rightMargin=MARGIN,
         topMargin=MARGIN,
         bottomMargin=MARGIN,
-        title=f"{t['title']} — {subject.name}",
+        title=f"{t['title']}: {subject.name}",
     )
     story: list[Any] = [
-        Paragraph(f"{t['title']} — {_esc(subject.name)}", st["h1"]),
+        Paragraph(f"{t['title']}: {_esc(subject.name)}", st["h1"]),
         Paragraph(
             f"<b>{_esc(info['name'])}</b> · {_esc(info['basis'])}<br/>{_esc(info['channel'])}",
             st["muted"],
@@ -156,7 +156,7 @@ def build_sar(
         Spacer(1, 8),
     ]
     if inv.demo:
-        story.append(Paragraph("DEMO — fictitious data, not for filing.", st["warn"]))
+        story.append(Paragraph("DEMO: fictitious data, not for filing.", st["warn"]))
         story.append(Spacer(1, 8))
 
     # 1. Reporting entity (to fill in)
@@ -257,7 +257,7 @@ def build_sar(
         ):
             grounds.append(
                 {
-                    "flag": f"{h.list_type.value.upper()} — {h.dataset}",
+                    "flag": f"{h.list_type.value.upper()}: {h.dataset}",
                     "evidence": f"{name(h.entity_id)} ≈ {h.matched_name} ({h.score:.0f} %). {h.provenance.url or ''}",
                 }
             )

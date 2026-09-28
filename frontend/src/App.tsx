@@ -109,7 +109,7 @@ export default function App() {
     onSuccess: (c) => {
       setSaveError(null);
       qc.invalidateQueries({ queryKey: ["dashboard"] });
-      toast("Saved as a case — monitoring is on");
+      toast("Saved as a case: monitoring is on");
       openCase(c.id);
     },
     onError: (e, params) => {

@@ -2,7 +2,7 @@
 
 - ACRA (SG): the Singapore register of entities, open data on data.gov.sg.
 - Registrar of Companies (IL): the Israeli company register, open data on data.gov.il
-  (flags companies marked as "violating" — unpaid annual fees or missing reports).
+  (flags companies marked as "violating": unpaid annual fees or missing reports).
 - Canada's Business Registries (CA): federal and provincial corporations, one search.
 - CJEU (EU): judgments of the Court of Justice / General Court naming the company,
   through the EU Publications Office SPARQL endpoint (EUR-Lex / CELLAR).
@@ -54,7 +54,7 @@ class _Register(BaseConnector):
         url = entity.sources[0].url if entity.sources else self.homepage
         return [
             Document(
-                title=f"Register entry — {self.label.split(' — ')[0]}",
+                title=f"Register entry, {self.label.split(', ')[0]}",
                 kind="register",
                 url=url,
                 summary=f"n° {self.native_id(own[0])}",
@@ -65,13 +65,13 @@ class _Register(BaseConnector):
 
 # ---------------------------------------------------------------- Singapore
 SG_API = "https://data.gov.sg/api/action/datastore_search"
-SG_RESOURCE = "d_3f960c10fed6145404ca7b821f263b87"  # ACRA — entities with UEN
+SG_RESOURCE = "d_3f960c10fed6145404ca7b821f263b87"  # ACRA: entities with UEN
 SG_UI = "https://www.bizfile.gov.sg/"
 
 
 class AcraConnector(_Register):
     name = "sg_acra"
-    label = "ACRA — Singapore register of business entities"
+    label = "ACRA: Singapore register of business entities"
     jurisdictions = {"SG"}
     country = "SG"
     homepage = "https://www.acra.gov.sg"
@@ -131,7 +131,7 @@ F_GOV, F_VIOLATING = "חברה ממשלתית", "מפרה"
 
 class IsraelRegistrarConnector(_Register):
     name = "il_companies"
-    label = "Israeli Registrar of Companies — company register"
+    label = "Israeli Registrar of Companies: company register"
     jurisdictions = {"IL"}
     country = "IL"
     homepage = "https://www.gov.il/en/departments/corporations_authority"
@@ -148,7 +148,7 @@ class IsraelRegistrarConnector(_Register):
         active = "פעיל" in status
         extra: dict[str, Any] = {
             "accounts_unknown": True,
-            "register_status": " — ".join(p for p in (status, r.get(F_SUBSTATUS)) if p) or None,
+            "register_status": ": ".join(p for p in (status, r.get(F_SUBSTATUS)) if p) or None,
         }
         if str(r.get(F_VIOLATING) or "") == "מפרה":
             extra["register_warning"] = (
@@ -209,7 +209,7 @@ CA_PROVINCES = {
 
 class CanadaRegistriesConnector(_Register):
     name = "ca_cbr"
-    label = "Canada's Business Registries — federal and provincial corporations"
+    label = "Canada's Business Registries: federal and provincial corporations"
     jurisdictions = {"CA"}
     country = "CA"
     homepage = "https://ised-isde.canada.ca/cbr/srch/index-eng.html"
@@ -300,7 +300,7 @@ def _sparql_text(value: str) -> str:
 
 class CjeuConnector(BaseConnector):
     name = "cjeu"
-    label = "EU Court of Justice and General Court — judgments (EUR-Lex)"
+    label = "EU Court of Justice and General Court: judgments (EUR-Lex)"
     kind = "documents"
     homepage = "https://curia.europa.eu"
     document_types = {"company", "person"}
@@ -335,7 +335,7 @@ SELECT DISTINCT ?celex ?title ?date WHERE {{
         docs = []
         for b in rows:
             celex = (b.get("celex") or {}).get("value")
-            title = ((b.get("title") or {}).get("value") or "").replace("#", " — ").strip()
+            title = ((b.get("title") or {}).get("value") or "").replace("#", ": ").strip()
             if not celex or not title:
                 continue
             docs.append(
@@ -345,7 +345,7 @@ SELECT DISTINCT ?celex ?title ?date WHERE {{
                     date=_dmy((b.get("date") or {}).get("value")),
                     url=EURLEX.format(celex=celex),
                     summary=f"CELEX {celex}",
-                    source="EU Court of Justice / General Court (EUR-Lex) — name in the case title",
+                    source="EU Court of Justice / General Court (EUR-Lex): name in the case title",
                     flags=["court"],
                 )
             )

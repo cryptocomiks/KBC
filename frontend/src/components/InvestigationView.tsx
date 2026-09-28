@@ -237,7 +237,7 @@ export default function InvestigationView({
               value=""
               disabled={sarState === "busy"}
               onChange={(e) => draftSar(e.target.value)}
-              title="Pre-filled draft to check and complete — never filed automatically"
+              title="Pre-filled draft to check and complete: never filed automatically"
             >
               <option value="">{sarState === "busy" ? "Preparing draft…" : "Draft for…"}</option>
               <option value="tracfin">TRACFIN (France)</option>
@@ -314,7 +314,7 @@ export default function InvestigationView({
           <CryptoSankey investigation={inv} onSelect={select} />
           <details className="group card">
             <summary className="cursor-pointer select-none px-4 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-300">
-              Detailed findings ({inv.summary?.length ?? 0}) — full reading of the network, with sources
+              Detailed findings ({inv.summary?.length ?? 0}): full reading of the network, with sources
             </summary>
             <div className="border-t border-slate-200 dark:border-slate-800">
               <KeyFindings investigation={inv} onSelect={select} />

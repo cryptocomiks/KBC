@@ -218,7 +218,7 @@ class _EuropeanRegistry(BaseConnector):
                 title=f"Register entry ({self.register_name})",
                 kind="register",
                 url=self.ui_url(native),
-                summary=f"{entity.name} — {native}",
+                summary=f"{entity.name}: {native}",
                 source=self.label,
             )
         ]
@@ -280,7 +280,7 @@ def _brreg_address(a: dict[str, Any] | None) -> str | None:
 
 class BrregConnector(_EuropeanRegistry):
     name = "brreg"
-    label = "Brønnøysund Register Centre — Norwegian business register"
+    label = "Brønnøysund Register Centre: Norwegian business register"
     jurisdictions = {"NO"}
     country = "NO"
     register_name = "Brønnøysund Enhetsregisteret"
@@ -471,7 +471,7 @@ def _prh_address(addresses: list[dict[str, Any]] | None) -> str | None:
 
 class PrhConnector(_EuropeanRegistry):
     name = "prh"
-    label = "PRH / YTJ — Finnish Trade Register (open data)"
+    label = "PRH / YTJ: Finnish Trade Register (open data)"
     jurisdictions = {"FI"}
     country = "FI"
     register_name = "Finnish Trade Register (PRH/YTJ)"
@@ -599,7 +599,7 @@ def _ee_form(name: str) -> str | None:
 
 class AriregisterConnector(_EuropeanRegistry):
     name = "ariregister"
-    label = "e-Äriregister — Estonian business register"
+    label = "e-Äriregister: Estonian business register"
     jurisdictions = {"EE"}
     country = "EE"
     register_name = "Estonian e-Business Register"
@@ -755,7 +755,7 @@ def _cz_share(podil: Any) -> float | None:
 
 class AresConnector(_EuropeanRegistry):
     name = "ares"
-    label = "ARES — Czech business register (Ministry of Finance)"
+    label = "ARES: Czech business register (Ministry of Finance)"
     jurisdictions = {"CZ"}
     country = "CZ"
     register_name = "Czech ARES / commercial register"
@@ -1083,7 +1083,7 @@ def translate_be_role(role: str | None) -> str | None:
 
 class KboConnector(_EuropeanRegistry):
     name = "kbo"
-    label = "KBO / BCE — Belgian Crossroads Bank for Enterprises"
+    label = "KBO / BCE: Belgian Crossroads Bank for Enterprises"
     jurisdictions = {"BE"}
     country = "BE"
     register_name = "Belgian Crossroads Bank for Enterprises (KBO/BCE)"
@@ -1268,7 +1268,7 @@ class KboConnector(_EuropeanRegistry):
 
 # ------------------------------------------------------------------ Latvia
 LV_API = "https://data.gov.lv/dati/api/3/action/datastore_search"
-LV_RESOURCE = "25e80bf3-f107-4ab4-89ef-251b5b9374e9"  # Uzņēmumu reģistrs — register entries
+LV_RESOURCE = "25e80bf3-f107-4ab4-89ef-251b5b9374e9"  # Uzņēmumu reģistrs: register entries
 LV_UI = "https://info.ur.gov.lv/#/data-search/legal-entity/{code}"
 
 
@@ -1276,7 +1276,7 @@ class LatviaRegisterConnector(_EuropeanRegistry):
     """Latvian Register of Enterprises (Uzņēmumu reģistrs), open data on data.gov.lv."""
 
     name = "lv_ur"
-    label = "Uzņēmumu reģistrs — Latvian register of enterprises"
+    label = "Uzņēmumu reģistrs: Latvian register of enterprises"
     jurisdictions = {"LV"}
     country = "LV"
     register_name = "Latvian Register of Enterprises"
@@ -1345,7 +1345,7 @@ class KrsConnector(_EuropeanRegistry):
     the Ministry of Justice API only answers for a known number)."""
 
     name = "krs"
-    label = "KRS — Polish National Court Register (by KRS number)"
+    label = "KRS: Polish National Court Register (by KRS number)"
     jurisdictions = {"PL"}
     country = "PL"
     register_name = "Polish National Court Register (KRS)"

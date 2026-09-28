@@ -1,5 +1,5 @@
 # ---------------------------------------------------------------------------
-# High-risk jurisdictions — EDIT THIS FILE to follow your institution's policy.
+# High-risk jurisdictions: EDIT THIS FILE to follow your institution's policy.
 #
 # Lists are ISO 3166-1 alpha-2 codes. They are a *starting point* compiled
 # from public sources and MUST be reviewed against the latest publications:
@@ -7,12 +7,12 @@
 #   - EU list of non-cooperative jurisdictions for tax purposes (Annex I)
 #   - Your own internal country-risk matrix
 # ---------------------------------------------------------------------------
-as_of: "2025-06 (FATF June 2025 plenary; EU Annex I February 2025) — verify before use"
+as_of: "2025-06 (FATF June 2025 plenary; EU Annex I February 2025): verify before use"
 
-# FATF — High-risk jurisdictions subject to a call for action
+# FATF: High-risk jurisdictions subject to a call for action
 fatf_blacklist: [KP, IR, MM]
 
-# FATF — Jurisdictions under increased monitoring
+# FATF: Jurisdictions under increased monitoring
 fatf_greylist:
   [DZ, AO, BO, BG, BF, CM, CI, HR, CD, HT, KE, LA, LB, MC, MZ, NA, NP, NG, ZA, SS, SY, VE, VN, VG, YE]
 

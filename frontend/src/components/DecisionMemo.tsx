@@ -82,7 +82,7 @@ export default function DecisionMemo({ caseId }: { caseId: string }) {
           <div className="tag">Decision memo</div>
           <div className="text-[12px] text-slate-500">
             {m.draft
-              ? "Draft written from the case — review, complete the [placeholders], then save."
+              ? "Draft written from the case: review, complete the [placeholders], then save."
               : `Saved${m.updated_by ? ` by ${m.updated_by}` : ""}${m.updated_at ? ` on ${fmtDate(m.updated_at)}` : ""}.`}
             {placeholders > 0 && <span className="ml-1 text-amber-700 dark:text-amber-300">{placeholders} placeholder(s) left.</span>}
           </div>

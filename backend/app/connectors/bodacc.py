@@ -1,4 +1,4 @@
-"""BODACC — French official bulletin of civil and commercial announcements.
+"""BODACC: French official bulletin of civil and commercial announcements.
 
 Open data, no key: https://bodacc-datadila.opendatasoft.com (DILA).
 Every legal event of a French company is published there: registration,
@@ -49,7 +49,7 @@ def _loads(value: Any) -> dict[str, Any]:
 
 class BodaccConnector(BaseConnector):
     name = "bodacc"
-    label = "BODACC — French legal announcements (DILA)"
+    label = "BODACC: French legal announcements (DILA)"
     kind = "documents"
     jurisdictions = {"FR"}
     homepage = "https://www.bodacc.fr"
@@ -85,7 +85,7 @@ class BodaccConnector(BaseConnector):
             summary = self._summary(r, kind)
             docs.append(
                 Document(
-                    title=f"BODACC — {family}"
+                    title=f"BODACC: {family}"
                     + (f" ({r['typeavis_lib']})" if r.get("typeavis_lib") else ""),
                     kind="legal_notice" if kind == "deregistration" else kind,
                     date=parse_date(r.get("dateparution")),
@@ -121,5 +121,5 @@ class BodaccConnector(BaseConnector):
             if isinstance(creation, dict) and creation.get("categorieCreation"):
                 parts.append(creation["categorieCreation"])
         parts.append(r.get("tribunal"))
-        text = " — ".join(str(p).strip() for p in parts if p and str(p).strip())
+        text = ": ".join(str(p).strip() for p in parts if p and str(p).strip())
         return text[:400] or None

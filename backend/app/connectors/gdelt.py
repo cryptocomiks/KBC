@@ -1,4 +1,4 @@
-"""Adverse media — press mentions of the subject with financial-crime keywords (no key).
+"""Adverse media: press mentions of the subject with financial-crime keywords (no key).
 
 GDELT DOC 2.0 API (open news index). It allows one request every 5 s per IP address and
 answers HTTP 429 to shared cloud IPs, so it is not retried. (Google News feeds are
@@ -45,7 +45,7 @@ def _gdelt_day(value: str | None) -> date | None:
 
 class GdeltConnector(BaseConnector):
     name = "gdelt_media"
-    label = "Adverse media — GDELT news index"
+    label = "Adverse media: GDELT news index"
     kind = "media"
     homepage = "https://www.gdeltproject.org"
     document_types = {"person", "company"}
@@ -100,6 +100,6 @@ class GdeltConnector(BaseConnector):
             date=day,
             url=url,
             summary=outlet or None,
-            source=f"Adverse media via {via} — subject named in the headline, verify (homonyms)",
+            source=f"Adverse media via {via}: subject named in the headline, verify (homonyms)",
             flags=["adverse_media"],
         )

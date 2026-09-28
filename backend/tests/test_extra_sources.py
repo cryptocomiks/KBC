@@ -140,7 +140,7 @@ def test_lobbywatch_parliamentarians_and_their_declared_interests():
     conn = es.LobbywatchConnector(LIVE)
     [p] = conn.search_person("Gerhard Pfister")
     assert p.birth_date == "1962-10-01" and p.identifiers == {"Wikidata": "Q1387808"}
-    assert p.extra["pep_position"] == "Member of the Swiss Federal Assembly (National Council — ZG)"
+    assert p.extra["pep_position"] == "Member of the Swiss Federal Assembly (National Council: ZG)"
     assert "private@example.ch" not in json.dumps(p.model_dump(mode="json"))  # no contact details
     [link] = conn.get_person_roles(p.id)
     assert link.relationship.type == RelationType.OFFICER
@@ -566,7 +566,7 @@ def test_africanlii_keeps_judgments_where_the_company_is_a_party():
         "People v Banda (tender to a meat producer)",
     ]  # the act is skipped, the duplicate from the regional portal too
     assert docs[0].flags == ["court"] and docs[0].date.isoformat() == "2013-10-29"
-    assert docs[0].summary == "Zambia — court ZMSC"
+    assert docs[0].summary == "Zambia: court ZMSC"
     assert docs[0].url == "https://zambialii.org/akn/zm/judgment/zmsc/2013/43/eng@2013-10-29"
     assert docs[1].flags == ["court", "set_aside"]  # not a party
     assert es.AfricanLiiConnector(LIVE).get_documents(_person("Jane Private")) == []
@@ -577,7 +577,7 @@ def test_african_registers_are_linked_for_manual_search():
 
     docs = register_links(_company("Dangote Cement Plc", jurisdiction="NG"))
     titles = [d.title for d in docs]
-    assert "Corporate Affairs Commission, Nigeria (CAC) — company search" in titles
+    assert "Corporate Affairs Commission, Nigeria (CAC): company search" in titles
     assert any(t.startswith("Court judgments (AfricanLII)") for t in titles)
     assert not any(
         "AfricanLII" in d.title for d in register_links(_company("Nestlé S.A.", jurisdiction="CH"))

@@ -27,7 +27,7 @@ export default function Header({ meta, theme, onToggleTheme, onHome, onCases, ca
     onSuccess: (r) => {
       qc.removeQueries({ queryKey: ["search"] });
       qc.removeQueries({ queryKey: ["investigation"] });
-      toast(`Cache cleared — ${r.deleted} entries deleted`);
+      toast(`Cache cleared: ${r.deleted} entries deleted`);
     },
   });
   const enabled = connectors.data?.filter((c) => c.enabled).length ?? 0;

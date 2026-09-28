@@ -1,6 +1,6 @@
 {
  "limits": "Test set written by the development team: a regression guard, not a guarantee on real data. Extend it with an independent sample of real alerts before production use.",
- "generated_at": "2026-09-27T16:16:04+00:00",
+ "generated_at": "2026-09-28T08:18:47+00:00",
  "engine_version": "0.1.0",
  "testset_version": 3,
  "thresholds": {

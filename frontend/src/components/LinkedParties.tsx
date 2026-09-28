@@ -114,7 +114,7 @@ export function PartyRow({ p, onSelect, i = 0 }: { p: Party; onSelect: (id: stri
         </span>
       </td>
       <td className={`py-2 pr-4 text-right text-[11px] font-semibold uppercase ${LEVEL_TEXT[p.level] ?? LEVEL_TEXT.none}`}>
-        {p.level === "none" ? "—" : p.level}
+        {p.level === "none" ? "-" : p.level}
       </td>
     </tr>
   );

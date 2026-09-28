@@ -117,14 +117,14 @@ export default function CdbForms({ caseId }: { caseId: string }) {
       <div className="card p-4">
         <div className="flex flex-wrap items-center gap-2">
           <FileSignature className="h-5 w-5 text-brand-600" />
-          <span className="tag">Beneficial ownership — CDB 20</span>
+          <span className="tag">Beneficial ownership: CDB 20</span>
           {d.forms.map((f) => (
             <span key={f.id} className="rounded-md bg-slate-900 px-2 py-0.5 font-mono text-[11px] font-bold text-white dark:bg-white dark:text-slate-900">
               {f.code}
             </span>
           ))}
           <span className={`text-xs ${d.missing_total ? "text-amber-700 dark:text-amber-300" : "text-brand-700 dark:text-brand-400"}`}>
-            {d.missing_total ? `${d.missing_total} field(s) to complete` : "complete — ready to sign"}
+            {d.missing_total ? `${d.missing_total} field(s) to complete` : "complete: ready to sign"}
           </span>
           <div className="ml-auto flex items-center gap-2">
             <input className="input w-36 py-1 text-xs" placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)} />
@@ -162,7 +162,7 @@ export default function CdbForms({ caseId }: { caseId: string }) {
         return (
           <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
             <div className="grid grid-cols-2 gap-2">
-              <Tile label="Forms to sign" value={d.forms.map((f) => f.code).join(" + ")} sub={d.forms.length > 1 ? "incl. structures in the chain" : d.forms[0]?.title.split(" — ")[1]} />
+              <Tile label="Forms to sign" value={d.forms.map((f) => f.code).join(" + ")} sub={d.forms.length > 1 ? "incl. structures in the chain" : d.forms[0]?.title.split(": ")[1]} />
               <Tile label="Persons identified" value={people.length} sub={`${people.filter(({ p }) => p.source).length} from the registers`} />
               <Tile
                 label="Completeness"
@@ -182,7 +182,7 @@ export default function CdbForms({ caseId }: { caseId: string }) {
                 <BarList
                   max={100}
                   marker={25}
-                  markerLabel="25 % — controlling person / beneficial owner threshold"
+                  markerLabel="25 %: controlling person / beneficial owner threshold"
                   rows={owners.map(({ f, p }) => ({
                     key: `${f.id}-${p.key}`,
                     label: `${p.first_name} ${p.last_name}`.trim(),

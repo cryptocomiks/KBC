@@ -1,4 +1,4 @@
-"""Pappers (France) — companies, officers, beneficial owners, filed accounts.
+"""Pappers (France): companies, officers, beneficial owners, filed accounts.
 
 API: https://www.pappers.fr/api/documentation (key: PAPPERS_API_KEY; each
 call consumes credits). Richer than the public directory: declared
@@ -74,7 +74,7 @@ class PappersConnector(BaseConnector):
             incorporation_date=parse_date(c.get("date_creation")),
             dissolution_date=parse_date(c.get("date_cessation")),
             last_accounts_date=parse_date(flexible_date(closing)) if closing else None,
-            activity=" — ".join(p for p in (c.get("code_naf"), c.get("libelle_code_naf")) if p)
+            activity=": ".join(p for p in (c.get("code_naf"), c.get("libelle_code_naf")) if p)
             or None,
             address=address or None,
             identifiers={"SIREN": siren},
@@ -151,7 +151,7 @@ class PappersConnector(BaseConnector):
         return out
 
     def get_shareholders(self, company_id: str) -> list[LinkedEntity]:
-        """Declared beneficial owners (RBE) — shareholders are not exposed by Pappers."""
+        """Declared beneficial owners (RBE): shareholders are not exposed by Pappers."""
         siren = self.native_id(company_id)
         c = self._profile(siren) or {}
         out = []
@@ -161,7 +161,7 @@ class PappersConnector(BaseConnector):
             votes = b.get("pourcentage_votes")
             role = (
                 "Declared beneficial owner"
-                + (f" — {parts}% shares" if parts is not None else "")
+                + (f": {parts}% shares" if parts is not None else "")
                 + (f", {votes}% votes" if votes is not None else "")
             )
             rel = Relationship(

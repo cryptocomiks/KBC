@@ -41,7 +41,7 @@ export const RISK_BADGE: Record<RiskLevel, string> = {
 const regionNames = new Intl.DisplayNames(["en"], { type: "region" });
 
 export function countryName(code?: string | null): string {
-  if (!code) return "—";
+  if (!code) return "-";
   try {
     return regionNames.of(code.toUpperCase()) ?? code;
   } catch {
@@ -55,7 +55,7 @@ export function flag(code?: string | null): string {
 }
 
 export function fmtDate(value?: unknown): string {
-  if (!value) return "—";
+  if (!value) return "-";
   const s = String(value);
   if (s.length > 10 && s.includes("T")) {
     const d = new Date(s);
@@ -65,7 +65,7 @@ export function fmtDate(value?: unknown): string {
 }
 
 export function fmtPct(value?: unknown): string {
-  if (value === null || value === undefined || value === "") return "—";
+  if (value === null || value === undefined || value === "") return "-";
   return `${Number(value).toLocaleString("en", { maximumFractionDigits: 2 })}%`;
 }
 

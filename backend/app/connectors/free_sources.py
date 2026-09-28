@@ -1,16 +1,16 @@
 """Free public sources, no key and no quota.
 
-- SHAB / FOSC (CH): Swiss Official Gazette of Commerce — commercial-register changes,
+- SHAB / FOSC (CH): Swiss Official Gazette of Commerce: commercial-register changes,
   bankruptcies, compositions with creditors, calls to creditors (amtsblattportal.ch).
-- VIES (EU): the Commission's VAT number check — active or not, and the name and address
+- VIES (EU): the Commission's VAT number check: active or not, and the name and address
   the tax administration holds.
 - CRO (IE): the Irish Companies Registration Office register, open data (daily), with the
   accounts filed each year.
 - Find Case Law (UK): judgments of the courts of England and Wales (The National Archives).
-- RDAP (worldwide): domain registration data — creation date, registrar, status — of the
+- RDAP (worldwide): domain registration data, creation date, registrar, status, of the
   company's websites; a website created a few weeks ago is a shell-company signal.
 - EU Transparency Register: organisations registered as interest representatives
-  (lobbying) with the EU institutions — compact index rebuilt monthly from the
+  (lobbying) with the EU institutions: compact index rebuilt monthly from the
   Commission's export (scripts/update_transparency_register.py).
 
 Privacy: the gazette and the case law are searched for companies only (the gazette also
@@ -85,7 +85,7 @@ HR_SUB = {"HR01": "new registration", "HR02": "change", "HR03": "deletion"}
 
 class ShabConnector(BaseConnector):
     name = "ch_shab"
-    label = "SHAB / FOSC — Swiss Official Gazette of Commerce"
+    label = "SHAB / FOSC: Swiss Official Gazette of Commerce"
     kind = "documents"
     homepage = "https://www.shab.ch"
     jurisdictions = {"CH"}
@@ -129,7 +129,7 @@ class ShabConnector(BaseConnector):
                     kind="legal_notice",
                     date=_day(meta.get("publicationDate")),
                     url=SHAB_UI.format(id=meta.get("id")),
-                    summary=f"{label}{f' — {sub}' if sub else ''} · n° {meta.get('publicationNumber')}"
+                    summary=f"{label}{f': {sub}' if sub else ''} · n° {meta.get('publicationNumber')}"
                     + (f" · {', '.join(meta.get('cantons') or [])}" if meta.get("cantons") else ""),
                     source=self.label,
                     flags=flags,
@@ -169,7 +169,7 @@ def vat_numbers(entity: Entity) -> list[tuple[str, str]]:
 
 class ViesConnector(BaseConnector):
     name = "eu_vies"
-    label = "VIES — EU VAT number validation (European Commission)"
+    label = "VIES: EU VAT number validation (European Commission)"
     kind = "documents"
     homepage = VIES_UI
     document_types = {"company"}
@@ -191,7 +191,7 @@ class ViesConnector(BaseConnector):
             address = re.sub(r"\s*\n\s*", ", ", str(data.get("address") or "").strip())
             shown = [x for x in (name, address) if x and x != "---"]
             summary = (
-                ("Registered: " + " — ".join(shown))
+                ("Registered: " + ": ".join(shown))
                 if shown
                 else "Name and address not disclosed by this member state"
             )
@@ -207,10 +207,10 @@ class ViesConnector(BaseConnector):
                 and _norm(name) not in _norm(entity.name)
             ):
                 flags.append("vat_name_mismatch")
-                summary += " — the name differs from the register: check the identity"
+                summary += ": the name differs from the register: check the identity"
             docs.append(
                 Document(
-                    title=f"EU VAT number {cc}{number} — {'valid' if valid else 'NOT VALID'} (VIES)",
+                    title=f"EU VAT number {cc}{number}: {'valid' if valid else 'NOT VALID'} (VIES)",
                     kind="register",
                     date=_day(data.get("requestDate")),
                     url=VIES_UI,
@@ -237,7 +237,7 @@ CRO_WARNING = ("strike off listed", "liquidation", "receivership", "examinership
 
 class CroConnector(BaseConnector):
     name = "ie_cro"
-    label = "CRO — Irish Companies Registration Office (open data)"
+    label = "CRO: Irish Companies Registration Office (open data)"
     kind = "registry"
     jurisdictions = {"IE"}
     homepage = "https://cro.ie"
@@ -325,7 +325,7 @@ class CroConnector(BaseConnector):
                 to = _day(r.get("submissions_accounts_to_date"))
                 docs.append(
                     Document(
-                        title=f"Financial statements filed{f' — accounts to {to}' if to else ''}",
+                        title=f"Financial statements filed{f': accounts to {to}' if to else ''}",
                         kind="accounts",
                         date=_day(r.get("submission_reg_date") or r.get("submission_rec_date")),
                         url=CRO_UI.format(num=num),
@@ -343,7 +343,7 @@ ATOM = "{http://www.w3.org/2005/Atom}"
 
 class UkCaseLawConnector(BaseConnector):
     name = "uk_caselaw"
-    label = "Find Case Law — UK court judgments (The National Archives)"
+    label = "Find Case Law: UK court judgments (The National Archives)"
     kind = "documents"
     homepage = "https://caselaw.nationalarchives.gov.uk"
     document_types = {"company", "person"}
@@ -375,7 +375,7 @@ class UkCaseLawConnector(BaseConnector):
                     date=_day(e.findtext(f"{ATOM}published")),
                     url=link.get("href") if link is not None else self.homepage,
                     summary=court or None,
-                    source=self.label + " — named as a party",
+                    source=self.label + ": named as a party",
                     flags=["court"],
                 )
             )
@@ -389,7 +389,7 @@ YOUNG_DOMAIN_DAYS = 365
 
 class RdapConnector(BaseConnector):
     name = "rdap"
-    label = "RDAP — domain registration data (ICANN registries)"
+    label = "RDAP: domain registration data (ICANN registries)"
     kind = "archive"  # website pass: runs once the company's websites are known
     homepage = "https://rdap.org"
     document_types = {"company"}
@@ -440,7 +440,7 @@ class RdapConnector(BaseConnector):
                 parts.append("domain much older than the company: bought or reused")
             docs.append(
                 Document(
-                    title=f"Domain {domain} — registration data (RDAP)",
+                    title=f"Domain {domain}: registration data (RDAP)",
                     kind="website",
                     date=created,
                     url=RDAP.format(domain=domain),
@@ -482,7 +482,7 @@ def _tr_index() -> dict[str, list[dict[str, Any]]]:
 
 class EuTransparencyRegisterConnector(BaseConnector):
     name = "eu_transparency"
-    label = "EU Transparency Register — lobbying with the EU institutions"
+    label = "EU Transparency Register: lobbying with the EU institutions"
     kind = "documents"
     homepage = "https://transparency-register.europa.eu"
     document_types = {"company"}
@@ -511,14 +511,14 @@ class EuTransparencyRegisterConnector(BaseConnector):
                 details.append(f"{o['fte']:g} FTE on EU lobbying")
             docs.append(
                 Document(
-                    title=f"Registered interest representative — {o.get('name')} (EU Transparency Register {o.get('id')})",
+                    title=f"Registered interest representative: {o.get('name')} (EU Transparency Register {o.get('id')})",
                     kind="register",
                     date=_day(o.get("since")),
                     url=TR_UI.format(id=o.get("id")),
                     summary=" · ".join(d for d in details if d),
                     source=self.label
                     + (
-                        f" — export of {_TR_META['export_date']}"
+                        f": export of {_TR_META['export_date']}"
                         if _TR_META.get("export_date")
                         else ""
                     ),

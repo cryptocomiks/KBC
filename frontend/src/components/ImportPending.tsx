@@ -85,7 +85,7 @@ export default function ImportPending({ view, onBack }: Props) {
         <div className={`flex items-center gap-2 text-sm font-medium ${state.cls}`}>
           {c.import_state === "pending" || c.import_state === "resolved" ? <Clock className="h-4 w-4" /> : <AlertTriangle className="h-4 w-4" />}
           {state.label}
-          {info.note && <span className="font-normal text-slate-500">— {info.note}</span>}
+          {info.note && <span className="font-normal text-slate-500">{info.note}</span>}
         </div>
         {(c.import_state === "pending" || c.import_state === "resolved" || c.import_state === "error") && (
           <button className="btn-primary" disabled={run.isPending} onClick={() => run.mutate(undefined)}>
@@ -93,7 +93,7 @@ export default function ImportPending({ view, onBack }: Props) {
             {c.import_state === "error" ? "Retry the analysis" : "Analyse now"}
           </button>
         )}
-        {run.isPending && <p className="text-xs text-slate-500">Searching the registers and screening the network — up to a few minutes…</p>}
+        {run.isPending && <p className="text-xs text-slate-500">Searching the registers and screening the network: up to a few minutes…</p>}
         {run.error && <p className="text-xs text-red-600">{(run.error as Error).message}</p>}
 
         <form

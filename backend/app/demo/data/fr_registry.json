@@ -274,17 +274,17 @@
  "documents": [
   {
    "entity": "900100303",
-   "title": "Legal notice — Collective proceedings (judicial liquidation)",
+   "title": "Legal notice: Collective proceedings (judicial liquidation)",
    "kind": "insolvency",
    "date": "2020-11-16",
-   "summary": "Judgment opening a judicial liquidation — Commercial court of Bobigny (fictitious)",
+   "summary": "Judgment opening a judicial liquidation: Commercial court of Bobigny (fictitious)",
    "flags": [
     "insolvency"
    ]
   },
   {
    "entity": "900100303",
-   "title": "Legal notice — Deregistration",
+   "title": "Legal notice: Deregistration",
    "kind": "legal_notice",
    "date": "2021-07-12",
    "summary": "Removal from the trade register after closure of the liquidation (fictitious)",
@@ -308,7 +308,7 @@
   },
   {
    "entity": "900100202",
-   "title": "Legal notice — Change of shareholder",
+   "title": "Legal notice: Change of shareholder",
    "kind": "legal_notice",
    "date": "2017-09-04",
    "summary": "100% of the shares held by Meridian Capital Holdings S.à r.l. (fictitious)"

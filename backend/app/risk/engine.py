@@ -132,7 +132,7 @@ class RiskEngine:
         cur = latest.get("currency", "")
         return (
             f"total assets {latest['total_assets']} {cur} but revenue {latest['revenue']} {cur} "
-            f"({latest.get('year')}) — a holding or an empty shell: check the economic rationale"
+            f"({latest.get('year')}): a holding or an empty shell: check the economic rationale"
         )
 
     def assess(self, net: Network) -> RiskAssessment:
@@ -154,7 +154,9 @@ class RiskEngine:
             # A hit contradicted by the evidence (other date of birth, nationality, country)
             # stays a possible match to rule out, never a confirmed one.
             strong = h.score >= t["strong_match_score"] and h.triage != "namesake"
-            ev = f"{name(h.entity_id)} ≈ '{h.matched_name}' — {h.dataset} (confidence {h.score:.0f}%)"
+            ev = (
+                f"{name(h.entity_id)} ≈ '{h.matched_name}': {h.dataset} (confidence {h.score:.0f}%)"
+            )
             if h.list_type == ListType.SANCTION:
                 flag("sanctions_match" if strong else "sanctions_possible_match", h.entity_id, ev)
             elif h.list_type == ListType.PEP:
@@ -194,14 +196,14 @@ class RiskEngine:
                 if "vat_invalid" in doc.flags:
                     flag("vat_invalid", eid, f"{e.name}: {doc.title}")
                 if "young_domain" in doc.flags:
-                    flag("young_domain", eid, f"{e.name}: {doc.title} — {doc.summary}")
+                    flag("young_domain", eid, f"{e.name}: {doc.title}: {doc.summary}")
                 if "insolvency" in doc.flags:
                     when = f" on {doc.date}" if doc.date else ""
                     flag(
                         "insolvency_proceedings",
                         eid,
                         f"{e.name}: {doc.title}{when}"
-                        + (f" — {doc.summary}" if doc.summary else ""),
+                        + (f": {doc.summary}" if doc.summary else ""),
                     )
             shell = self._shell_indicator(e.extra.get("financials") or [])
             if shell:
@@ -334,7 +336,7 @@ class RiskEngine:
                     flag(
                         "pep_relative",
                         mine,
-                        f"{ents[mine].name} — {r.role or 'relative'} of {name(other)} (PEP: {peps[other].matched_name})",
+                        f"{ents[mine].name}: {r.role or 'relative'} of {name(other)} (PEP: {peps[other].matched_name})",
                     )
 
         # Adverse media: keyword-filtered press mentions (leads to review)
@@ -347,7 +349,7 @@ class RiskEngine:
                 flag(
                     "adverse_media",
                     eid,
-                    f"{e.name}: {len(articles)} article(s) with risk keywords — {titles}",
+                    f"{e.name}: {len(articles)} article(s) with risk keywords: {titles}",
                 )
 
         # 4. Addresses and nominee directors
@@ -428,8 +430,8 @@ class RiskEngine:
                 f"Screening hits ≥ {t['strong_match_score']:.0f}% count as matches, "
                 f"{t['possible_match_score']:.0f}–{t['strong_match_score']:.0f}% as possible matches, "
                 "below are shown for review only.",
-                "Weights and thresholds: config/risk.yaml — jurisdiction lists: config/jurisdictions.yaml"
-                " — country indicators (Basel AML Index, CPI, World Bank WGI): config/country_risk.json"
+                "Weights and thresholds: config/risk.yaml: jurisdiction lists: config/jurisdictions.yaml"
+                ": country indicators (Basel AML Index, CPI, World Bank WGI): config/country_risk.json"
                 + (f", retrieved {self.countries.retrieved}." if self.countries.retrieved else "."),
             ],
         )

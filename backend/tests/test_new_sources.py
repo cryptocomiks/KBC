@@ -130,7 +130,7 @@ def test_listed_entries_are_compact_but_complete():
         nationalities=["FR"],
     )
     entry = ListedEntry(
-        entity=e, dataset="PEP — France", url="u", details={"a": None}, list_type=ListType.PEP
+        entity=e, dataset="PEP: France", url="u", details={"a": None}, list_type=ListType.PEP
     )
     assert entry.type == EntityType.PERSON and entry.names == ("Jane Doe", "J. Doe")
     rebuilt = entry.entity

@@ -96,7 +96,7 @@ export default function CaseHistory({ view }: { view: CaseView }) {
           <ul className="space-y-1.5 text-xs">
             {decisions.map((d) => (
               <li key={d.item_key}>
-                <b>{DECISION[d.decision] ?? d.decision}</b> — {d.item_label || d.item_key}
+                <b>{DECISION[d.decision] ?? d.decision}</b>: {d.item_label || d.item_key}
                 <span className="ml-1 font-mono text-[10px] text-slate-500">{when(d.decided_at)}</span>
                 {d.comment && <div className="text-slate-500">{d.comment}</div>}
               </li>

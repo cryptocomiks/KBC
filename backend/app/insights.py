@@ -193,7 +193,7 @@ def build_summary(net: Network, risk: RiskAssessment, jur_name=lambda c: c or "?
         if figures:
             out.append(
                 Finding(
-                    text=f"Latest published accounts ({fin['year']}): {', '.join(figures)} — {fin.get('source', '')}.",
+                    text=f"Latest published accounts ({fin['year']}): {', '.join(figures)}: {fin.get('source', '')}.",
                     entity_ids=[subject.id],
                 )
             )
@@ -288,7 +288,7 @@ def build_summary(net: Network, risk: RiskAssessment, jur_name=lambda c: c or "?
         out.append(
             Finding(
                 text=f"{len(media)} press article(s) with risk keywords (fraud, corruption, sanctions…) "
-                f"mention {len({e.id for e, _ in media})} entit(ies) of the network — see the timeline.",
+                f"mention {len({e.id for e, _ in media})} entit(ies) of the network: see the timeline.",
                 severity="warning",
                 entity_ids=list(dict.fromkeys(e.id for e, _ in media))[:5],
                 urls=[d.url for _, d in media[:3] if d.url],

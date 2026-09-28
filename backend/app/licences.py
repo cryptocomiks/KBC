@@ -3,15 +3,15 @@
 A compliance team buying the service must know, for each source, whether its data may be
 used in a commercial service. Each connector is classed in one of five categories:
 
-* ``open`` — official or openly licensed data (public domain, CC0, CC BY, ODbL, Etalab,
+* ``open``: official or openly licensed data (public domain, CC0, CC BY, ODbL, Etalab,
   OGL…): commercial reuse allowed, with attribution where the licence asks for it;
-* ``terms`` — free access under the publisher's terms of use (API fair use, website
+* ``terms``: free access under the publisher's terms of use (API fair use, website
   terms, third-party proxy): allowed in principle, to be confirmed with the publisher
   before a commercial deployment;
-* ``subscription`` — API key: commercial use depends on the plan behind the key;
-* ``non_commercial`` — the licence forbids commercial use without a paid licence
+* ``subscription``: API key: commercial use depends on the plan behind the key;
+* ``non_commercial``: the licence forbids commercial use without a paid licence
   (CC BY-NC, developer keys for non-commercial use);
-* ``demo`` — fictitious dataset.
+* ``demo``: fictitious dataset.
 
 With ``COMMERCIAL_MODE=true``, non-commercial sources are switched off, unless the firm
 holds a commercial licence for them and lists them in ``LICENSED_SOURCES``. This table is

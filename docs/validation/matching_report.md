@@ -1,6 +1,6 @@
 # Matching validation report
 
-Generated 2026-09-27T16:16:04+00:00 · engine 0.1.0 · test set v3 (96 labelled pairs)
+Generated 2026-09-28T08:18:47+00:00 · engine 0.1.0 · test set v3 (96 labelled pairs)
 
 Thresholds: possible match ≥ 70, strong match ≥ 85 (config/risk.yaml).
 
@@ -17,23 +17,23 @@ Thresholds: possible match ≥ 70, strong match ≥ 85 (config/risk.yaml).
 
 | Category | Expected | Pairs | Detection | False positives |
 |---|---|---|---|---|
-| Transliteration / middle names | match | 20 | 100.0 % | — |
-| Diacritics & case | match | 5 | 100.0 % | — |
-| Name order | match | 4 | 100.0 % | — |
-| Same person, same date of birth | match | 3 | 100.0 % | — |
-| Company legal forms & punctuation | match | 14 | 100.0 % | — |
-| Typos | match | 4 | 100.0 % | — |
-| Same registration number | match | 2 | 100.0 % | — |
-| Namesakes, different date of birth | no match | 6 | — | 0.0 % |
-| Very common names, no date of birth | no match | 6 | — | 0.0 % |
-| Different people sharing a name part | no match | 9 | — | 0.0 % |
-| Single word vs full name | no match | 3 | — | 0.0 % |
-| Generic company words only | no match | 8 | — | 0.0 % |
-| Same distinctive name, other generic words (review expected) | match | 1 | 100.0 % | — |
-| Same name, different country | no match | 3 | — | 0.0 % |
-| Person vs company | no match | 3 | — | 0.0 % |
-| A distinctive word is missing | no match | 3 | — | 0.0 % |
-| Same name + country (subsidiary, review expected) | match | 2 | 100.0 % | — |
+| Transliteration / middle names | match | 20 | 100.0 % | - |
+| Diacritics & case | match | 5 | 100.0 % | - |
+| Name order | match | 4 | 100.0 % | - |
+| Same person, same date of birth | match | 3 | 100.0 % | - |
+| Company legal forms & punctuation | match | 14 | 100.0 % | - |
+| Typos | match | 4 | 100.0 % | - |
+| Same registration number | match | 2 | 100.0 % | - |
+| Namesakes, different date of birth | no match | 6 | - | 0.0 % |
+| Very common names, no date of birth | no match | 6 | - | 0.0 % |
+| Different people sharing a name part | no match | 9 | - | 0.0 % |
+| Single word vs full name | no match | 3 | - | 0.0 % |
+| Generic company words only | no match | 8 | - | 0.0 % |
+| Same distinctive name, other generic words (review expected) | match | 1 | 100.0 % | - |
+| Same name, different country | no match | 3 | - | 0.0 % |
+| Person vs company | no match | 3 | - | 0.0 % |
+| A distinctive word is missing | no match | 3 | - | 0.0 % |
+| Same name + country (subsidiary, review expected) | match | 2 | 100.0 % | - |
 
 ## Errors
 

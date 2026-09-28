@@ -1,10 +1,10 @@
-"""UK Companies House without an API key — the public register website.
+"""UK Companies House without an API key: the public register website.
 
 find-and-update.company-information.service.gov.uk answers its search pages in
 JSON (companies and officers) and publishes officer lists and personal
-appointments as stable, id-tagged HTML. That gives the UK register — including
+appointments as stable, id-tagged HTML. That gives the UK register: including
 the Register of Overseas Entities (foreign companies owning UK land, numbers
-"OE…") — to deployments without a COMPANIES_HOUSE_API_KEY. When the key is set,
+"OE…"): to deployments without a COMPANIES_HOUSE_API_KEY. When the key is set,
 the API connector is used instead and this one switches itself off.
 
 Moderate use only (one page per company / officer, cached): it is the same
@@ -82,7 +82,7 @@ def _psc_percent(natures: list[str]) -> float | None:
 class CompaniesHouseWebConnector(CompaniesHouseConnector):
     name = "companies_house_web"
     label = (
-        "Companies House (UK) — public register website, incl. overseas entities owning UK property"
+        "Companies House (UK): public register website, incl. overseas entities owning UK property"
     )
     key_setting = None
     max_retries = 1
@@ -192,7 +192,7 @@ class CompaniesHouseWebConnector(CompaniesHouseConnector):
         return out
 
     def get_shareholders(self, company_id: str) -> list[LinkedEntity]:
-        """Persons with significant control — for overseas entities, the registrable beneficial owners."""
+        """Persons with significant control: for overseas entities, the registrable beneficial owners."""
         number = self.native_id(company_id)
         if ":" in number:
             return []
@@ -352,7 +352,7 @@ class CompaniesHouseWebConnector(CompaniesHouseConnector):
         if entity.extra.get("uk_overseas_entity"):
             docs.append(
                 Document(
-                    title="Registered overseas entity — may own land or property in the UK",
+                    title="Registered overseas entity: may own land or property in the UK",
                     kind="register",
                     url=f"{UI}/company/{number}/persons-with-significant-control",
                     summary="Foreign company on the UK Register of Overseas Entities (required to buy, sell or "

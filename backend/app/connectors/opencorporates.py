@@ -1,4 +1,4 @@
-"""OpenCorporates — the largest open database of companies (140+ registries).
+"""OpenCorporates: the largest open database of companies (140+ registries).
 
 API: https://api.opencorporates.com/documentation/API-Reference
 (token: OPENCORPORATES_API_TOKEN). Officers are returned per appointment, so
