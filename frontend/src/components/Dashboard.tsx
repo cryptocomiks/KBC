@@ -72,7 +72,20 @@ export default function Dashboard({ status, onOpenCase }: Props) {
   const q = useQuery({ queryKey: ["dashboard", attempt], queryFn: api.dashboard, retry: false, enabled: status?.enabled !== false });
 
   if (status && !status.enabled) {
-    return <div className="card mx-auto max-w-xl p-6 text-sm text-amber-700 dark:text-amber-300">{status.message}</div>;
+    return (
+      <div className="card mx-auto max-w-xl p-6">
+        <h1 className="text-lg font-semibold">Cases are not switched on yet</h1>
+        <p className="mt-1 text-sm text-slate-500">
+          Search, investigations, beneficial owners, statement analysis and PDF reports work now. Saving cases (KYC file, alerts, CDB 20 forms, daily monitoring) needs a password and a
+          database on the server. The administrator sets them once:
+        </p>
+        <ol className="mt-4 list-decimal space-y-1.5 pl-5 text-sm">
+          <li>Vercel, Storage: create a Postgres database and connect it to the project.</li>
+          <li>Vercel, Settings, Environment Variables: add APP_PASSWORD and CRON_SECRET, then redeploy.</li>
+          <li>GitHub, Settings, Secrets, Actions: add the same CRON_SECRET for the daily monitoring.</li>
+        </ol>
+      </div>
+    );
   }
   if (q.error instanceof AuthError) return <PasswordGate wrong={attempt > 0} onUnlock={() => setAttempt((a) => a + 1)} />;
   if (q.isLoading) {

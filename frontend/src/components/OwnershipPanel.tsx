@@ -8,7 +8,7 @@ const pct = (v: number | null | undefined) => (v == null ? "-" : `${Number(v.toF
 
 const STATUS: Record<OwnershipOwner["status"], { label: string; tone: string }> = {
   ubo_both: { label: "UBO · declared", tone: "bg-[#248a3d]/10 text-[#1b7331] dark:text-[#30d158]" },
-  ubo_ownership: { label: "UBO · not declared", tone: "bg-[#d70015]/10 text-[#d70015] dark:text-[#ff453a]" },
+  ubo_ownership: { label: "UBO · not declared", tone: "bg-[#d70015]/10 text-[#b42318] dark:text-[#ff453a]" },
   ubo_declared: { label: "Declared UBO", tone: "bg-brand-500/10 text-brand-600 dark:text-[#2997ff]" },
   below_threshold: { label: "Below threshold", tone: "bg-slate-500/10 text-slate-600 dark:text-slate-300" },
   dead_end: { label: "Chain stops here", tone: "bg-amber-500/15 text-amber-800 dark:text-amber-300" },

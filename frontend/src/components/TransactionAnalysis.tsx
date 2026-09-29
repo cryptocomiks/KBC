@@ -8,7 +8,7 @@ import { compact, Tile } from "./viz";
 
 const SEV: Record<string, { label: string; tone: string; dot: string }> = {
   critical: { label: "Critical", tone: "bg-[#d70015] text-white", dot: "bg-[#d70015]" },
-  high: { label: "High", tone: "bg-[#d70015]/10 text-[#d70015] dark:text-[#ff453a]", dot: "bg-[#ff3b30]" },
+  high: { label: "High", tone: "bg-[#d70015]/10 text-[#b42318] dark:text-[#ff453a]", dot: "bg-[#ff3b30]" },
   medium: { label: "Medium", tone: "bg-amber-500/15 text-amber-800 dark:text-amber-300", dot: "bg-amber-500" },
   low: { label: "Low", tone: "bg-slate-500/10 text-slate-600 dark:text-slate-300", dot: "bg-slate-400" },
 };
