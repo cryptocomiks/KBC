@@ -278,6 +278,23 @@ def test_invalid_key_gives_readable_error():
         CompaniesHouseConnector(KEYS).get_company_details("companies_house:1")
 
 
+@respx.mock
+def test_keyless_source_refusing_access_is_not_blamed_on_a_key_and_rests():
+    """A source without key that answers 403 (bot protection, blocked cloud address) is
+    reported as a refusal by the source, then left alone for a while."""
+    from app.connectors.base import ConnectorError
+    from app.connectors.wikidata import WikidataPepConnector
+
+    route = respx.get("https://www.wikidata.org/w/api.php").mock(return_value=httpx.Response(403))
+    conn = WikidataPepConnector(KEYS)
+    with pytest.raises(ConnectorError, match="access refused by the source") as exc:
+        conn.screen(person("Jane Example"))
+    assert "API key" not in str(exc.value)
+    with pytest.raises(ConnectorError, match="skipped for a few minutes"):
+        conn.screen(person("John Example"))
+    assert route.call_count == 1
+
+
 # -------------------------------------------------------- OpenCorporates
 @respx.mock
 def test_opencorporates_company_and_officers():

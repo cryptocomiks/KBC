@@ -68,19 +68,20 @@ def test_sample_statement_raises_every_expected_flag():
 
 
 def test_counterparty_screening_uses_the_given_screener():
-    def screen(entity):
-        if "Terekhov" not in entity.name:
-            return []
-        return [
+    def screen(entities):
+        hits = [
             ScreeningHit(
-                entity_id=entity.id,
+                entity_id=e.id,
                 list_type=ListType.SANCTION,
                 dataset="Test list",
                 matched_name="TEREKHOV, Ruslan",
                 score=97,
                 provenance=Provenance(source="t", source_label="t"),
             )
+            for e in entities
+            if "Terekhov" in e.name
         ]
+        return hits, []
 
     r = analyse(SAMPLE.read_bytes(), SAMPLE.name, {"country": "CH"}, screen)
     hit = rules(r)["counterparty_screening"]
@@ -108,3 +109,43 @@ def test_endpoint_never_stores_and_returns_the_analysis():
         "/api/transactions/analyze", files={"file": ("x.csv", b"a,b\n1,2\n", "text/csv")}
     )
     assert bad.status_code == 422
+
+
+def test_statement_screening_asks_every_source_at_once_within_a_budget(registry):
+    """All counterparties go to every screening source in parallel. A source still loading at
+    the deadline is named, a source that is down is named, the other sources' hits are kept."""
+    import time
+
+    from app.connectors.base import BaseConnector, ConnectorError
+    from app.models import Entity, EntityType
+    from app.service import KbcService
+
+    batches: list[int] = []
+
+    class SlowList(BaseConnector):
+        name, label, kind, is_demo = "slow_list", "Slow list", "screening", True
+
+        def screen_many(self, entities):
+            batches.append(len(entities))
+            time.sleep(1.5)
+            return []
+
+    class BrokenList(BaseConnector):
+        name, label, kind, is_demo = "broken_list", "Broken list", "screening", True
+
+        def screen(self, entity):
+            raise ConnectorError("down")
+
+    registry.connectors["slow_list"] = SlowList(registry.settings)
+    registry.connectors["broken_list"] = BrokenList(registry.settings)
+    people = [
+        Entity(id=f"stmt:{i}", type=EntityType.PERSON, name=n)
+        for i, n in enumerate(["Ruslan Terekhov", "Jane Example"])
+    ]
+    start = time.monotonic()
+    hits, notes = KbcService(registry).screen_entities(people, budget=0.5)
+    assert time.monotonic() - start < 1.2  # the slow list does not hold the answer back
+    assert batches == [2]  # one call with both names
+    assert any("Not screened within" in n and "Slow list" in n for n in notes)
+    assert any("unavailable" in n and "Broken list" in n for n in notes)
+    assert any(h.entity_id == "stmt:0" for h in hits)  # the demo sanctions list answered

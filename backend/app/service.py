@@ -4,13 +4,14 @@ from __future__ import annotations
 
 import hashlib
 import json
-from concurrent.futures import ThreadPoolExecutor
+import time
+from concurrent.futures import ThreadPoolExecutor, wait
 from typing import Any
 
 from app.beneficial import analyse as analyse_ownership
 from app.brief import build_brief
 from app.cache import get_cache
-from app.connectors.base import ConnectorError, group_warnings
+from app.connectors.base import BaseConnector, ConnectorError, group_warnings
 from app.connectors.crypto_util import detect_chain
 from app.connectors.registry import ConnectorRegistry
 from app.doc_requests import build_requests
@@ -38,6 +39,7 @@ from app.triage import apply_triage
 
 SEARCH_LIMIT = 25
 LINKED_SUMMARY_TOP = 8  # linked companies are fetched for the best candidates only
+SCREEN_BUDGET_SECONDS = 25.0  # statement counterparties: answer within the host time limit
 
 
 # Fingerprint of the investigation format (fields of every nested model).
@@ -218,16 +220,40 @@ class KbcService:
         return list(names)[:8], len(names)
 
     # ------------------------------------------------------ investigation
-    def screen_entity(self, entity: Entity) -> list[ScreeningHit]:
-        """Screen one name against every enabled screening source (statement counterparties).
-        A source that is down or still loading is skipped; the others still answer."""
-        hits: list[ScreeningHit] = []
+    def screen_entities(
+        self, entities: list[Entity], budget: float = SCREEN_BUDGET_SECONDS
+    ) -> tuple[list[ScreeningHit], list[str]]:
+        """Screen several names at once (statement counterparties). Every screening source runs
+        in parallel and a source that takes batches gets all the names in one call. A source
+        that is down is skipped; one that has not answered within the budget (a list still
+        downloading on a server that just started) is named in the returned notes."""
+        tasks: list[tuple[BaseConnector, list[Entity]]] = []
         for conn in self.registry.enabled(kind="screening"):
-            try:
-                hits += conn.screen(entity)
-            except ConnectorError:
-                continue
-        return apply_triage(hits, {entity.id: entity})
+            batched = type(conn).screen_many is not BaseConnector.screen_many
+            tasks += [(conn, entities)] if batched else [(conn, [e]) for e in entities]
+        if not entities or not tasks:
+            return [], []
+        workers = max(1, min(self.registry.settings.screening_workers, len(tasks)))
+        pool = ThreadPoolExecutor(max_workers=workers)
+        futures = {pool.submit(conn.screen_many, batch): conn for conn, batch in tasks}
+        start = time.monotonic()
+        done, pending = wait(futures, timeout=budget)
+        pool.shutdown(wait=False, cancel_futures=True)
+        hits: list[ScreeningHit] = []
+        for future in done:
+            if future.exception() is None:
+                hits += future.result()
+        notes = []
+        failed = sorted({futures[f].label for f in done if f.exception() is not None})
+        if failed:
+            notes.append(f"Screening source unavailable: {', '.join(failed)}.")
+        late = sorted({futures[f].label for f in pending})
+        if late:
+            notes.append(
+                f"Not screened within {round(time.monotonic() - start)} s against: {', '.join(late)}"
+                " (lists still loading on the server): run the analysis again in a minute."
+            )
+        return apply_triage(hits, {e.id: e for e in entities}), notes
 
     def investigate(self, req: InvestigationRequest, memory: bool = True) -> Investigation:
         """Investigation with the analysts' memory applied: hits already ruled out as

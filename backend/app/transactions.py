@@ -24,7 +24,6 @@ import csv
 import io
 import re
 import statistics
-import time
 from collections import Counter, defaultdict
 from datetime import date, datetime, timedelta
 from typing import Any
@@ -38,7 +37,6 @@ from app.risk.config import get_country_risk, get_jurisdictions, get_risk_config
 MAX_BYTES = 5_000_000
 MAX_ROWS = 20_000
 MAX_SCREENED = 60
-SCREEN_BUDGET_SECONDS = 25.0
 BROADLY_SANCTIONED = {"KP", "IR", "SY", "CU", "RU", "BY"}
 # Declared annual amounts (KYC questionnaire, in EUR): upper bound of each band
 VOLUME_BANDS = {
@@ -366,8 +364,9 @@ def analyse(
     profile: dict[str, Any] | None = None,
     screen: Any = None,
 ) -> dict[str, Any]:
-    """`profile`: {country, volume, cash, threshold} from the KYC file. `screen(entity)` returns
-    screening hits (the enabled sanctions / watchlist connectors), or None to skip it."""
+    """`profile`: {country, volume, cash, threshold} from the KYC file. `screen(entities)`
+    screens the counterparties in one go (the enabled sanctions / watchlist connectors) and
+    returns (hits, notes); None skips it."""
     if len(data) > MAX_BYTES:
         raise ValueError("File too large (5 MB maximum).")
     profile = profile or {}
@@ -617,21 +616,25 @@ def analyse(
     top = sorted(by_cp.values(), key=lambda r: -(r["in"] + r["out"]))
     screened = 0
     if screen is not None:
-        deadline = time.monotonic() + SCREEN_BUDGET_SECONDS
-        for row in top[:MAX_SCREENED]:
-            if time.monotonic() > deadline:
-                warnings.append(f"Screening stopped after {screened} counterparties (time budget).")
-                break
-            etype = EntityType.COMPANY if LEGAL_WORDS.search(row["name"]) else EntityType.PERSON
-            ent = Entity(
-                id=f"stmt:{screened}", type=etype, name=row["name"], jurisdiction=row["country"]
+        entities = [
+            Entity(
+                id=f"stmt:{i}",
+                type=EntityType.COMPANY if LEGAL_WORDS.search(row["name"]) else EntityType.PERSON,
+                name=row["name"],
+                jurisdiction=row["country"],
             )
-            try:
-                hits = screen(ent)
-            except Exception as exc:  # noqa: BLE001 - a source outage must not stop the analysis
-                warnings.append(f"Screening unavailable for {row['name']}: {str(exc)[:80]}")
-                hits = []
-            screened += 1
+            for i, row in enumerate(top[:MAX_SCREENED])
+        ]
+        try:
+            hits, notes = screen(entities)
+        except Exception as exc:  # noqa: BLE001 - a source outage must not stop the analysis
+            hits, notes = [], [f"Screening unavailable: {str(exc)[:80]}"]
+        warnings += notes
+        screened = len(entities)
+        by_entity: dict[str, list] = defaultdict(list)
+        for h in hits:
+            by_entity[h.entity_id].append(h)
+        for ent, row in zip(entities, top, strict=False):
             row["hits"] = [
                 {
                     "dataset": h.dataset,
@@ -639,7 +642,7 @@ def analyse(
                     "score": h.score,
                     "list_type": h.list_type.value,
                 }
-                for h in hits
+                for h in sorted(by_entity[ent.id], key=lambda h: -h.score)
                 if h.score >= t["possible_match_score"]
                 and h.triage not in ("namesake", "dismissed")
             ][:5]

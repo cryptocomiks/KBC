@@ -118,7 +118,7 @@ async def analyze_transactions(
             data,
             file.filename or "statement.csv",
             prof if isinstance(prof, dict) else {},
-            service().screen_entity if screen else None,
+            service().screen_entities if screen else None,
         )
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc

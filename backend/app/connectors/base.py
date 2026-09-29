@@ -376,8 +376,15 @@ class BaseConnector(ABC):
         if resp.status_code == 404:
             data: Any = None
         elif resp.status_code in (401, 403):
+            if self.key_setting:
+                raise ConnectorError(
+                    f"{self.label}: access refused (HTTP {resp.status_code}), check the API key"
+                )
+            # A keyless source that refuses us (bot protection, blocked cloud address): let it
+            # rest instead of asking again for every entity.
+            _mark_down(self.name, "access refused by the source")
             raise ConnectorError(
-                f"{self.label}: access refused (HTTP {resp.status_code}), check the API key"
+                f"{self.label}: access refused by the source (HTTP {resp.status_code})"
             )
         elif resp.status_code == 429:
             _mark_down(self.name, "rate limited")
