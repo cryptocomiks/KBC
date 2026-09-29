@@ -183,7 +183,7 @@ export default function KycQuestionnaire({ caseId, data }: Props) {
             Vigilance <VigilanceBadge level={a.level} />
           </span>
         ) : (
-          <span className="text-xs font-medium text-amber-600">Not completed</span>
+          <span className="text-xs font-medium text-amber-700 dark:text-amber-400">Not completed</span>
         )}
       </button>
 
@@ -221,7 +221,7 @@ export default function KycQuestionnaire({ caseId, data }: Props) {
                   <div className="mt-2 flex items-center gap-1.5 text-xs text-slate-500">
                     <CalendarClock className="h-3.5 w-3.5" /> Review every {a.review_months} months · next by {fmtDate(a.next_review)}
                   </div>
-                  {dirty && <p className="mt-2 text-[11px] text-amber-600">Answers changed: save to update the level.</p>}
+                  {dirty && <p className="mt-2 text-[11px] text-amber-700 dark:text-amber-400">Answers changed: save to update the level.</p>}
                   {a.triggers.length > 0 && (
                     <div className="mt-3">
                       <div className="text-[11px] font-semibold text-slate-500">Enhanced because</div>
@@ -259,7 +259,7 @@ export default function KycQuestionnaire({ caseId, data }: Props) {
                       </ul>
                     </details>
                   )}
-                  {a.missing.length > 0 && <p className="mt-2 text-[11px] text-amber-600">Unanswered: {a.missing.join(", ")}.</p>}
+                  {a.missing.length > 0 && <p className="mt-2 text-[11px] text-amber-700 dark:text-amber-400">Unanswered: {a.missing.join(", ")}.</p>}
                 </>
               ) : (
                 <p className="text-xs text-slate-500">
@@ -272,7 +272,7 @@ export default function KycQuestionnaire({ caseId, data }: Props) {
               {save.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
               Save and assess
             </button>
-            {save.error && <p className="text-xs text-red-600">{(save.error as Error).message}</p>}
+            {save.error && <p className="text-xs text-red-600 dark:text-red-400">{(save.error as Error).message}</p>}
             <p className="text-[10px] leading-snug text-slate-500">
               Client risk factors of the EU AML directives and of the French Monetary and Financial Code (art. L561-4-1 to
               L561-10-2). Printed in the PDF report of the case.

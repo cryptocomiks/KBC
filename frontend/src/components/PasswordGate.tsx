@@ -25,7 +25,7 @@ export default function PasswordGate({ onUnlock, wrong }: Props) {
       <p className="text-sm text-slate-500">
         Saved cases, analyst decisions and monitoring are private. Enter the password set in <code>APP_PASSWORD</code>.
       </p>
-      {wrong && <p className="text-sm text-red-600">Wrong password.</p>}
+      {wrong && <p className="text-sm text-red-600 dark:text-red-400">Wrong password.</p>}
       <input type="password" className="input w-full" placeholder="Password" value={pw} onChange={(e) => setPw(e.target.value)} autoFocus />
       <button className="btn-primary w-full justify-center" disabled={!pw}>
         Unlock

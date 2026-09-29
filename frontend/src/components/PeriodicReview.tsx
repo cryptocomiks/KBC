@@ -115,7 +115,7 @@ export default function PeriodicReview({ caseId, onTab }: { caseId: string; onTa
           (four-eyes validation at the end, as at onboarding).
         </p>
         {r.warning && <p className="mt-2 text-xs text-amber-700">{r.warning}</p>}
-        {start.error && <p className="mt-2 text-xs text-red-600">{(start.error as Error).message}</p>}
+        {start.error && <p className="mt-2 text-xs text-red-600 dark:text-red-400">{(start.error as Error).message}</p>}
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
@@ -183,7 +183,7 @@ export default function PeriodicReview({ caseId, onTab }: { caseId: string; onTa
               {ok} still valid · {r.to_renew.length} to renew or obtain
             </span>
           </div>
-          <ul className="mt-3 max-h-80 space-y-1 overflow-y-auto pr-1">
+          <ul className="mt-3 max-h-80 space-y-1 overflow-y-auto pr-1" tabIndex={0} aria-label="Documents on file">
             {r.documents.map((d) => (
               <li key={d.label} className="flex items-start gap-2 text-[12.5px]">
                 <span className={`w-24 shrink-0 text-[10px] font-semibold uppercase ${DOC[d.status]}`}>{d.status.replace("_", " ")}</span>

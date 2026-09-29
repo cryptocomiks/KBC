@@ -98,7 +98,7 @@ export default function SourceOfWealth({ caseId, subjectName }: { caseId: string
             return (
               <div key={s.id} className="rounded-xl border border-slate-200 p-3 dark:border-white/10">
                 <div className="flex gap-2">
-                  <select className="input w-full py-1 text-[13px]" value={s.type} onChange={(e) => setSrc(i, { type: e.target.value })}>
+                  <select aria-label="Source type" className="input w-full py-1 text-[13px]" value={s.type} onChange={(e) => setSrc(i, { type: e.target.value })}>
                     {Object.entries(a.types).map(([k, t]) => (
                       <option key={k} value={k}>
                         {t.label}
@@ -147,7 +147,7 @@ export default function SourceOfWealth({ caseId, subjectName }: { caseId: string
           </button>
           {a.by && <span className="text-[11px] text-slate-500">Saved by {a.by}, {fmtDate(a.at)}</span>}
         </div>
-        {save.error && <p className="mt-2 text-xs text-red-600">{(save.error as Error).message}</p>}
+        {save.error && <p className="mt-2 text-xs text-red-600 dark:text-red-400">{(save.error as Error).message}</p>}
       </div>
 
       {/* Assessment */}

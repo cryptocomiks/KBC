@@ -146,6 +146,7 @@ export default function LinkedParties({ investigation: inv, onSelect }: Props) {
           ).map(([k, label]) => (
             <button
               key={k}
+              aria-pressed={tab === k}
               onClick={() => {
                 setTab(k);
                 setAll(false);

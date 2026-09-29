@@ -7,7 +7,7 @@ import { Meter, Tile, type Tone } from "./viz";
 const pct = (v: number | null | undefined) => (v == null ? "-" : `${Number(v.toFixed(2))} %`);
 
 const STATUS: Record<OwnershipOwner["status"], { label: string; tone: string }> = {
-  ubo_both: { label: "UBO · declared", tone: "bg-[#248a3d]/10 text-[#248a3d] dark:text-[#30d158]" },
+  ubo_both: { label: "UBO · declared", tone: "bg-[#248a3d]/10 text-[#1b7331] dark:text-[#30d158]" },
   ubo_ownership: { label: "UBO · not declared", tone: "bg-[#d70015]/10 text-[#d70015] dark:text-[#ff453a]" },
   ubo_declared: { label: "Declared UBO", tone: "bg-brand-500/10 text-brand-600 dark:text-[#2997ff]" },
   below_threshold: { label: "Below threshold", tone: "bg-slate-500/10 text-slate-600 dark:text-slate-300" },
@@ -73,7 +73,7 @@ function OwnerCard({ o, threshold, onSelect }: { o: OwnershipOwner; threshold: n
             <span className="text-[20px] font-semibold tracking-tight tabular-nums">{pct(o.effective_pct)}</span>
           </div>
           <div className="relative mt-1">
-            <Meter value={o.effective_pct ?? 0} max={100} tone={(o.effective_pct ?? 0) >= threshold ? "accent" : "neutral"} />
+            <Meter value={o.effective_pct ?? 0} max={100} tone={(o.effective_pct ?? 0) >= threshold ? "accent" : "neutral"} label={`Effective interest of ${o.name}`} />
             <span className="absolute -top-1 h-[14px] w-px bg-slate-500/70" style={{ left: `${threshold}%` }} title={`Threshold ${threshold} %`} />
           </div>
           <div className="mt-1 flex justify-between text-[11px] text-slate-500">
@@ -144,7 +144,7 @@ export default function OwnershipPanel({ investigation: inv, onSelect }: { inves
                     {h.jurisdiction ?? "?"} · {h.direct ? "direct" : `${h.layers} intermediate compan${h.layers > 1 ? "ies" : "y"}`}
                   </div>
                 </button>
-                <Meter value={h.effective_pct ?? 0} max={100} />
+                <Meter value={h.effective_pct ?? 0} max={100} label={`Interest held in ${h.name}`} />
                 <div className="text-right text-[14px] font-semibold tabular-nums">{pct(h.effective_pct)}</div>
               </li>
             ))}
@@ -239,7 +239,7 @@ export default function OwnershipPanel({ investigation: inv, onSelect }: { inves
           <h2 className="flex items-center gap-2 text-[19px] font-semibold tracking-[-0.02em]">
             <Layers className="h-4 w-4 text-slate-400" /> Ownership coverage, level by level
           </h2>
-          <p className="text-[13px] text-slate-500">Share capital of each company in the chain accounted for by the shareholders identified: where the chain goes dark.</p>
+          <p className="text-[13px] text-slate-500">Share capital of each company in the chain accounted for by the shareholders identified, and where the chain goes dark.</p>
         </header>
         <ul className="mt-3 divide-y divide-slate-200/70 dark:divide-white/[0.06]">
           {a.coverage.map((c) => (
@@ -260,7 +260,7 @@ export default function OwnershipPanel({ investigation: inv, onSelect }: { inves
                   </div>
                 )}
               </div>
-              <Meter value={c.identified_pct} max={100} tone={c.identified_pct >= 99.5 ? "good" : c.depth_limited ? "neutral" : "warning"} />
+              <Meter value={c.identified_pct} max={100} tone={c.identified_pct >= 99.5 ? "good" : c.depth_limited ? "neutral" : "warning"} label={`Share capital of ${c.name} identified`} />
               <div className="text-right text-[13px] tabular-nums">
                 <b>{pct(c.identified_pct)}</b>
                 {c.unexplained_pct > 0 && <div className="text-[11px] text-slate-500">{pct(c.unexplained_pct)} unknown</div>}
@@ -287,7 +287,7 @@ export default function OwnershipPanel({ investigation: inv, onSelect }: { inves
         </header>
         {a.questions.length === 0 ? (
           <p className="flex items-center gap-2 px-5 py-4 text-sm text-slate-500">
-            <Check className="h-4 w-4 text-[#248a3d]" /> The ownership is fully explained by the sources: nothing to ask on this point.
+            <Check className="h-4 w-4 text-[#1b7331]" /> The ownership is fully explained by the sources: nothing to ask on this point.
           </p>
         ) : (
           <ol className="mt-3 list-decimal space-y-2 px-5 pb-5 pl-10 text-[14px] marker:text-slate-400">
@@ -312,7 +312,7 @@ function ActionsSection({ actions }: { actions?: string[] }) {
     <section className="card overflow-hidden border-l-4 border-l-[#d70015]">
       <header className="px-5 pt-5">
         <h2 className="flex items-center gap-2 text-[19px] font-semibold tracking-[-0.02em]">
-          <AlertOctagon className="h-4 w-4 text-[#d70015]" /> Internal actions
+          <AlertOctagon className="h-4 w-4 text-[#d70015] dark:text-[#ff453a]" /> Internal actions
         </h2>
         <p className="text-[13px] text-slate-500">For the compliance team only: never share with the client (tipping-off).</p>
       </header>
@@ -333,7 +333,7 @@ function SanctionsSection({ a, onSelect }: { a: OwnershipAnalysis; onSelect: (id
     <section className="card overflow-hidden">
       <header className="px-5 pt-5">
         <h2 className="flex items-center gap-2 text-[19px] font-semibold tracking-[-0.02em]">
-          <ShieldAlert className="h-4 w-4 text-[#d70015]" /> Sanctions by ownership and control
+          <ShieldAlert className="h-4 w-4 text-[#d70015] dark:text-[#ff453a]" /> Sanctions by ownership and control
         </h2>
         <p className="text-[13px] text-slate-500">
           OFAC 50 % rule and EU ownership criterion: holdings of sanctioned persons are added up; an entity owned 50 % or more is blocked, and so are the entities it owns 50 % or
@@ -342,7 +342,7 @@ function SanctionsSection({ a, onSelect }: { a: OwnershipAnalysis; onSelect: (id
       </header>
       {a.sanctions.length === 0 ? (
         <p className="flex items-center gap-2 px-5 py-4 text-sm text-slate-500">
-          <UserCheck className="h-4 w-4 text-[#248a3d]" /> No entity in the network is owned or run by a person on a sanctions list (confirmed matches only).
+          <UserCheck className="h-4 w-4 text-[#1b7331]" /> No entity in the network is owned or run by a person on a sanctions list (confirmed matches only).
         </p>
       ) : (
         <ul className="mt-3 divide-y divide-slate-200/70 dark:divide-white/[0.06]">
@@ -361,7 +361,7 @@ function SanctionsSection({ a, onSelect }: { a: OwnershipAnalysis; onSelect: (id
                 </div>
               </div>
               <div className="relative">
-                <Meter value={s.aggregate_pct} max={100} tone={s.blocked ? "critical" : "serious"} />
+                <Meter value={s.aggregate_pct} max={100} tone={s.blocked ? "critical" : "serious"} label={`Ownership of ${s.name} held by sanctioned persons`} />
                 <span className="absolute -top-1 left-1/2 h-[14px] w-px bg-slate-500/70" title="50 %" />
               </div>
               <div className="text-right text-[14px] font-semibold tabular-nums">{pct(s.aggregate_pct)}</div>

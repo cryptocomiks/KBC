@@ -122,7 +122,7 @@ function MemoryRegister() {
                   {m.comment && <div className="mt-0.5 text-slate-600 dark:text-slate-400">“{m.comment}”</div>}
                 </div>
                 <button
-                  className="btn-ghost px-2 py-1 text-xs text-red-600"
+                  className="btn-ghost px-2 py-1 text-xs text-red-600 dark:text-red-400"
                   disabled={forget.isPending}
                   onClick={() => window.confirm("Revoke this ruling? The alert will come back in every case.") && forget.mutate(m.item_key)}
                 >
@@ -227,7 +227,7 @@ export default function CaseAlerts({ caseId }: { caseId: string }) {
           </div>
         )}
         {batch.data?.dismissed !== undefined && <p className="mt-2 text-xs text-brand-700 dark:text-brand-400">{batch.data.dismissed} alert(s) ruled out and remembered.</p>}
-        {(batch.error || decide.error) && <p className="mt-2 text-xs text-red-600">{((batch.error || decide.error) as Error).message}</p>}
+        {(batch.error || decide.error) && <p className="mt-2 text-xs text-red-600 dark:text-red-400">{((batch.error || decide.error) as Error).message}</p>}
         {!v.memory_enabled && <p className="mt-2 text-xs text-amber-700">The memory is off on this server (no password configured).</p>}
       </div>
 

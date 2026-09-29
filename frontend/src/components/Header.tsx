@@ -43,7 +43,7 @@ export default function Header({ meta, theme, onToggleTheme, onHome, onCases, ca
           </span>
         </button>
         {meta?.demo_mode && (
-          <span className="hidden rounded-full bg-black/[0.05] px-2.5 py-0.5 text-[11px] text-[#6e6e73] md:inline dark:bg-white/[0.08] dark:text-[#a1a1a6]">
+          <span className="hidden rounded-full bg-black/[0.05] px-2.5 py-0.5 text-[11px] text-[#636366] md:inline dark:bg-white/[0.08] dark:text-[#a1a1a6]">
             {live ? "Demo + live public sources" : "Demo · fictitious data"}
           </span>
         )}
@@ -71,14 +71,15 @@ function NavLink({ active, onClick, Icon, label, badge, tour }: { active: boolea
     <button
       data-tour={tour}
       onClick={onClick}
+      aria-label={badge ? `${label} (${badge})` : label}
       aria-current={active ? "page" : undefined}
       className={`flex h-8 items-center gap-1.5 rounded-full px-3 transition-colors ${
         active ? "bg-black/[0.06] text-[#1d1d1f] dark:bg-white/[0.12] dark:text-white" : "text-[#1d1d1f]/80 hover:text-[#1d1d1f] dark:text-[#f5f5f7]/80 dark:hover:text-white"
       }`}
     >
-      <Icon className="h-[15px] w-[15px] sm:hidden" />
+      <Icon className="h-[15px] w-[15px] sm:hidden" aria-hidden />
       <span className="hidden sm:inline">{label}</span>
-      {badge && <span className="text-[11px] text-[#6e6e73] tabular-nums dark:text-[#a1a1a6]">{badge}</span>}
+      {badge && <span className="text-[11px] text-[#636366] tabular-nums dark:text-[#a1a1a6]">{badge}</span>}
     </button>
   );
 }

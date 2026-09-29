@@ -133,7 +133,7 @@ export default function ClientDocuments({ investigation: inv, onSelect }: Props)
             </span>
           )}
         </div>
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
         {doc?.warnings.map((w) => (
           <p key={w} className="text-xs text-[#b54708] dark:text-[#fec84b]">
             {w}

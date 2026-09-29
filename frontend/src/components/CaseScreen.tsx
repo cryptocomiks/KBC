@@ -54,7 +54,7 @@ export default function CaseScreen({ caseId, tab, onTab, theme, onBack, onInvest
   if (q.error instanceof AuthError) return <PasswordGate wrong={attempt > 0} onUnlock={() => setAttempt((a) => a + 1)} />;
   if (q.isLoading || !q.data) {
     return q.error ? (
-      <div className="card p-6 text-sm text-red-600">{(q.error as Error).message}</div>
+      <div className="card p-6 text-sm text-red-600 dark:text-red-400">{(q.error as Error).message}</div>
     ) : (
       <CaseSkeleton />
     );

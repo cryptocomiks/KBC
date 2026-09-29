@@ -9,6 +9,8 @@ import { VIGILANCE, VigilanceBadge } from "./KycQuestionnaire";
 
 const ORDER = ["geography", "activity", "client", "transactions"] as const;
 const LEVEL_COLOR = { low: "#17b26a", medium: "#f79009", high: "#f04438" } as const;
+/** Same meaning for text, dark enough to read on white (the fills above are for shapes). */
+const LEVEL_TEXT = { low: "text-[#067647] dark:text-[#47cd89]", medium: "text-[#b54708] dark:text-[#fec84b]", high: "text-[#b42318] dark:text-[#fda29b]" } as const;
 
 /** Four-axis radar (0 at the centre, 100 at the tip), polygon filled with the brand colour. */
 function RadarChart({ axes }: { axes: Record<string, RiskAxis> }) {
@@ -95,7 +97,7 @@ export default function RiskMap({ caseId, data }: Props) {
               <li key={k} className="rounded-xl border border-slate-200 p-3 dark:border-white/10">
                 <div className="flex items-center justify-between text-[13px] font-semibold">
                   {ax.label}
-                  <span className="font-mono text-xs" style={{ color: LEVEL_COLOR[ax.level] }}>
+                  <span className={`font-mono text-xs ${LEVEL_TEXT[ax.level]}`}>
                     {ax.score}/100
                   </span>
                 </div>
@@ -138,7 +140,7 @@ export default function RiskMap({ caseId, data }: Props) {
               save.mutate();
             }}
           >
-            <select className="input text-sm" value={level} onChange={(e) => setLevel(e.target.value as Vigilance | "")}>
+            <select aria-label="Vigilance level" className="input text-sm" value={level} onChange={(e) => setLevel(e.target.value as Vigilance | "")}>
               <option value="">Computed ({VIGILANCE[a.computed_level].label})</option>
               <option value="simplified">Simplified</option>
               <option value="standard">Standard</option>
@@ -162,7 +164,7 @@ export default function RiskMap({ caseId, data }: Props) {
             {why.trim().length > 0 && why.trim().length < 15 && (
               <p className="text-[11px] text-slate-500 md:col-span-4">At least 15 characters: explain what the computation does not see.</p>
             )}
-            {save.error && <p className="text-xs text-red-600 md:col-span-4">{(save.error as Error).message}</p>}
+            {save.error && <p className="text-xs text-red-600 dark:text-red-400 md:col-span-4">{(save.error as Error).message}</p>}
           </form>
         )}
         {!!data.override_history?.length && (

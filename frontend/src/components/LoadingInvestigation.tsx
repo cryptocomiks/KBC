@@ -39,7 +39,7 @@ export default function LoadingInvestigation() {
             >
               <span
                 className={`grid h-5 w-5 shrink-0 place-items-center rounded-full transition-colors duration-500 ${
-                  i < current ? "bg-[#079455] text-white" : i === current ? "bg-brand-600 text-white" : "bg-black/[0.06] dark:bg-white/[0.1]"
+                  i < current ? "bg-[#079455] text-white" : i === current ? "bg-brand-600 text-white dark:bg-[#0071e3]" : "bg-black/[0.06] dark:bg-white/[0.1]"
                 }`}
               >
                 {i < current ? <Check className="h-3 w-3" /> : i === current ? <Loader2 className="h-3 w-3 animate-spin" /> : null}

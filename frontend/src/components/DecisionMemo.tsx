@@ -70,7 +70,7 @@ export default function DecisionMemo({ caseId }: { caseId: string }) {
         <Loader2 className="h-5 w-5 animate-spin" /> Writing the memo from the case…
       </div>
     );
-  if (q.error) return <div className="card p-6 text-sm text-red-600">{(q.error as Error).message}</div>;
+  if (q.error) return <div className="card p-6 text-sm text-red-600 dark:text-red-400">{(q.error as Error).message}</div>;
   const m = q.data!;
   const dirty = text !== m.text || m.draft;
   const placeholders = (text.match(/\[[^\]]*\]/g) ?? []).length;
@@ -91,6 +91,7 @@ export default function DecisionMemo({ caseId }: { caseId: string }) {
           {(["preview", "edit"] as const).map((k) => (
             <button
               key={k}
+              aria-pressed={mode === k}
               className={`rounded-full px-3 py-1 font-medium ${mode === k ? "bg-white shadow-sm dark:bg-white/10" : "text-slate-500"}`}
               onClick={() => setMode(k)}
             >
@@ -124,7 +125,7 @@ export default function DecisionMemo({ caseId }: { caseId: string }) {
         </button>
       </div>
       {(save.error || pdf.error || regenerate.error) && (
-        <p className="px-4 pt-2 text-xs text-red-600">{((save.error || pdf.error || regenerate.error) as Error).message}</p>
+        <p className="px-4 pt-2 text-xs text-red-600 dark:text-red-400">{((save.error || pdf.error || regenerate.error) as Error).message}</p>
       )}
       <div className="p-5">
         {mode === "edit" ? (

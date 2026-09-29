@@ -8,9 +8,9 @@ import type { CaseView, ImportChoice } from "../types";
 const STATE: Record<string, { label: string; cls: string }> = {
   pending: { label: "Waiting: company to find", cls: "text-slate-500" },
   resolved: { label: "Company found: analysis waiting", cls: "text-slate-500" },
-  ambiguous: { label: "Several companies match", cls: "text-amber-600" },
-  not_found: { label: "Company not found", cls: "text-amber-600" },
-  error: { label: "Analysis failed", cls: "text-red-600" },
+  ambiguous: { label: "Several companies match", cls: "text-amber-700 dark:text-amber-400" },
+  not_found: { label: "Company not found", cls: "text-amber-700 dark:text-amber-400" },
+  error: { label: "Analysis failed", cls: "text-red-600 dark:text-red-400" },
 };
 
 interface Props {
@@ -76,7 +76,7 @@ export default function ImportPending({ view, onBack }: Props) {
             </div>
           </div>
           <button
-            className="btn-ghost py-1.5 text-xs text-red-600"
+            className="btn-ghost py-1.5 text-xs text-red-600 dark:text-red-400"
             onClick={() => window.confirm(`Delete “${c.title}” from the cases?`) && remove.mutate()}
           >
             <Trash2 className="h-3.5 w-3.5" />
@@ -93,8 +93,8 @@ export default function ImportPending({ view, onBack }: Props) {
             {c.import_state === "error" ? "Retry the analysis" : "Analyse now"}
           </button>
         )}
-        {run.isPending && <p className="text-xs text-slate-500">Searching the registers and screening the network: up to a few minutes…</p>}
-        {run.error && <p className="text-xs text-red-600">{(run.error as Error).message}</p>}
+        {run.isPending && <p className="text-xs text-slate-500">Searching the registers and screening the network. This can take a few minutes…</p>}
+        {run.error && <p className="text-xs text-red-600 dark:text-red-400">{(run.error as Error).message}</p>}
 
         <form
           className="flex gap-2"

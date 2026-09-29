@@ -127,6 +127,12 @@ export default function App() {
 
   return (
     <div className="flex min-h-full flex-col">
+      <button
+        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-3 focus:z-[100] focus:rounded-full focus:bg-brand-500 focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
+        onClick={() => document.getElementById("main")?.focus()}
+      >
+        Skip to content
+      </button>
       <Header
         meta={meta.data}
         theme={theme}
@@ -150,7 +156,7 @@ export default function App() {
       )}
       <Toaster />
       <Disclaimer text={meta.data?.disclaimer} />
-      <main className="mx-auto w-full max-w-[1600px] flex-1 space-y-5 px-4 py-5">
+      <main id="main" tabIndex={-1} className="mx-auto w-full max-w-[1600px] flex-1 space-y-5 px-4 py-5 outline-none">
         {page === "cases" && !caseId && <Dashboard status={casesStatus} onOpenCase={openCase} />}
         {page === "validation" && <ValidationPage />}
         {page === "sources" && <SourcesPage meta={meta.data} />}
@@ -188,7 +194,7 @@ export default function App() {
                 <Loader2 className="h-4 w-4 animate-spin" /> Searching sources…
               </div>
             )}
-            {results.error && <div className="text-sm text-red-600">Search failed: {(results.error as Error).message}</div>}
+            {results.error && <div className="text-sm text-red-600 dark:text-red-400">Search failed: {(results.error as Error).message}</div>}
             {results.data && !results.isFetching && (
               <CandidateList
                 data={results.data}
@@ -206,14 +212,14 @@ export default function App() {
               <LoadingInvestigation />
             )}
             {investigation.error && (
-              <div className="card p-6 text-sm text-red-600">
+              <div className="card p-6 text-sm text-red-600 dark:text-red-400">
                 Investigation failed: {(investigation.error as Error).message}{" "}
                 <button className="btn-outline ml-2" onClick={back}>
                   Back
                 </button>
               </div>
             )}
-            {saveError && <div className="text-sm text-red-600">Could not save the case: {saveError}</div>}
+            {saveError && <div className="text-sm text-red-600 dark:text-red-400">Could not save the case: {saveError}</div>}
             {investigation.data && (
               <InvestigationView
                 investigation={investigation.data}

@@ -101,7 +101,7 @@ export function OwnershipChart({ investigation: inv, onSelect }: Props) {
                     <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: color(i, o.flags) }} />
                     <span className="truncate font-medium group-hover:text-brand-600">{o.name}</span>
                     {o.flags.map((f) => (
-                      <span key={f} className="rounded bg-[#d92d20]/10 px-1.5 text-[10px] font-semibold text-[#b42318] uppercase">
+                      <span key={f} className="rounded bg-[#d92d20]/10 px-1.5 text-[10px] font-semibold text-[#b42318] uppercase dark:text-[#fda29b]">
                         {f}
                       </span>
                     ))}
@@ -315,7 +315,7 @@ export function CountryExposure({ investigation: inv }: Props) {
                 <span>{flag(String(r.code))}</span>
                 <span className="truncate font-medium">{countryName(String(r.code))}</span>
                 <span className="ml-auto shrink-0 text-[11px] text-slate-500 tabular-nums">
-                  {score !== null ? `Basel ${score.toFixed(1)}` : "Basel:"}
+                  {score !== null ? `Basel ${score.toFixed(1)}` : "Basel n/a"}
                   {r.cpi_score != null && ` · CPI ${String(r.cpi_score)}`}
                 </span>
               </div>

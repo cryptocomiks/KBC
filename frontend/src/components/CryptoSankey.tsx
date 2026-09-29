@@ -112,7 +112,7 @@ export default function CryptoSankey({ investigation: inv, onSelect }: Props) {
         <h2 className="text-sm font-semibold">Crypto flows</h2>
         <span className="text-[11px] text-slate-500">aggregated on-chain transfers, one hop · width = amount · red = sanctioned</span>
         {currencies.length > 1 && (
-          <select className="input ml-auto py-1 text-xs" value={cur} onChange={(e) => setCurrency(e.target.value)}>
+          <select aria-label="Currency" className="input ml-auto py-1 text-xs" value={cur} onChange={(e) => setCurrency(e.target.value)}>
             {currencies.map((c) => (
               <option key={c}>{c}</option>
             ))}

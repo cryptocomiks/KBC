@@ -154,7 +154,7 @@ export default function CaseWorkflow({ caseId, view }: Props) {
           Sent back by {view.history[0].by}: “{view.history[0].comment}”
         </p>
       )}
-      {act.error && <p className="text-xs text-red-600">{(act.error as Error).message}</p>}
+      {act.error && <p className="text-xs text-red-600 dark:text-red-400">{(act.error as Error).message}</p>}
       {showHistory && (
         <ul className="space-y-1 border-t border-slate-200 pt-2 text-xs dark:border-white/10">
           {view.history.map((h, i) => (

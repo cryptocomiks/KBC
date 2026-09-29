@@ -65,7 +65,7 @@ export default function QuickChecks({ company, country }: { company?: string; co
             {run.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldAlert className="h-4 w-4" />} Run the checks
           </button>
           {company && <span className="text-xs text-slate-500">Domains are compared with “{company}”.</span>}
-          {run.error && <span className="text-sm text-red-600">{(run.error as Error).message}</span>}
+          {run.error && <span className="text-sm text-red-600 dark:text-red-400">{(run.error as Error).message}</span>}
         </div>
       </form>
 

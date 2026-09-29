@@ -156,7 +156,7 @@ export default function ImportPanel({ status }: Props) {
               below to pick the right company.
             </p>
           )}
-          {error && <p className="text-xs text-red-600">{error}</p>}
+          {error && <p className="text-xs text-red-600 dark:text-red-400">{error}</p>}
         </div>
       )}
     </div>

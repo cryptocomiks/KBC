@@ -142,7 +142,7 @@ export default function EntityPanel({ investigation: inv, entityId, onSelect }: 
       <li key={key}>
         <button
           onClick={() => onSelect(other.id)}
-          className={`flex w-full items-start gap-2 rounded-md px-2 py-1 text-left hover:bg-slate-100 dark:hover:bg-slate-800 ${ended ? "opacity-60" : ""}`}
+          className={`flex w-full items-start gap-2 rounded-md px-2 py-1 text-left hover:bg-slate-100 dark:hover:bg-slate-800 ${ended ? "text-slate-500" : ""}`}
         >
           {dir === "out" ? <ArrowRight className="mt-0.5 h-3.5 w-3.5 shrink-0 text-slate-400" /> : <ArrowLeft className="mt-0.5 h-3.5 w-3.5 shrink-0 text-slate-400" />}
           <span className="min-w-0">

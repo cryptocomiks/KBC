@@ -30,7 +30,7 @@ function Counted({ value }: { value: string }) {
 }
 
 const SEV_ICON = { critical: AlertOctagon, warning: AlertTriangle, info: Info } as const;
-const SEV_COLOR = { critical: "text-red-600", warning: "text-amber-600", info: "text-slate-400" } as const;
+const SEV_COLOR = { critical: "text-red-600 dark:text-red-400", warning: "text-amber-600", info: "text-slate-400" } as const;
 
 interface Props {
   investigation: Investigation;
@@ -54,11 +54,11 @@ export default function BriefCard({ investigation: inv, onSelect, onOpenTab, hid
       {/* Risk rating, main finding, recommended action */}
       <div className="grid border-b border-slate-200 md:grid-cols-[200px_1fr] dark:border-slate-800">
         <div className={`flex flex-col justify-center gap-1 px-5 py-4 ${LEVEL_PANEL[b.level] ?? LEVEL_PANEL.low}`}>
-          <div className="text-[11px] font-semibold tracking-wider uppercase opacity-80">Risk rating</div>
+          <div className="text-[11px] font-semibold tracking-wider uppercase">Risk rating</div>
           <div className="flex items-center gap-2 text-[20px] font-bold tracking-wide uppercase">
             <Verdict className="h-5 w-5" /> {level}
           </div>
-          <div className="text-[12px] font-medium opacity-80">Score {b.score.toFixed(0)} / 100</div>
+          <div className="text-[12px] font-medium">Score {b.score.toFixed(0)} / 100</div>
         </div>
         <div className="px-5 py-4">
           <div className="tag">Summary</div>

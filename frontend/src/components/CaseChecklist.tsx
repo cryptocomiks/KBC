@@ -26,7 +26,7 @@ function Row({
 }) {
   return (
     <li className="group flex items-start gap-3 px-3 py-2.5">
-      <input type="checkbox" className="mt-0.5 h-4 w-4 shrink-0 accent-brand-600" checked={item.done} disabled={busy} onChange={onToggle} />
+      <input type="checkbox" className="mt-0.5 h-4 w-4 shrink-0 accent-brand-600" checked={item.done} disabled={busy} onChange={onToggle} aria-label={item.label} />
       <div className="min-w-0 flex-1">
         <div className={`text-[13px] leading-snug ${item.done ? "text-slate-500 line-through decoration-slate-400/60" : ""}`}>{item.label}</div>
         {item.reason && !item.done && <div className="text-[11px] text-slate-500">{item.reason}</div>}
@@ -155,7 +155,7 @@ export default function CaseChecklist({ caseId, data, subjectName }: Props) {
               Suggested from the vigilance level and the red flags. Optional: remove what does not apply, add your own.
             </p>
           </section>
-          {error && <p className="text-xs text-red-600 lg:col-span-2">{(error as Error).message}</p>}
+          {error && <p className="text-xs text-red-600 dark:text-red-400 lg:col-span-2">{(error as Error).message}</p>}
         </div>
       )}
     </div>

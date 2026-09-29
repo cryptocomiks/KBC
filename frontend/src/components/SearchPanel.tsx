@@ -38,6 +38,7 @@ export default function SearchPanel({ initial, demo, live, onSearch, compact }: 
   const typeBtn = (t: SearchParams["type"], label: string, Icon: typeof User) => (
     <button
       type="button"
+      aria-pressed={p.type === t}
       onClick={() => setP({ ...p, type: t })}
       className={`inline-flex items-center gap-1.5 rounded-[8px] px-2.5 py-1 transition-all duration-200 text-xs font-medium ${
         p.type === t ? "bg-white shadow-[0_1px_3px_rgb(0_0_0/0.12)] dark:bg-slate-600" : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"

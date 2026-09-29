@@ -197,7 +197,7 @@ export default function WorldMap({ investigation: inv, onSelect }: Props) {
               Basel AML {hover.basel_aml_score != null ? `${Number(hover.basel_aml_score).toFixed(2)}/10` : "n/a"} · CPI{" "}
               {hover.cpi_score != null ? `${hover.cpi_score}/100` : "n/a"}
             </div>
-            {hover.lists ? <div className="font-semibold text-red-600">{String(hover.lists)}</div> : null}
+            {hover.lists ? <div className="font-semibold text-red-600 dark:text-red-400">{String(hover.lists)}</div> : null}
           </div>
         )}
       </div>

@@ -78,7 +78,7 @@ export default function Dashboard({ status, onOpenCase }: Props) {
   if (q.isLoading) {
     return <DashboardSkeleton />;
   }
-  if (q.error) return <div className="card p-6 text-sm text-red-600">{(q.error as Error).message}</div>;
+  if (q.error) return <div className="card p-6 text-sm text-red-600 dark:text-red-400">{(q.error as Error).message}</div>;
   const d = q.data!;
   const analysed = d.cases.filter((c) => !c.import_state);
   const total = d.cases.length;
@@ -97,7 +97,7 @@ export default function Dashboard({ status, onOpenCase }: Props) {
           <h1 className="headline text-[40px]">Cases</h1>
           <p className="mt-1 text-[15px] text-slate-500">
             Your client portfolio, re-checked daily when monitoring is on. Storage: {status?.storage ?? "-"}
-            {status?.message && <span className="ml-1 text-amber-600">· {status.message}</span>}
+            {status?.message && <span className="ml-1 text-amber-700 dark:text-amber-400">· {status.message}</span>}
           </p>
         </div>
         <button
@@ -253,7 +253,7 @@ export default function Dashboard({ status, onOpenCase }: Props) {
                           </td>
                           <td className="px-3 py-2.5">
                             {c.import_state ? (
-                              <span className={`text-[11px] font-medium ${["ambiguous", "not_found", "error"].includes(c.import_state) ? "text-amber-600" : "text-slate-500"}`}>
+                              <span className={`text-[11px] font-medium ${["ambiguous", "not_found", "error"].includes(c.import_state) ? "text-amber-700 dark:text-amber-400" : "text-slate-500"}`}>
                                 {IMPORT_LABEL[c.import_state] ?? c.import_state}
                               </span>
                             ) : (
@@ -273,7 +273,7 @@ export default function Dashboard({ status, onOpenCase }: Props) {
                             {left == null ? (
                               <span className="text-slate-400">-</span>
                             ) : (
-                              <span className={left < 0 ? "font-semibold text-red-600" : left <= 30 ? "font-semibold text-amber-600" : "text-slate-500"}>
+                              <span className={left < 0 ? "font-semibold text-red-600 dark:text-red-400" : left <= 30 ? "font-semibold text-amber-700 dark:text-amber-400" : "text-slate-500"}>
                                 {left < 0 ? `${-left}d late` : `in ${left}d`}
                               </span>
                             )}
@@ -314,12 +314,12 @@ export default function Dashboard({ status, onOpenCase }: Props) {
                 {d.recent_changes.length === 0 ? (
                   <p className="text-xs text-slate-500">Nothing yet: changes appear after the daily checks.</p>
                 ) : (
-                  <ul className="max-h-80 space-y-1.5 overflow-auto pr-1">
+                  <ul className="max-h-80 space-y-1.5 overflow-auto pr-1" tabIndex={0} aria-label="Latest changes">
                     {d.recent_changes.map((x) => {
                       const Icon = SEV[x.severity] ?? Info;
                       return (
                         <li key={x.id} className="flex gap-2 text-xs">
-                          <Icon className={`mt-0.5 h-3.5 w-3.5 shrink-0 ${x.severity === "critical" ? "text-red-600" : x.severity === "warning" ? "text-amber-600" : "text-slate-400"}`} />
+                          <Icon className={`mt-0.5 h-3.5 w-3.5 shrink-0 ${x.severity === "critical" ? "text-red-600 dark:text-red-400" : x.severity === "warning" ? "text-amber-600" : "text-slate-400"}`} />
                           <button className="text-left hover:text-brand-600" onClick={() => x.case_id && onOpenCase(x.case_id)}>
                             <span className="font-semibold">{x.case_title}</span> · {x.description}
                             <span className="ml-1 font-mono text-[10px] text-slate-500">{x.run_at?.slice(0, 10)}</span>

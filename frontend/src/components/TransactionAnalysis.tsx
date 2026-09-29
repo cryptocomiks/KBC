@@ -127,7 +127,7 @@ export default function TransactionAnalysis({ profile, subjectName }: { profile?
             }}
           />
         </div>
-        {error && <p className="mt-3 text-sm text-[#d70015]">{error}</p>}
+        {error && <p className="mt-3 text-sm text-[#d70015] dark:text-[#ff453a]">{error}</p>}
       </section>
 
       {result && <Results r={result} subjectName={subjectName} />}
@@ -186,7 +186,7 @@ function Results({ r, subjectName }: { r: StatementAnalysis; subjectName?: strin
         </header>
         {r.alerts.length === 0 ? (
           <p className="flex items-center gap-2 px-5 py-4 text-sm text-slate-500">
-            <ShieldCheck className="h-4 w-4 text-[#248a3d]" /> No red flag on these transactions with the current rules.
+            <ShieldCheck className="h-4 w-4 text-[#1b7331]" /> No red flag on these transactions with the current rules.
           </p>
         ) : (
           <ul className="mt-3 divide-y divide-slate-200/70 dark:divide-white/[0.06]">
@@ -273,7 +273,7 @@ function Results({ r, subjectName }: { r: StatementAnalysis; subjectName?: strin
                   <td className="max-w-[260px] truncate px-2 py-1.5 text-slate-500" title={t.description ?? ""}>
                     {t.description}
                   </td>
-                  <td className={`px-2 py-1.5 text-right whitespace-nowrap tabular-nums ${t.direction === "in" ? "text-[#248a3d] dark:text-[#30d158]" : ""}`}>
+                  <td className={`px-2 py-1.5 text-right whitespace-nowrap tabular-nums ${t.direction === "in" ? "text-[#1b7331] dark:text-[#30d158]" : ""}`}>
                     {t.direction === "in" ? "+" : "−"}
                     {money(t.amount)}
                   </td>
@@ -337,7 +337,7 @@ function AlertRow({ a, ccy, active, onShow }: { a: StatementAlert; ccy: string |
         </button>
       </div>
       {a.severity === "critical" && (
-        <p className="mt-2 ml-5 flex items-center gap-1.5 text-[12px] text-[#d70015]">
+        <p className="mt-2 ml-5 flex items-center gap-1.5 text-[12px] text-[#d70015] dark:text-[#ff453a]">
           <AlertTriangle className="h-3.5 w-3.5" /> Do not execute further payments with this counterparty until the match is ruled out.
         </p>
       )}

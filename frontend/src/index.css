@@ -19,8 +19,8 @@
   --color-slate-100: #ededf0;
   --color-slate-200: #e0e0e5;
   --color-slate-300: #d2d2d7;
-  --color-slate-400: #86868b;
-  --color-slate-500: #6e6e73;
+  --color-slate-400: #6e6e73; /* darker than Apple's #86868b: 4.5:1 on white and on the grey canvas */
+  --color-slate-500: #636366;
   --color-slate-600: #515154;
   --color-slate-700: #3a3a3c;
   --color-slate-800: #2c2c2e;
@@ -31,12 +31,22 @@
   --color-brand-50: #eaf3fe;
   --color-brand-100: #d3e6fc;
   --color-brand-300: #6bb4ff;
+  --color-brand-400: #2997ff;
   --color-brand-500: #0071e3;
   --color-brand-600: #0066cc;
   --color-brand-700: #004f9e;
 
   --radius-card: 18px;
   --ease-fluid: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+/* Dark appearance: the same utility names resolve to lighter values, so secondary text,
+   links and hints keep a contrast of at least 4.5:1 on the dark surfaces (WCAG 2.1 AA). */
+.dark {
+  --color-slate-400: #a1a1a6;
+  --color-slate-500: #98989d;
+  --color-brand-600: #2997ff;
+  --color-brand-700: #409cff;
 }
 
 html,
@@ -331,7 +341,7 @@ h3 {
 
 /* Small heading above a block (neutral, like Apple's grouped lists) */
 @utility tag {
-  @apply text-[13px] font-semibold tracking-[-0.01em] text-[#6e6e73] dark:text-[#a1a1a6];
+  @apply text-[13px] font-semibold tracking-[-0.01em] text-[#636366] dark:text-[#a1a1a6];
 }
 /* Eyebrow above a product-page headline (apple.com orange) */
 @utility eyebrow {
@@ -566,6 +576,15 @@ header.sticky {
 }
 
 /* ------------------------------------------------------------ accessibility */
+/* Keyboard focus: always visible, the same ring everywhere (a mouse click does not show it).
+   Text fields keep their own focus halo. */
+:where(a, button, summary, [tabindex]:not([tabindex="-1"]), input[type="checkbox"], input[type="radio"]):focus-visible {
+  outline: 2px solid #0071e3;
+  outline-offset: 2px;
+}
+:where(.dark) :where(a, button, summary, [tabindex]:not([tabindex="-1"]), input[type="checkbox"], input[type="radio"]):focus-visible {
+  outline-color: #2997ff;
+}
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

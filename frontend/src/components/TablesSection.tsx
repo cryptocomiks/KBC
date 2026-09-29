@@ -92,6 +92,7 @@ export default function TablesSection({ investigation: inv, onSelect, activeTab,
             return (
               <span className="flex flex-col gap-0.5" onClick={(e) => e.stopPropagation()}>
                 <select
+                  aria-label={`Analyst decision for ${String(r.matched_name)}`}
                   className={`rounded border px-1 py-0.5 text-[11px] ${d ? DECISION_STYLE[d.decision] : "border-slate-300 dark:border-slate-600 dark:bg-slate-900"}`}
                   value={d?.decision ?? "none"}
                   onChange={(e) => onDecide(hitKey(r), `${String(r.entity)} ≈ ${String(r.matched_name)} (${String(r.dataset)})`, e.target.value as DecisionValue | "none")}

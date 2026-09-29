@@ -11,7 +11,7 @@ export function RefChips({ refs }: { refs: LegalRef[] }) {
       {refs.map((r) => {
         const body = (
           <>
-            {!r.short.startsWith(r.jurisdiction) && <span className="text-[9px] font-bold tracking-wide text-slate-400">{FLAG[r.jurisdiction] ?? r.jurisdiction}</span>} {r.short}
+            {!r.short.startsWith(r.jurisdiction) && <span className="text-[9px] font-bold tracking-wide text-slate-600 dark:text-slate-300">{FLAG[r.jurisdiction] ?? r.jurisdiction}</span>} {r.short}
           </>
         );
         const cls = "inline-flex items-center gap-1 rounded-md bg-black/[0.04] px-1.5 py-0.5 text-[11px] text-slate-600 dark:bg-white/[0.06] dark:text-slate-300";

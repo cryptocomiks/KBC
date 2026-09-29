@@ -8,7 +8,7 @@ import type { ConnectorStatus, Meta } from "../types";
 type Category = ConnectorStatus["licence"]["category"];
 
 const CATEGORIES: { key: Category; title: string; text: string; tone: string }[] = [
-  { key: "open", title: "Open licence", text: "Official or openly licensed data: commercial reuse allowed, with attribution where required.", tone: "bg-[#248a3d]/10 text-[#248a3d] dark:text-[#30d158]" },
+  { key: "open", title: "Open licence", text: "Official or openly licensed data: commercial reuse allowed, with attribution where required.", tone: "bg-[#248a3d]/10 text-[#1b7331] dark:text-[#30d158]" },
   { key: "terms", title: "Publisher's terms", text: "Free access under the publisher's terms of use: confirm with the publisher before a commercial deployment.", tone: "bg-brand-500/10 text-brand-600 dark:text-[#2997ff]" },
   { key: "subscription", title: "Subscription", text: "API key: commercial use depends on the plan behind the key.", tone: "bg-violet-500/10 text-violet-700 dark:text-violet-300" },
   { key: "non_commercial", title: "Non-commercial", text: "The licence forbids commercial use without a paid licence. Switched off in commercial mode.", tone: "bg-amber-500/15 text-amber-800 dark:text-amber-300" },
@@ -38,7 +38,7 @@ export default function SourcesPage({ meta }: { meta?: Meta }) {
     return c;
   }, [q.data]);
 
-  if (q.error) return <div className="card p-6 text-sm text-red-600">{(q.error as Error).message}</div>;
+  if (q.error) return <div className="card p-6 text-sm text-red-600 dark:text-red-400">{(q.error as Error).message}</div>;
   if (!q.data) return <BlockSkeleton rows={8} />;
 
   const n = needle.trim().toLowerCase();
@@ -122,7 +122,7 @@ export default function SourcesPage({ meta }: { meta?: Meta }) {
               <li key={s.name} className="grid gap-2 px-5 py-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
                 <div className="flex items-start gap-2.5">
                   {s.enabled ? (
-                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#248a3d] dark:text-[#30d158]" aria-label="Active" />
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#1b7331] dark:text-[#30d158]" aria-label="Active" />
                   ) : (
                     <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" aria-label="Off" />
                   )}
@@ -145,7 +145,7 @@ export default function SourcesPage({ meta }: { meta?: Meta }) {
                 <div className="pl-6 sm:pl-0">
                   <span className={`inline-block rounded-full px-2 py-0.5 text-[11px] font-semibold ${c.tone}`}>{c.title}</span>
                   {s.licence.commercial_licence_held && (
-                    <span className="ml-1.5 inline-block rounded-full bg-[#248a3d]/10 px-2 py-0.5 text-[11px] font-semibold text-[#248a3d] dark:text-[#30d158]">
+                    <span className="ml-1.5 inline-block rounded-full bg-[#248a3d]/10 px-2 py-0.5 text-[11px] font-semibold text-[#1b7331] dark:text-[#30d158]">
                       Licence held
                     </span>
                   )}

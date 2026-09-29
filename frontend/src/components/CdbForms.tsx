@@ -37,7 +37,7 @@ function Field({ label, value, missing, onSave }: { label: string; value: string
   const [v, setV] = useState(value);
   return (
     <label className="block">
-      <span className={`block text-[10px] font-medium uppercase tracking-wide ${missing ? "text-amber-600" : "text-slate-500"}`}>
+      <span className={`block text-[10px] font-medium uppercase tracking-wide ${missing ? "text-amber-700 dark:text-amber-400" : "text-slate-500"}`}>
         {label}
         {missing && " · to complete"}
       </span>
@@ -124,7 +124,7 @@ export default function CdbForms({ caseId }: { caseId: string }) {
             </span>
           ))}
           <span className={`text-xs ${d.missing_total ? "text-amber-700 dark:text-amber-300" : "text-brand-700 dark:text-brand-400"}`}>
-            {d.missing_total ? `${d.missing_total} field(s) to complete` : "complete: ready to sign"}
+            {d.missing_total ? `${d.missing_total} field(s) to complete` : "complete, ready to sign"}
           </span>
           <div className="ml-auto flex items-center gap-2">
             <input className="input w-36 py-1 text-xs" placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)} />
@@ -140,7 +140,7 @@ export default function CdbForms({ caseId }: { caseId: string }) {
           {d.draft_note} {d.edited_by && <>Last edit by {d.edited_by}, {fmtDate(d.edited_at)}.</>}
         </p>
         {d.exemption && <p className="mt-2 rounded-lg bg-sky-500/10 px-3 py-2 text-[12px] text-sky-800 dark:text-sky-200">{d.exemption}</p>}
-        {(save.error || pdf.error) && <p className="mt-2 text-xs text-red-600">{((save.error || pdf.error) as Error).message}</p>}
+        {(save.error || pdf.error) && <p className="mt-2 text-xs text-red-600 dark:text-red-400">{((save.error || pdf.error) as Error).message}</p>}
         <h4 className="mt-4 mb-2 text-[12px] font-semibold">Contracting party</h4>
         <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {PARTY.map(([k, label]) => (
@@ -235,7 +235,7 @@ export default function CdbForms({ caseId }: { caseId: string }) {
           </div>
           <div className="mt-3 flex items-center gap-2">
             {ROLES[f.code].length > 1 && (
-              <select className="input w-auto py-1 text-xs" value={role[f.id] ?? ROLES[f.code][0][0]} onChange={(e) => setRole({ ...role, [f.id]: e.target.value })}>
+              <select aria-label="Role of the person to add" className="input w-auto py-1 text-xs" value={role[f.id] ?? ROLES[f.code][0][0]} onChange={(e) => setRole({ ...role, [f.id]: e.target.value })}>
                 {ROLES[f.code].map(([k, l]) => (
                   <option key={k} value={k}>
                     {l}

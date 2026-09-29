@@ -87,7 +87,7 @@ export default function CaseOverview({ o, onTab }: { o: Overview; onTab: (t: Cas
               <span className="font-semibold">{o.cdb.persons} person(s)</span>
             </div>
             <p className={`mt-1 text-[11px] ${o.cdb.missing ? "text-amber-700 dark:text-amber-300" : "text-slate-500"}`}>
-              {o.cdb.missing ? `${o.cdb.missing} field(s) to complete` : "complete: ready to sign"}
+              {o.cdb.missing ? `${o.cdb.missing} field(s) to complete` : "complete, ready to sign"}
             </p>
           </button>
           <button className="block w-full text-left" onClick={() => onTab("sow")}>

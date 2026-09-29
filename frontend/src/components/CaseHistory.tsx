@@ -5,7 +5,7 @@ import { api } from "../api";
 import type { CaseView } from "../types";
 
 const SEV = {
-  critical: { Icon: AlertOctagon, cls: "text-red-600" },
+  critical: { Icon: AlertOctagon, cls: "text-red-600 dark:text-red-400" },
   warning: { Icon: AlertTriangle, cls: "text-amber-600" },
   info: { Icon: Info, cls: "text-slate-400" },
 } as const;
@@ -40,11 +40,11 @@ export default function CaseHistory({ view }: { view: CaseView }) {
         {changes.length === 0 ? (
           <p className="text-xs text-slate-500">No change since the case was created. Checks run daily when monitoring is on.</p>
         ) : (
-          <ul className="max-h-[420px] space-y-1.5 overflow-auto pr-1">
+          <ul className="max-h-[420px] space-y-1.5 overflow-auto pr-1" tabIndex={0} aria-label="Changes found">
             {changes.map((x) => {
               const { Icon, cls } = SEV[x.severity] ?? SEV.info;
               return (
-                <li key={x.id ?? x.description} className={`flex gap-2 text-xs ${x.seen ? "opacity-60" : ""}`}>
+                <li key={x.id ?? x.description} className={`flex gap-2 text-xs ${x.seen ? "text-slate-500" : ""}`}>
                   <Icon className={`mt-0.5 h-3.5 w-3.5 shrink-0 ${cls}`} />
                   <span>
                     <span className="font-mono text-[10px] text-slate-500">{x.run_at?.slice(0, 10)}</span> {x.description}

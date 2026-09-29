@@ -10,7 +10,7 @@ import { CountUp, Meter } from "./viz";
 export default function ValidationPage() {
   const q = useQuery({ queryKey: ["validation"], queryFn: api.validation, staleTime: Infinity });
   const [showAll, setShowAll] = useState(false);
-  if (q.error) return <div className="card p-6 text-sm text-red-600">{(q.error as Error).message}</div>;
+  if (q.error) return <div className="card p-6 text-sm text-red-600 dark:text-red-400">{(q.error as Error).message}</div>;
   if (!q.data) return <BlockSkeleton rows={6} />;
   const r = q.data;
   const o = r.overall;
@@ -57,8 +57,8 @@ export default function ValidationPage() {
                     {c.pairs} pairs · {isMatch ? "should raise an alert" : "should stay silent"}
                   </div>
                 </div>
-                <Meter value={isMatch ? rate : 100 - rate} max={100} tone={ok ? "good" : "critical"} height={6} />
-                <div className={`text-right text-[14px] font-semibold tabular-nums ${ok ? "text-[#248a3d] dark:text-[#30d158]" : "text-[#d70015]"}`}>
+                <Meter value={isMatch ? rate : 100 - rate} max={100} tone={ok ? "good" : "critical"} height={6} label={c.category} />
+                <div className={`text-right text-[14px] font-semibold tabular-nums ${ok ? "text-[#1b7331] dark:text-[#30d158]" : "text-[#d70015] dark:text-[#ff453a]"}`}>
                   {isMatch ? `${rate} % caught` : `${rate} % alerts`}
                 </div>
               </li>

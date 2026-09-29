@@ -1,5 +1,6 @@
 import {
   BadgeCheck,
+  Banknote,
   ChevronRight,
   Building2,
   ClipboardCheck,
@@ -37,7 +38,7 @@ const STEPS = [
   {
     Icon: Network,
     title: "Map",
-    text: "Registers are read in every country reached: officers, shareholders, beneficial owners, parent companies: up to three levels, with effective ownership computed through every layer.",
+    text: "Registers are read in every country reached (officers, shareholders, beneficial owners, parent companies), up to three levels deep, with effective ownership computed through every layer.",
   },
   {
     Icon: ShieldAlert,
@@ -55,12 +56,22 @@ const WHAT = [
   {
     Icon: Fingerprint,
     title: "Know your client",
-    text: "Identity and status from the official register, legal form, address, capital, filings and legal notices: with the source of every fact.",
+    text: "Identity and status from the official register, legal form, address, capital, filings and legal notices, with the source of every fact.",
   },
   {
     Icon: Users,
     title: "Who is really behind",
-    text: "Ultimate beneficial owners over 25 %, compared with the owners the client declared. Circular holdings, long chains and nominees are flagged.",
+    text: "Every owner above the company with the effective interest summed over all routes, the share of the capital traced to real people, and where the chain goes dark. Compared with the owners the client declared.",
+  },
+  {
+    Icon: ShieldAlert,
+    title: "Sanctions by ownership",
+    text: "OFAC 50 % rule and EU ownership test: a company owned 50 % or more by sanctioned persons is flagged as blocked, and so are the companies it owns in turn.",
+  },
+  {
+    Icon: Banknote,
+    title: "Follow the money",
+    text: "Drop a bank statement: structuring below the threshold, cash, money passing straight through, high-risk countries, crypto platforms, counterparties on sanctions lists. Read in memory, never stored.",
   },
   {
     Icon: Globe2,
@@ -70,7 +81,7 @@ const WHAT = [
   {
     Icon: Gauge,
     title: "Why it scores that way",
-    text: "No black box: each point of the score comes from a named factor, its weight and its distance to the client.",
+    text: "No black box: each point of the score comes from a named factor, its weight and its distance to the client, with the legal basis and a justification ready for the file.",
   },
 ];
 
@@ -105,7 +116,7 @@ function Section({
         <div className="reveal mx-auto max-w-3xl text-center">
           <div className="eyebrow">{tag}</div>
           <h2 className="headline mt-2 text-[clamp(2rem,4.4vw,3.5rem)]">{title}</h2>
-          {intro && <p className="subhead mx-auto mt-4 max-w-2xl text-[clamp(1.05rem,1.6vw,1.3rem)] text-[#6e6e73] dark:text-[#a1a1a6]">{intro}</p>}
+          {intro && <p className="subhead mx-auto mt-4 max-w-2xl text-[clamp(1.05rem,1.6vw,1.3rem)] text-[#636366] dark:text-[#a1a1a6]">{intro}</p>}
         </div>
         <div className="mt-14">{children}</div>
       </div>
@@ -140,8 +151,8 @@ export default function Landing({ search, connectors, onCases }: Props) {
             <br />
             <span className="text-glow">In one click.</span>
           </h1>
-          <p className="subhead mx-auto mt-5 max-w-2xl text-[clamp(1.1rem,2vw,1.6rem)] text-[#6e6e73] dark:text-[#a1a1a6]">
-            Who owns the company, who runs it, whether anyone is sanctioned or exposed: and the KYC file, ready.
+          <p className="subhead mx-auto mt-5 max-w-2xl text-[clamp(1.1rem,2vw,1.6rem)] text-[#636366] dark:text-[#a1a1a6]">
+            Who owns the company, who runs it, whether anyone is sanctioned or exposed. And the KYC file, ready.
           </p>
           <div className="mt-7 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-[17px]">
             <button className="btn-primary !px-6 !py-2.5 !text-[17px]" onClick={toSearch}>
@@ -155,7 +166,7 @@ export default function Landing({ search, connectors, onCases }: Props) {
         <div className="reveal mx-auto mt-14 max-w-5xl text-left" style={{ ["--d" as string]: 2 }}>
           {search}
         </div>
-        <p className="reveal mx-auto mt-6 flex max-w-3xl items-center justify-center gap-2 text-[12px] text-[#6e6e73] dark:text-[#86868b]" style={{ ["--d" as string]: 3 }}>
+        <p className="reveal mx-auto mt-6 flex max-w-3xl items-center justify-center gap-2 text-[12px] text-[#636366] dark:text-[#86868b]" style={{ ["--d" as string]: 3 }}>
           <BadgeCheck className="h-3.5 w-3.5 shrink-0" /> Public and official sources only. Every fact carries its source.
         </p>
       </section>
@@ -184,9 +195,9 @@ export default function Landing({ search, connectors, onCases }: Props) {
           {STEPS.map((s, i) => (
             <li key={s.title} className="reveal rounded-[28px] bg-white p-8 sm:p-10 dark:bg-[#1c1c1e]" style={{ ["--d" as string]: i % 2 }}>
               <s.Icon className="h-8 w-8 text-brand-500 dark:text-[#2997ff]" strokeWidth={1.6} />
-              <div className="mt-6 text-[13px] font-semibold text-[#6e6e73] dark:text-[#a1a1a6]">Step {i + 1}</div>
+              <div className="mt-6 text-[13px] font-semibold text-[#636366] dark:text-[#a1a1a6]">Step {i + 1}</div>
               <h3 className="headline mt-1 text-[28px]">{s.title}</h3>
-              <p className="mt-3 text-[15px] leading-relaxed text-[#6e6e73] dark:text-[#a1a1a6]">{s.text}</p>
+              <p className="mt-3 text-[15px] leading-relaxed text-[#636366] dark:text-[#a1a1a6]">{s.text}</p>
             </li>
           ))}
         </ol>
@@ -198,12 +209,12 @@ export default function Landing({ search, connectors, onCases }: Props) {
         title="The answers a compliance officer needs."
         className="bg-white dark:bg-black"
       >
-        <div className="grid gap-x-10 gap-y-14 sm:grid-cols-2">
+        <div className="grid gap-x-10 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
           {WHAT.map((w, i) => (
-            <div key={w.title} className="reveal text-center sm:text-left" style={{ ["--d" as string]: i % 2 }}>
+            <div key={w.title} className="reveal text-center sm:text-left" style={{ ["--d" as string]: i % 3 }}>
               <w.Icon className="mx-auto h-9 w-9 text-[#1d1d1f] sm:mx-0 dark:text-[#f5f5f7]" strokeWidth={1.4} />
               <h3 className="headline mt-4 text-[24px]">{w.title}</h3>
-              <p className="mt-2 text-[16px] leading-relaxed text-[#6e6e73] dark:text-[#a1a1a6]">{w.text}</p>
+              <p className="mt-2 text-[16px] leading-relaxed text-[#636366] dark:text-[#a1a1a6]">{w.text}</p>
             </div>
           ))}
         </div>
@@ -236,9 +247,9 @@ export default function Landing({ search, connectors, onCases }: Props) {
                   </div>
                   <ul className="mt-3 space-y-1.5">
                     {list.slice(0, 6).map((c) => (
-                      <li key={c.name} className="text-[13px] leading-snug text-[#6e6e73] dark:text-[#a1a1a6]">
+                      <li key={c.name} className="text-[13px] leading-snug text-[#636366] dark:text-[#a1a1a6]">
                         {c.label}
-                        {!c.enabled && c.message.startsWith("Offline") && <span className="ml-1 text-amber-600">(offline)</span>}
+                        {!c.enabled && c.message.startsWith("Offline") && <span className="ml-1 text-amber-700 dark:text-amber-400">(offline)</span>}
                       </li>
                     ))}
                     {list.length > 6 && <li className="text-[13px] text-[#86868b]">and {list.length - 6} more</li>}
@@ -247,7 +258,7 @@ export default function Landing({ search, connectors, onCases }: Props) {
               );
             })}
         </div>
-        <p className="reveal mx-auto mt-10 max-w-3xl text-center text-[13px] leading-relaxed text-[#6e6e73] dark:text-[#86868b]">
+        <p className="reveal mx-auto mt-10 max-w-3xl text-center text-[13px] leading-relaxed text-[#636366] dark:text-[#86868b]">
           {enabled > 0 && `${enabled} sources active on this server. `}The full list, with the status of each source, is under{" "}
           <b className="font-semibold">Sources</b> in the top bar. Watchlists include the EU, UN, US (OFAC), UK, Swiss, French and Monaco asset
           freezes, regulators' enforcement actions and warnings, and law-enforcement notices.
@@ -286,7 +297,7 @@ export default function Landing({ search, connectors, onCases }: Props) {
             <div key={m.title} className="reveal text-center" style={{ ["--d" as string]: i }}>
               <m.Icon className="mx-auto h-9 w-9 text-[#1d1d1f] dark:text-[#f5f5f7]" strokeWidth={1.4} />
               <h3 className="headline mt-4 text-[22px]">{m.title}</h3>
-              <p className="mt-2 text-[15px] leading-relaxed text-[#6e6e73] dark:text-[#a1a1a6]">{m.text}</p>
+              <p className="mt-2 text-[15px] leading-relaxed text-[#636366] dark:text-[#a1a1a6]">{m.text}</p>
             </div>
           ))}
         </div>
@@ -296,7 +307,7 @@ export default function Landing({ search, connectors, onCases }: Props) {
       <section className="bleed bg-slate-50 px-4 py-24 text-center dark:bg-[#0a0a0a]">
         <div className="reveal mx-auto max-w-3xl">
           <h2 className="headline text-[clamp(2rem,4.4vw,3.5rem)]">Follow your clients over time.</h2>
-          <p className="subhead mx-auto mt-4 max-w-2xl text-[clamp(1.05rem,1.6vw,1.3rem)] text-[#6e6e73] dark:text-[#a1a1a6]">
+          <p className="subhead mx-auto mt-4 max-w-2xl text-[clamp(1.05rem,1.6vw,1.3rem)] text-[#636366] dark:text-[#a1a1a6]">
             Save an investigation as a case: questionnaire, checklist, four-eyes validation and daily monitoring.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-[17px]">

@@ -81,7 +81,7 @@ export default function CommandPalette({ casesEnabled, onClose, onNavigate }: Pr
           <input
             autoFocus
             className="h-12 flex-1 bg-transparent text-[15px] outline-none placeholder:text-slate-400"
-            placeholder="Search a company, a person, an identifier: or open a case…"
+            placeholder="Search a company, a person or an identifier, or open a case…"
             value={q}
             onChange={(e) => setQ(e.target.value)}
             onKeyDown={(e) => {

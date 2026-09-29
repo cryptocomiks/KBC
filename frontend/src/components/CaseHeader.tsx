@@ -91,7 +91,7 @@ export default function CaseHeader({ view, tab, onTab, onBack }: Props) {
               <input type="checkbox" className="accent-brand-600" checked={c.monitor} onChange={(e) => update.mutate({ monitor: e.target.checked })} />
               <BellRing className="h-3.5 w-3.5" /> <span className="hidden lg:inline">Monitoring</span>
             </label>
-            <select className="input py-1 text-xs" value={c.status} onChange={(e) => update.mutate({ status: e.target.value as "open" | "closed" })}>
+            <select aria-label="Case status" className="input py-1 text-xs" value={c.status} onChange={(e) => update.mutate({ status: e.target.value as "open" | "closed" })}>
               <option value="open">Open</option>
               <option value="closed">Closed</option>
             </select>
@@ -100,7 +100,7 @@ export default function CaseHeader({ view, tab, onTab, onBack }: Props) {
               <span className="hidden sm:inline">Re-check</span>
             </button>
             <button
-              className="btn-ghost px-2 py-1.5 text-xs text-red-600"
+              className="btn-ghost px-2 py-1.5 text-xs text-red-600 dark:text-red-400"
               aria-label="Delete the case"
               onClick={() => window.confirm(`Delete the case “${c.title}” and its decisions?`) && remove.mutate()}
             >
@@ -109,7 +109,7 @@ export default function CaseHeader({ view, tab, onTab, onBack }: Props) {
           </div>
         </div>
         {(last || refresh.error) && (
-          <p className={`px-4 pb-1 text-[11px] ${refresh.error ? "text-red-600" : "text-slate-500"}`}>{refresh.error ? (refresh.error as Error).message : last}</p>
+          <p className={`px-4 pb-1 text-[11px] ${refresh.error ? "text-red-600 dark:text-red-400" : "text-slate-500"}`}>{refresh.error ? (refresh.error as Error).message : last}</p>
         )}
 
         {/* Key figures */}

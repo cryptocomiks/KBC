@@ -91,7 +91,7 @@ export function Tile({
         {typeof value === "number" && Number.isInteger(value) ? <CountUp value={value} /> : value}
       </span>
       {sub && <span className="mt-0.5 truncate text-[11px] text-slate-500">{sub}</span>}
-      {meter && <Meter className="mt-2" value={meter.value} max={meter.max} tone={meter.tone} />}
+      {meter && <Meter className="mt-2" value={meter.value} max={meter.max} tone={meter.tone} label={label} />}
     </Tag>
   );
 }
@@ -107,7 +107,7 @@ export function Meter({ value, max, tone = "accent", className = "", height = 6,
       aria-valuenow={value}
       aria-valuemin={0}
       aria-valuemax={max}
-      aria-label={label}
+      aria-label={label ?? "Level"}
     >
       <div className="bar-x h-full rounded-full" style={{ width: `${pct}%`, background: TONE[tone] }} />
     </div>
@@ -345,7 +345,7 @@ export function ChartCard({
         )}
       </div>
       {asTable && table ? (
-        <div className="max-h-72 overflow-auto">
+        <div className="max-h-72 overflow-auto" tabIndex={0} role="region" aria-label={`${title}: values`}>
           <table className="w-full text-[12px]">
             <thead className="text-left text-[10.5px] uppercase tracking-wide text-slate-500">
               <tr>

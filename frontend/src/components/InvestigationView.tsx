@@ -1,5 +1,6 @@
 import {
   Crown,
+  FileSpreadsheet,
   AlertTriangle,
   ArrowLeft,
   ChevronRight,
@@ -31,6 +32,7 @@ import WorldMap from "./WorldMap";
 import KeyFindings from "./KeyFindings";
 import Timeline from "./Timeline";
 import OwnershipPanel from "./OwnershipPanel";
+import TransactionAnalysis from "./TransactionAnalysis";
 import LegalBasis from "./LegalBasis";
 import GraphView, { GraphLegend, type GraphFilters, type GraphHandle, type GraphLayout } from "./GraphView";
 import RiskPanel, { RiskGauge } from "./RiskPanel";
@@ -56,13 +58,15 @@ interface Props {
   onTrail?: (index: number) => void;
 }
 
-type Tab = "overview" | "network" | "ownership" | "map" | "evidence";
+type Tab = "overview" | "network" | "ownership" | "map" | "evidence" | "transactions";
 const TABS: [Tab, string, typeof Network][] = [
   ["overview", "Overview", LayoutDashboard],
   ["network", "Network", Network],
   ["ownership", "Beneficial owners", Crown],
   ["map", "Map & timeline", MapIcon],
   ["evidence", "Evidence & tables", FileSearch],
+  // In a case, the statement analysis has its own tab (with the KYC profile) in the case header.
+  ["transactions", "Transactions", FileSpreadsheet],
 ];
 
 export default function InvestigationView({
@@ -226,7 +230,7 @@ export default function InvestigationView({
             {pdfState === "busy" ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileDown className="h-4 w-4" />}
             PDF report
           </button>
-          {pdfState === "error" && <span className="text-xs text-red-600">PDF generation failed</span>}
+          {pdfState === "error" && <span className="text-xs text-red-600 dark:text-red-400">PDF generation failed</span>}
           <div>
             <label className="label mb-1 block" htmlFor="sar">
               Suspicious activity report
@@ -245,7 +249,7 @@ export default function InvestigationView({
               <option value="lu_crf">CRF (Luxembourg)</option>
             </select>
           </div>
-          {sarState === "error" && <span className="text-xs text-red-600">Draft failed</span>}
+          {sarState === "error" && <span className="text-xs text-red-600 dark:text-red-400">Draft failed</span>}
         </div>
       </div>
 
@@ -266,7 +270,7 @@ export default function InvestigationView({
           {invThumb && (
             <span aria-hidden className="tab-thumb absolute bottom-0 h-[2px] rounded-full bg-[#1d1d1f] dark:bg-white" style={{ left: invThumb.left, width: invThumb.width }} />
           )}
-          {TABS.map(([k, label, Icon]) => (
+          {TABS.filter(([k]) => !(caseId && k === "transactions")).map(([k, label, Icon]) => (
             <button
               key={k}
               role="tab"
@@ -336,6 +340,7 @@ export default function InvestigationView({
               ).map(([k, label, Icon]) => (
                 <button
                   key={k}
+                  aria-pressed={layout === k}
                   onClick={() => setLayout(k)}
                   className={`inline-flex items-center gap-1.5 rounded-[8px] px-2.5 py-1 transition-all duration-200 text-xs font-medium ${
                     layout === k ? "bg-white shadow-[0_1px_3px_rgb(0_0_0/0.12)] dark:bg-slate-600" : "text-slate-500"
@@ -386,6 +391,10 @@ export default function InvestigationView({
           <CryptoSankey investigation={inv} onSelect={select} />
           <Timeline investigation={inv} onSelect={select} />
         </div>
+      )}
+
+      {tab === "transactions" && !caseId && (
+        <TransactionAnalysis subjectName={subject.name} profile={{ country: subject.jurisdiction ?? subject.nationalities?.[0] ?? undefined }} />
       )}
 
       {tab === "evidence" && (
