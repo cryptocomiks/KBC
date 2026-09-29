@@ -380,7 +380,7 @@ a *Demo · fictitious* or *Real public data* badge.
 | **Country risk** | Basel AML Index (Basel Institute on Governance), Corruption Perceptions Index (Transparency International, via Our World in Data), World Bank WGI control of corruption | none, refreshed monthly by the *Country risk data* workflow | - |
 | **BODACC** (DILA) | French legal announcements: registrations, changes, **filed accounts**, **insolvency proceedings**, deregistrations. Each notice is a linked document | none, open data | - |
 | **Official sanctions lists** | **OFAC SDN** (US Treasury) and **UN Security Council** consolidated list, downloaded from the issuers and indexed in memory | none | - |
-| **Bank statement analysis** (case tab *Transactions*) | CSV / Excel export of any bank, read in memory and never stored: structuring below the identification threshold (CHF 15 000, 10 000 otherwise), split payments, cash, round amounts, pass-through, higher-risk countries (from IBAN or country), crypto platforms, monthly spikes, activity above the KYC profile, funnel accounts, counterparties screened against the enabled lists; each flag with its legal basis and a justification (FR / EN). A sample statement is provided | - | - |
+| **Bank statement analysis** (*Transactions* tab of an investigation or a case) | CSV / Excel export of any bank, read in memory and never stored: structuring below the identification threshold (CHF 15 000, 10 000 otherwise), split payments, cash, round amounts, pass-through, higher-risk countries (from IBAN or country), crypto platforms, monthly spikes, activity above the KYC profile, funnel accounts, counterparties screened against the enabled lists; each flag with its legal basis and a justification (FR / EN). A sample statement is provided | - | - |
 | **Legal basis and justification** (`config/legal_basis.yaml`) | Every red flag mapped to the provisions it rests on (LBA, OBA-FINMA, CDB 20, LEmb; EU AMLD, Reg. 269/2014, EU ownership & control; OFAC 50 % rule; FATF Recommendations) with a ready-to-paste justification in French and English; shown in *Evidence & tables* and in the PDF. An operational map, not legal advice | - | - |
 | **Beneficial ownership analysis** (computed) | *Beneficial owners* tab and PDF section 6a: effective interest of every person above the subject summed over all routes (layers, countries crossed), declared vs computed, capital traced to natural persons and coverage level by level (dead ends, gaps due to the search depth), senior-managing-official fallback (EU AMLD art. 3(6)(a)(ii)), 10 % threshold for high-risk cases, **sanctions by ownership** (OFAC 50 % rule / EU ownership, blocked status propagated; sanctioned officers for the EU control test), internal actions kept apart from the questions for the client (no tipping-off) | - | - |
 | **Official sanctions lists: Europe** | **EU** consolidated financial sanctions (European Commission), **UK Sanctions List** (FCDO) and **Swiss sanctions list** (SECO, de-listed targets skipped), downloaded from the authorities in the background (~90 MB, refreshed every 12 h); freely reusable, so they stay on in commercial mode | none | - |
@@ -436,6 +436,12 @@ connectors are tested against **mocked HTTP responses** shaped like each API's d
 the unit tests never call external APIs. The live behaviour is checked after each deployment by
 `scripts/smoke_test.py --live`.
 
+**Accessibility (WCAG 2.1 AA).** Every page and tab (search, investigation tabs, sources, validation,
+cases, mobile widths) is checked with axe-core in light and dark appearance: no violation. Text
+contrast is at least 4.5:1 in both appearances, every control has an accessible name, and the site
+works with the keyboard alone ("Skip to content" link, visible focus ring, scrollable areas reachable
+with Tab).
+
 ## Compliance & ethics
 
 - **Public or lawfully accessible sources only.** No scraping behind logins, no paid data resold.
@@ -463,6 +469,8 @@ the unit tests never call external APIs. The live behaviour is checked after eac
 - **Jurisdiction lists** are a snapshot and must be kept up to date.
 - **On Vercel**, the cache is ephemeral and functions have a time limit. Deep expansions over live APIs
   are better run with Docker. The ICIJ dataset (several hundred MB) is meant for local or Docker use.
+  On a server that has just started, the EU, UK and Swiss lists (about 90 MB) take a minute to load:
+  a check run in that minute says which lists were not included yet.
 - **Address matching** uses normalised token similarity. It can miss heavily reformatted addresses.
 - **Zefix officers** are parsed from the text of the SOGC notices (German, French, Italian). Unusual
   wordings can be missed; the notices themselves are always linked. Only publications available in
