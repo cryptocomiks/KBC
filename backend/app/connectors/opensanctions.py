@@ -78,7 +78,7 @@ class OpenSanctionsConnector(BaseConnector):
         global _QUOTA_BLOCKED_UNTIL
         if time.time() < _QUOTA_BLOCKED_UNTIL:
             raise ConnectorError(
-                f"{self.label}: monthly quota of the API key exceeded: skipped (bulk lists still screen)"
+                f"{self.label}: monthly quota of the API key exceeded, skipped (bulk lists still screen)"
             )
         # Entities come nearest to the subject first: the paid API screens the closest parties
         # (one request), the free bulk lists screen the whole network.
@@ -100,7 +100,7 @@ class OpenSanctionsConnector(BaseConnector):
                 if "HTTP 429" in str(exc):
                     _QUOTA_BLOCKED_UNTIL = time.time() + 3600  # do not hammer an exhausted quota
                     raise ConnectorError(
-                        f"{self.label}: request quota exceeded (HTTP 429): check the plan of the API key "
+                        f"{self.label}: request quota exceeded (HTTP 429), check the plan of the API key "
                         "on opensanctions.org; the bulk lists keep screening meanwhile"
                     ) from exc
                 raise

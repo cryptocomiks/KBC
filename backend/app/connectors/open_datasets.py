@@ -601,7 +601,7 @@ class OpenDatasetsExtendedConnector(OpenDatasetsConnector):
                 return state.index
             time.sleep(0.5)
         raise ConnectorError(
-            f"{self.label}: still loading on this server: included from the next check"
+            f"{self.label}: still loading on this server, included from the next check"
         )
 
     def prefetch(self) -> None:

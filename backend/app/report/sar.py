@@ -24,14 +24,14 @@ FIU = {
         "name": "TRACFIN (France)",
         "channel": "ERMES portal: https://www.economie.gouv.fr/tracfin",
         "basis": "Déclaration de soupçon: art. L561-15 du Code monétaire et financier",
-        "tipping_off": "Interdiction de divulgation : art. L561-18 CMF: ne pas informer le client ni des tiers.",
+        "tipping_off": "Interdiction de divulgation (art. L561-18 CMF) : ne pas informer le client ni des tiers.",
         "lang": "fr",
     },
     "mros": {
         "name": "MROS: Money Laundering Reporting Office Switzerland",
         "channel": "goAML: https://www.fedpol.admin.ch/fedpol/en/home/kriminalitaet/geldwaescherei.html",
         "basis": "Report under art. 9 AMLA (duty to report) / art. 305ter para. 2 SCC (right to report)",
-        "tipping_off": "Prohibition of information: art. 10a AMLA: do not inform the client or third parties.",
+        "tipping_off": "Prohibition of information (art. 10a AMLA): do not inform the client or third parties.",
         "lang": "en",
     },
     "lu_crf": {

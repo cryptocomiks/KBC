@@ -235,6 +235,23 @@ def to_cyrillic(latin: str) -> str:
     return " ".join("".join(out).split())
 
 
+_SOFT = ("т", "л", "н", "с", "з", "д", "в", "р")
+
+
+def cyrillic_variants(latin: str) -> list[str]:
+    """The transliteration, then the same with a soft sign on one word ("neft" -> "нефть").
+    Latin spelling drops the soft sign, and the register searches whole words: "газпром нефт"
+    does not find ПАО "ГАЗПРОМ НЕФТЬ". Longest words first, at most three queries."""
+    base = to_cyrillic(latin)
+    words = base.split()
+    out = [base]
+    for i in sorted(range(len(words)), key=lambda k: -len(words[k])):
+        w = words[i]
+        if len(w) >= 3 and w.endswith(_SOFT):
+            out.append(" ".join([*words[:i], w + "ь", *words[i + 1 :]]))
+    return list(dict.fromkeys(out))[:3]
+
+
 class EgrulConnector(BaseConnector):
     name = "ru_egrul"
     label = "EGRUL: Russian register of legal entities (Federal Tax Service)"
@@ -254,9 +271,9 @@ class EgrulConnector(BaseConnector):
             cache=False,
         )
         if not isinstance(token, dict) or not token.get("t"):
-            if isinstance(token, dict) and token.get("captchaRequired"):
+            if isinstance(token, dict) and (token.get("captchaRequired") or token.get("ERRORS")):
                 raise ConnectorError(f"{self.label}: captcha requested, try later")
-            return []
+            raise ConnectorError(f"{self.label}: unexpected answer from the register")
         # The result is prepared asynchronously: {"status": "wait"} until it is ready.
         data: Any = None
         for attempt in range(EGRUL_POLLS):
@@ -296,12 +313,12 @@ class EgrulConnector(BaseConnector):
         )
 
     def search_company(self, name: str, **filters: Any) -> list[Entity]:
-        queries = [name] if re.search(r"[а-яА-Я]", name) else [to_cyrillic(name), name]
+        queries = [name] if re.search(r"[а-яА-Я]", name) else [*cyrillic_variants(name), name]
         scored: dict[str, tuple[float, Entity]] = {}
         for q in queries:
             if len(q) < 3:
                 continue
-            for r in self._search(q)[:10]:
+            for r in self._search(q)[:20]:
                 e = self._entity(r)
                 score = max(name_similarity(name, a, "company")[0] for a in [e.name, *e.aliases])
                 if score >= 88:

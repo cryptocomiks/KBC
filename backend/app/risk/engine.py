@@ -132,7 +132,7 @@ class RiskEngine:
         cur = latest.get("currency", "")
         return (
             f"total assets {latest['total_assets']} {cur} but revenue {latest['revenue']} {cur} "
-            f"({latest.get('year')}): a holding or an empty shell: check the economic rationale"
+            f"({latest.get('year')}), typical of a holding or an empty shell: check the economic rationale"
         )
 
     def assess(self, net: Network) -> RiskAssessment:
@@ -430,8 +430,8 @@ class RiskEngine:
                 f"Screening hits ≥ {t['strong_match_score']:.0f}% count as matches, "
                 f"{t['possible_match_score']:.0f}–{t['strong_match_score']:.0f}% as possible matches, "
                 "below are shown for review only.",
-                "Weights and thresholds: config/risk.yaml: jurisdiction lists: config/jurisdictions.yaml"
-                ": country indicators (Basel AML Index, CPI, World Bank WGI): config/country_risk.json"
+                "Weights and thresholds: config/risk.yaml · jurisdiction lists: config/jurisdictions.yaml"
+                " · country indicators (Basel AML Index, CPI, World Bank WGI): config/country_risk.json"
                 + (f", retrieved {self.countries.retrieved}." if self.countries.retrieved else "."),
             ],
         )

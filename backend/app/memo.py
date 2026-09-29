@@ -102,10 +102,10 @@ def build_memo(
         by_triage[h.triage or "verify"] = by_triage.get(h.triage or "verify", 0) + 1
     if hits:
         add(
-            f"- Sanctions / PEP / watchlist matches: {len(hits)}: "
+            f"- Sanctions / PEP / watchlist matches: {len(hits)} ("
             f"{by_triage.get('likely', 0)} likely, {by_triage.get('verify', 0)} to check, "
             f"{by_triage.get('namesake', 0)} probable namesakes, "
-            f"{by_triage.get('dismissed', 0)} already ruled out."
+            f"{by_triage.get('dismissed', 0)} already ruled out)."
         )
     else:
         add("- No sanctions, PEP or watchlist match on the client or its network.")
@@ -201,8 +201,8 @@ def build_memo(
         )
     elif level == "enhanced":
         add(
-            "- Proposal: ACCEPT SUBJECT TO enhanced due diligence: the measures listed in "
-            "section 4, senior management approval and yearly review."
+            "- Proposal: ACCEPT SUBJECT TO enhanced due diligence (the measures listed in "
+            "section 4), senior management approval and yearly review."
         )
     elif level == "standard":
         add("- Proposal: ACCEPT with standard vigilance and a review every 2 years.")
@@ -219,13 +219,13 @@ def build_memo(
 
     # 7. Sign-off
     add("## 7. Sign-off")
-    add(f"- Prepared by: {kyc.get('author') or '[name]'}: date: [date]: signature: [ ]")
+    add(f"- Prepared by: {kyc.get('author') or '[name]'} · date: [date] · signature: [ ]")
     if workflow.get("validated_by"):
         add(
             f"- Validated by: {workflow['validated_by']} on {_day(workflow.get('validated_at'))} (four-eyes)"
         )
     else:
-        add("- Validated by (four-eyes): [name]: date: [date]: signature: [ ]")
+        add("- Validated by (four-eyes): [name] · date: [date] · signature: [ ]")
     if level == "enhanced":
-        add("- Senior management approval: [name]: date: [date]: signature: [ ]")
+        add("- Senior management approval: [name] · date: [date] · signature: [ ]")
     return "\n".join(lines)

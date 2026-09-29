@@ -169,7 +169,7 @@ def to_markdown(report: dict[str, Any]) -> str:
     for e in report["errors"]:
         kind = "missed match" if e["expected"] == "match" else "false positive"
         lines.append(
-            f"- **{kind}**: {e['query']} ↔ {e['candidate']} ({e['category']}): score {e['score']:g}, triage {e['triage']}: "
+            f"- **{kind}**: {e['query']} ↔ {e['candidate']} ({e['category']}), score {e['score']:g}, triage {e['triage']}: "
             + "; ".join(e["explanation"])
         )
     lines += [

@@ -979,7 +979,7 @@ class LobbywatchConnector(BaseConnector):
                 return []
             return [
                 Document(
-                    title=f"Lobbywatch: {entity.name}: links with the Swiss Parliament",
+                    title=f"Lobbywatch: links of {entity.name} with the Swiss Parliament",
                     kind="register",
                     url=LW_ORG_UI.format(id=native[2:]),
                     summary=" · ".join(p for p in parts if p),
@@ -1000,7 +1000,7 @@ class LobbywatchConnector(BaseConnector):
             ]
             return [
                 Document(
-                    title=f"Lobbywatch: {entity.name}: parliamentary mandate and declared interests",
+                    title=f"Lobbywatch: parliamentary mandate and declared interests of {entity.name}",
                     kind="register",
                     url=LW_PARL_UI.format(id=native[2:]),
                     summary=" · ".join(p for p in parts if p),

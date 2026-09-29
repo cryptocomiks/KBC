@@ -268,7 +268,7 @@ def check_domain(domain: str, *, mailbox: bool, company: str | None = None) -> l
                 "Mailbox",
                 "warn" if company else "info",
                 f"{domain} is a free consumer mailbox"
-                + (": unusual for a company: ask for a corporate address" if company else ""),
+                + (", unusual for a company: ask for a corporate address" if company else ""),
             )
         )
     try:

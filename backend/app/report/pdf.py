@@ -827,7 +827,7 @@ def build_pdf(
         story.append(img)
         story.append(
             Paragraph(
-                "Legend: shapes: ● person, ▬ company, ◆ offshore entity, ▸ registered address. "
+                "Legend (shapes): ● person, ▬ company, ◆ offshore entity, ▸ registered address. "
                 "Edges: solid = shareholding (%), dashed violet = declared beneficial owner, dotted = officer. "
                 "Colours: grey = no flag, yellow = minor, amber = medium, orange = high, red = critical. "
                 "Subject outlined in blue.",

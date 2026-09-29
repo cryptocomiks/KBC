@@ -320,7 +320,7 @@ def assess(inv: Investigation, saved: dict[str, Any]) -> dict[str, Any]:
             flags.append(
                 {
                     "severity": "warning",
-                    "text": f"{spec['label']}: higher-risk source: corroborate with independent documents.",
+                    "text": f"{spec['label']} is a higher-risk source: corroborate it with independent documents.",
                 }
             )
         if s["country"] and (

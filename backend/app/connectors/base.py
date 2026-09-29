@@ -358,7 +358,7 @@ class BaseConnector(ABC):
                 if isinstance(exc, httpx.ConnectError | httpx.ConnectTimeout):
                     _mark_down(self.name, "unreachable")
                     raise ConnectorError(
-                        f"{self.label}: source unreachable ({exc}): skipped for this investigation"
+                        f"{self.label}: source unreachable ({exc}), skipped for this investigation"
                     ) from exc
                 raise ConnectorError(f"{self.label}: network error ({exc})") from exc
             # Rate limited or transient server error: back off and retry.
@@ -377,7 +377,7 @@ class BaseConnector(ABC):
             data: Any = None
         elif resp.status_code in (401, 403):
             raise ConnectorError(
-                f"{self.label}: access refused (HTTP {resp.status_code}): check the API key"
+                f"{self.label}: access refused (HTTP {resp.status_code}), check the API key"
             )
         elif resp.status_code == 429:
             _mark_down(self.name, "rate limited")

@@ -202,16 +202,32 @@ def _download(url: str, timeout: float) -> str:
     return resp.content.decode("utf-8", errors="replace")
 
 
+DOWNLOAD_ATTEMPTS = 3
+DOWNLOAD_BACKOFF_SECONDS = 2.0
+
+
 def _download_bytes(url: str, timeout: float) -> bytes:
-    """Streamed download (the Swiss server drops large unstreamed transfers)."""
-    buf = bytearray()
-    with httpx.stream(
-        "GET", url, timeout=timeout, follow_redirects=True, headers={"User-Agent": USER_AGENT}
-    ) as resp:
-        resp.raise_for_status()
-        for chunk in resp.iter_bytes():
-            buf.extend(chunk)
-    return bytes(buf)
+    """Streamed download, retried: the Swiss server sometimes closes the connection in the
+    middle of its 40 MB file ("peer closed connection without sending complete message body")."""
+    for attempt in range(1, DOWNLOAD_ATTEMPTS + 1):
+        buf = bytearray()
+        try:
+            with httpx.stream(
+                "GET",
+                url,
+                timeout=timeout,
+                follow_redirects=True,
+                headers={"User-Agent": USER_AGENT},
+            ) as resp:
+                resp.raise_for_status()
+                for chunk in resp.iter_bytes():
+                    buf.extend(chunk)
+            return bytes(buf)
+        except httpx.TransportError:
+            if attempt == DOWNLOAD_ATTEMPTS:
+                raise
+            time.sleep(DOWNLOAD_BACKOFF_SECONDS * attempt)
+    raise AssertionError("unreachable")
 
 
 def _local(tag: str) -> str:
@@ -833,14 +849,28 @@ class EuropeanSanctionsConnector(OfficialSanctionsConnector):
                 return f"{loader.__name__[6:].upper()} list unavailable ({exc})"
             return part
 
+        # Last good copy of each list: a list that fails to download on a refresh keeps its
+        # previous entries instead of silently disappearing from the screening.
+        previous: dict[str, tuple[list[ListedEntry], float]] = getattr(self._state, "parts", {})
+        parts: dict[str, tuple[list[ListedEntry], float]] = {}
         fresh = _Index()
+        loaders = self._loaders()
         with ThreadPoolExecutor(max_workers=3) as pool:
-            for result in pool.map(run, self._loaders()):
+            for loader, result in zip(loaders, pool.map(run, loaders), strict=True):
+                key = loader.__name__
                 if isinstance(result, str):
-                    fresh.errors.append(result)
+                    if key in previous:
+                        parts[key] = previous[key]
+                        when = time.strftime("%Y-%m-%d %H:%M UTC", time.gmtime(previous[key][1]))
+                        fresh.errors.append(f"{result}: the copy downloaded on {when} is used")
+                    else:
+                        fresh.errors.append(result)
                     continue
-                for entry in result.entries:
-                    fresh.add(entry)
+                parts[key] = (result.entries, time.time())
+        for entries, _ in parts.values():
+            for entry in entries:
+                fresh.add(entry)
+        self._state.parts = parts  # type: ignore[attr-defined]
         return fresh
 
     def prefetch(self) -> None:
@@ -867,7 +897,7 @@ class EuropeanSanctionsConnector(OfficialSanctionsConnector):
                 time.sleep(0.5)
             if not state.entries and getattr(state, "loading", False):
                 raise ConnectorError(
-                    f"{self.label}: still loading on this server: included from the next check"
+                    f"{self.label}: still loading on this server, included from the next check"
                 )
         return super().screen(entity)
 

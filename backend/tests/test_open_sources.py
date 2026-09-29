@@ -311,3 +311,28 @@ def test_official_eu_uk_swiss_lists(monkeypatch):
     assert hits[0].matched_name == "Aliaksandr Lukashenka"
     assert hits[0].details["nationalities"] == ["BY"]
     assert osl._uk_dob("23/03/1980") == "1980-03-23" and osl._uk_dob("dd/03/1980") == "1980-03"
+
+
+@respx.mock
+def test_european_download_is_retried_and_last_good_copy_kept(monkeypatch):
+    monkeypatch.setattr(osl, "_INDEX_EUROPE", osl._Index())
+    monkeypatch.setattr(osl, "DOWNLOAD_BACKOFF_SECONDS", 0)
+    respx.get(osl.EU_XML).mock(return_value=httpx.Response(200, text=EU_FSF))
+    respx.get(osl.UK_XML).mock(return_value=httpx.Response(200, text=UK_LIST))
+    ch = respx.get(osl.CH_XML).mock(
+        side_effect=[
+            httpx.RemoteProtocolError("peer closed connection"),
+            httpx.Response(200, text=CH_LIST),
+        ]
+    )
+    conn = osl.EuropeanSanctionsConnector(LIVE)
+    lukashenko = Entity(id="l", type=EntityType.PERSON, name="Alexander Lukashenko")
+    assert conn.screen(lukashenko) and ch.call_count == 2  # the dropped transfer was retried
+    assert not osl._INDEX_EUROPE.errors
+
+    # Next refresh: SECO keeps failing. Its last good copy stays in the screening.
+    ch.side_effect = httpx.RemoteProtocolError("peer closed connection")
+    osl._INDEX_EUROPE.loaded_at = 0
+    assert conn.screen(lukashenko)
+    [err] = osl._INDEX_EUROPE.errors
+    assert err.startswith("CH list unavailable") and "the copy downloaded on" in err

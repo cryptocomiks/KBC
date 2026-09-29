@@ -207,22 +207,47 @@ def check_european_sanctions() -> None:
     hits = conn.screen(person("Vladimir Putin", "1952-10-07"))
     for h in hits[:4]:
         print(f"      hit: {h.matched_name} | {h.dataset} | {h.score} | {h.details.get('program')}")
-    for label, key in (
-        ("EU", "EU consolidated"),
-        ("UK", "UK Sanctions List"),
-        ("Swiss", "Swiss sanctions"),
-    ):
-        expect(
-            f"{label} list: sanctioned reference person found",
-            any(h.score >= 85 and h.dataset.startswith(key) for h in hits),
-        )
     from app.connectors.official_sanctions import _INDEX_EUROPE
 
-    expect(
-        "European lists: no download error",
-        not _INDEX_EUROPE.errors,
-        "; ".join(_INDEX_EUROPE.errors),
+    # A list whose server dropped the download (after the retries) is an outage of the
+    # authority's server, reported as a warning; a list that downloads but no longer parses
+    # (format change) is a failure.
+    transport = (
+        "unreachable",
+        "timed out",
+        "timeout",
+        "peer closed",
+        "connection",
+        "disconnected",
+        "remoteprotocol",
+        "readerror",
     )
+    down = {
+        code
+        for code in ("EU", "UK", "CH")
+        for err in _INDEX_EUROPE.errors
+        if err.startswith(f"{code} list unavailable") and any(t in err.lower() for t in transport)
+    }
+    for label, key, code in (
+        ("EU", "EU consolidated", "EU"),
+        ("UK", "UK Sanctions List", "UK"),
+        ("Swiss", "Swiss sanctions", "CH"),
+    ):
+        found = any(h.score >= 85 and h.dataset.startswith(key) for h in hits)
+        if not found and code in down:
+            print(
+                f"WARN  {label} list: the authority's server dropped the download (outage, not a code error)"
+            )
+            continue
+        expect(f"{label} list: sanctioned reference person found", found)
+    other = [
+        e
+        for e in _INDEX_EUROPE.errors
+        if not any(e.startswith(f"{c} list unavailable") for c in down)
+    ]
+    if down:
+        print("      download errors: " + "; ".join(_INDEX_EUROPE.errors))
+    expect("European lists: no parsing error", not other, "; ".join(other))
 
 
 def check_official_sanctions() -> None:

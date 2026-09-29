@@ -40,6 +40,12 @@ SEARCH_LIMIT = 25
 LINKED_SUMMARY_TOP = 8  # linked companies are fetched for the best candidates only
 
 
+# Fingerprint of the investigation format (fields of every nested model).
+_SCHEMA_VERSION = hashlib.sha256(
+    json.dumps(Investigation.model_json_schema(), sort_keys=True).encode()
+).hexdigest()[:10]
+
+
 class KbcService:
     def __init__(self, registry: ConnectorRegistry | None = None) -> None:
         self.registry = registry or ConnectorRegistry()
@@ -236,7 +242,15 @@ class KbcService:
     def _compute(self, req: InvestigationRequest) -> Investigation:
         settings = get_settings()
         key_src = json.dumps(
-            [sorted(req.record_ids), req.depth, req.max_nodes, settings.demo_mode], sort_keys=True
+            [
+                sorted(req.record_ids),
+                req.depth,
+                req.max_nodes,
+                settings.demo_mode,
+                # A cached result from an older version of the analyses is recomputed.
+                _SCHEMA_VERSION,
+            ],
+            sort_keys=True,
         )
         key = hashlib.sha256(key_src.encode()).hexdigest()[:16]
         cache = get_cache()

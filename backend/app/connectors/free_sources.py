@@ -207,7 +207,7 @@ class ViesConnector(BaseConnector):
                 and _norm(name) not in _norm(entity.name)
             ):
                 flags.append("vat_name_mismatch")
-                summary += ": the name differs from the register: check the identity"
+                summary += "; the name differs from the register, check the identity"
             docs.append(
                 Document(
                     title=f"EU VAT number {cc}{number}: {'valid' if valid else 'NOT VALID'} (VIES)",

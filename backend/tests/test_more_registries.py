@@ -305,3 +305,33 @@ def test_egrul_result_never_ready_is_reported(monkeypatch):
     )
     with pytest.raises(ConnectorError, match="not ready"):
         mr.EgrulConnector(LIVE).search_company("Gazprom Neft")
+
+
+@respx.mock
+def test_egrul_tries_the_soft_sign_spelling(monkeypatch):
+    """'Neft' is 'нефть' in Russian: the plain transliteration 'нефт' finds other companies."""
+    monkeypatch.setattr(mr, "EGRUL_POLL_SECONDS", 0)
+
+    def token(request):
+        query = dict(httpx.QueryParams(request.content.decode()))["query"]
+        return httpx.Response(200, json={"t": "SOFT" if query.endswith("нефть") else "HARD"})
+
+    respx.post(f"{mr.EGRUL}/").mock(side_effect=token)
+    respx.get(f"{mr.EGRUL}/search-result/HARD").mock(
+        return_value=httpx.Response(200, json={"rows": [{"c": 'ООО "НЕФТ"', "k": "ul", "o": "1"}]})
+    )
+    respx.get(f"{mr.EGRUL}/search-result/SOFT").mock(
+        return_value=httpx.Response(
+            200, json={"rows": [{"c": 'ПАО "ГАЗПРОМ НЕФТЬ"', "k": "ul", "o": "1025501701686"}]}
+        )
+    )
+    assert mr.cyrillic_variants("Gazprom Neft") == ["газпром нефт", "газпром нефть"]
+    [found] = mr.EgrulConnector(LIVE).search_company("Gazprom Neft")
+    assert found.registration_number == "1025501701686"
+
+
+@respx.mock
+def test_egrul_unexpected_answer_is_reported_not_silent():
+    respx.post(f"{mr.EGRUL}/").mock(return_value=httpx.Response(200, json={"foo": 1}))
+    with pytest.raises(ConnectorError, match="unexpected answer"):
+        mr.EgrulConnector(LIVE).search_company("Gazprom Neft")

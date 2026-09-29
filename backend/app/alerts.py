@@ -127,7 +127,7 @@ def justification(hit: ScreeningHit, entity: Entity | None) -> str:
         parts.append(f"name similarity only ({hit.score:.0f}%), no corroborating identifier")
     who = entity.name if entity is not None else hit.entity_id
     return (
-        f"Namesake: {who} is not the listed “{hit.matched_name}” ({hit.dataset}): "
+        f"Namesake: {who} is not the listed “{hit.matched_name}” ({hit.dataset}), "
         + "; ".join(parts)
         + f". Match confidence {hit.score:.0f}%."
     )
