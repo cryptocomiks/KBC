@@ -92,9 +92,13 @@ def screen_list(rows: list[dict[str, Any]], screen: Any) -> dict[str, Any]:
     return {"screened": len(results), "results": results, "notes": notes, "complete": not late}
 
 
-def recent_designations(registry: Any, days: int = 90, limit: int = 300) -> dict[str, Any]:
+def recent_designations(
+    registry: Any, days: int = 90, limit: int = 300, wait: float = 25.0
+) -> dict[str, Any]:
     """Entries added to the official lists in the last `days` days, newest first. A list still
     downloading on this server is named in `loading` (its entries come on the next call)."""
+    import time
+
     from app.connectors.official_sanctions import (
         EuropeanSanctionsConnector,
         NationalSanctionsConnector,
@@ -102,16 +106,29 @@ def recent_designations(registry: Any, days: int = 90, limit: int = 300) -> dict
     )
 
     since = (datetime.now(UTC).date() - timedelta(days=days)).isoformat()
+    conns = [
+        registry.connectors.get(cls.name)
+        for cls in (
+            OfficialSanctionsConnector,
+            EuropeanSanctionsConnector,
+            NationalSanctionsConnector,
+        )
+    ]
+    conns = [c for c in conns if c is not None and c.enabled]
+    # On a server that has just started, the lists download while this request waits (a
+    # serverless host pauses background work between requests): up to `wait` seconds.
+    for c in conns:
+        if not c._state.entries:
+            c.prefetch()
+    deadline = time.monotonic() + wait
+    while any(not c._state.entries for c in conns) and time.monotonic() < deadline:
+        time.sleep(0.5)
     items: list[dict[str, Any]] = []
     loading: list[str] = []
     seen: set[tuple[str, str]] = set()
-    for cls in (OfficialSanctionsConnector, EuropeanSanctionsConnector, NationalSanctionsConnector):
-        conn = registry.connectors.get(cls.name)
-        if conn is None or not conn.enabled:
-            continue
+    for conn in conns:
         state = conn._state
         if not state.entries:
-            conn.prefetch()
             loading.append(conn.label)
             continue
         for entry in state.entries:

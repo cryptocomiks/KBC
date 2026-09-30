@@ -85,7 +85,7 @@ def test_recent_designations_newest_first_and_loading_lists():
             _Conn(osl.OfficialSanctionsConnector.name, "OFAC and UN", empty),
         ]
     )
-    res = recent_designations(reg, days=30)
+    res = recent_designations(reg, days=30, wait=0)
     assert [x["name"] for x in res["items"]] == ["Dual", "Newer Person", "New Bank"]
     assert res["by_list"] == {"US Entity List": 1, "UK Sanctions List (FCDO)": 2}
     assert res["loading"] == ["OFAC and UN"]
