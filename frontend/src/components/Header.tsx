@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { FolderOpen, Moon, Plug, Search, Sun, Trash2 } from "lucide-react";
+import { BellRing, FolderOpen, ListChecks, Moon, Plug, Search, Sun, Trash2 } from "lucide-react";
 import { api } from "../api";
 import { toast } from "../lib/toast";
 import Logo from "./Logo";
@@ -14,11 +14,15 @@ interface Props {
   onCases: () => void;
   casesActive: boolean;
   onSources: () => void;
+  onScreen: () => void;
+  screenActive: boolean;
+  onDesignations: () => void;
+  designationsActive: boolean;
   sourcesActive: boolean;
   onQuickOpen: () => void;
 }
 
-export default function Header({ meta, theme, onToggleTheme, onHome, onCases, casesActive, onSources, sourcesActive, onQuickOpen }: Props) {
+export default function Header({ meta, theme, onToggleTheme, onHome, onCases, casesActive, onSources, sourcesActive, onScreen, screenActive, onDesignations, designationsActive, onQuickOpen }: Props) {
   const mac = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform);
   const qc = useQueryClient();
   const connectors = useQuery({ queryKey: ["connectors"], queryFn: api.connectors });
@@ -49,6 +53,8 @@ export default function Header({ meta, theme, onToggleTheme, onHome, onCases, ca
         )}
         <nav className="ml-auto flex items-center gap-0.5">
           <NavLink active={casesActive} onClick={onCases} Icon={FolderOpen} label="Cases" tour="cases" />
+          <NavLink active={screenActive} onClick={onScreen} Icon={ListChecks} label="Screen a list" />
+          <NavLink active={designationsActive} onClick={onDesignations} Icon={BellRing} label="New listings" />
           <NavLink active={sourcesActive} onClick={onSources} Icon={Plug} label="Sources" badge={`${enabled}/${connectors.data?.length ?? 0}`} />
           <NavIcon
             title="Clear the local cache (API responses and investigations)"

@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Building2, CornerDownLeft, FolderOpen, Home, LayoutGrid, Search, User } from "lucide-react";
+import { BellRing, Bot, Building2, CornerDownLeft, FolderOpen, Home, LayoutGrid, ListChecks, Search, User } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { api } from "../api";
 import type { Route } from "../lib/route";
@@ -58,6 +58,9 @@ export default function CommandPalette({ casesEnabled, onClose, onNavigate }: Pr
     const pages: Item[] = [
       { id: "p-home", label: "New search", Icon: Home, route: { name: "home" } },
       { id: "p-cases", label: "Cases dashboard", Icon: LayoutGrid, route: { name: "cases" } },
+      { id: "p-screen", label: "Screen a list of names", hint: "customer list, payment counterparties", Icon: ListChecks, route: { name: "screen" } },
+      { id: "p-designations", label: "New listings on the sanctions lists", Icon: BellRing, route: { name: "designations" } },
+      { id: "p-hood", label: "Under the hood (AI agents, MCP)", Icon: Bot, route: { name: "hood" } },
     ];
     out.push(...pages.filter((p) => !n || norm(p.label).includes(n)));
     return out;

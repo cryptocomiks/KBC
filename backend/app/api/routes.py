@@ -97,6 +97,37 @@ def quick_checks(req: ChecksRequest) -> dict:
     return run_checks(req.model_dump())
 
 
+class ScreenRow(BaseModel):
+    name: str = Field(max_length=300)
+    type: str | None = Field(default=None, pattern="^(person|company|auto)$")
+    country: str | None = Field(default=None, max_length=2)
+    reference: str | None = Field(default=None, max_length=100)
+
+
+class ScreenRequest(BaseModel):
+    rows: list[ScreenRow] = Field(max_length=60)
+
+
+@router.post("/screen")
+def screen_names(req: ScreenRequest) -> dict:
+    """Screen up to 60 names (a customer list, payment counterparties) against every sanctions,
+    PEP and watchlist source at once. Nothing is stored."""
+    from app.screening_tools import screen_list
+
+    if not req.rows:
+        raise HTTPException(status_code=422, detail="Nothing to screen")
+    return screen_list([r.model_dump() for r in req.rows], service().screen_entities)
+
+
+@router.get("/designations")
+def designations(days: int = 90, limit: int = 300) -> dict:
+    """New entries on the official sanctions lists (UN, EU, UK, US export lists) in the last
+    `days` days, newest first."""
+    from app.screening_tools import recent_designations
+
+    return recent_designations(service().registry, max(1, min(days, 730)), max(1, min(limit, 2000)))
+
+
 @router.post("/transactions/analyze")
 async def analyze_transactions(
     file: UploadFile = File(...),

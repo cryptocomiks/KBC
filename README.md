@@ -263,6 +263,17 @@ flowchart LR
 ├── docker-compose.yml  vercel.json  Makefile  .env.example
 ```
 
+### List screening and new designations
+
+- **Screen a list** (`#/screen`, `POST /api/screen`): paste or open a CSV of up to 500 names (with an
+  optional country and your reference); each is screened against every sanctions, PEP and watchlist
+  source at once and comes back as a strong match, a possible match or no match, with a CSV export.
+  A name checked while a list was still downloading is reported as *not fully screened*, never as no
+  match, and can be screened again in one click. Nothing is stored.
+- **New listings** (`#/designations`, `GET /api/designations?days=90`): the latest entries of the UN,
+  EU, UK and US export lists, with their designation dates, per list and per day, exportable to CSV:
+  what to re-screen the portfolio against when a list moves.
+
 ### MCP server for AI agents
 
 `/api/mcp` is a [Model Context Protocol](https://modelcontextprotocol.io) server (streamable HTTP,

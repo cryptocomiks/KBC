@@ -1,21 +1,4 @@
-import {
-  BadgeCheck,
-  Banknote,
-  ChevronRight,
-  Building2,
-  ClipboardCheck,
-  FileText,
-  Fingerprint,
-  Gauge,
-  Globe2,
-  Lock,
-  Network,
-  Newspaper,
-  Scale,
-  Search,
-  ShieldAlert,
-  Users,
-} from "lucide-react";
+import { BadgeCheck, Banknote, BellRing, Bot, Building2, ChevronRight, ClipboardCheck, FileText, Fingerprint, Gauge, Globe2, ListChecks, Lock, Network, Newspaper, Scale, Search, ShieldAlert, Users } from "lucide-react";
 import { useRef, type ReactNode } from "react";
 import { useReveal } from "../lib/reveal";
 import type { ConnectorStatus } from "../types";
@@ -82,6 +65,23 @@ const WHAT = [
     Icon: Gauge,
     title: "Why it scores that way",
     text: "No black box: each point of the score comes from a named factor, its weight and its distance to the client, with the legal basis and a justification ready for the file.",
+  },  {
+    Icon: ListChecks,
+    title: "A whole list at once",
+    text: "Paste or drop a customer list or the counterparties of a payment run: up to 500 names screened against every list, with a CSV to file. Nothing is stored.",
+    href: "#/screen",
+  },
+  {
+    Icon: BellRing,
+    title: "When the lists move",
+    text: "Who the UN, the EU, the United Kingdom and the US added to their sanctions lists this month, read from the authorities, ready to re-screen your clients against.",
+    href: "#/designations",
+  },
+  {
+    Icon: Bot,
+    title: "Ready for AI agents",
+    text: "A Model Context Protocol server: Claude or an in-house compliance assistant can run the same due diligence and get the same sourced answers.",
+    href: "#/under-the-hood",
   },
 ];
 
@@ -94,7 +94,7 @@ const CATEGORY: Record<string, { label: string; Icon: typeof Building2 }> = {
   media: { label: "Press", Icon: Newspaper },
   archive: { label: "Websites & archives", Icon: Globe2 },
 };
-const WATCHLISTS = 297; // 120 core + 172 extended bulk lists + OFAC SDN + UN + 3 crypto address lists
+const WATCHLISTS = 309; // 120 core + 172 extended bulk lists + OFAC SDN + UN + 3 crypto address lists + 11 US export and trade lists + French freezes register
 
 /** A centred Apple-style section: eyebrow, large headline, optional intro. */
 function Section({
@@ -215,6 +215,11 @@ export default function Landing({ search, connectors, onCases }: Props) {
               <w.Icon className="mx-auto h-9 w-9 text-[#1d1d1f] sm:mx-0 dark:text-[#f5f5f7]" strokeWidth={1.4} />
               <h3 className="headline mt-4 text-[24px]">{w.title}</h3>
               <p className="mt-2 text-[16px] leading-relaxed text-[#636366] dark:text-[#a1a1a6]">{w.text}</p>
+              {"href" in w && w.href && (
+                <a href={w.href} className="link-more mt-2 inline-flex" aria-label={`Open: ${w.title}`}>
+                  Open <ChevronRight className="h-4 w-4" />
+                </a>
+              )}
             </div>
           ))}
         </div>

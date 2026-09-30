@@ -24,7 +24,7 @@ import { Tile } from "./viz";
 const BASE = import.meta.env.VITE_API_BASE ?? "/api";
 
 /** Facts measured on the release (re-measured by CI and the audits, see README). */
-const MEASURED = { tests: 295, screens: 26, date: "2026-09-30" };
+const MEASURED = { tests: 298, screens: 26, date: "2026-09-30" };
 
 interface McpTool {
   name: string;

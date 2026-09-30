@@ -17,7 +17,6 @@ from fastapi import APIRouter, Request, Response
 from fastapi.responses import JSONResponse
 
 from app import __version__ as VERSION
-from app.models import Entity, EntityType
 from app.schemas import InvestigationRequest
 
 router = APIRouter(tags=["mcp"])
@@ -87,7 +86,11 @@ TOOLS: list[dict[str, Any]] = [
             "type": "object",
             "properties": {
                 "names": {"type": "array", "items": {"type": "string"}, "maxItems": 60},
-                "type": {"type": "string", "enum": ["person", "company"], "default": "company"},
+                "type": {
+                    "type": "string",
+                    "enum": ["person", "company", "auto"],
+                    "default": "auto",
+                },
             },
             "required": ["names"],
         },
@@ -237,37 +240,14 @@ def _due_diligence(args: dict) -> dict:
 
 
 def _screen(args: dict) -> dict:
+    from app.screening_tools import screen_list
+
     raw = [str(n).strip() for n in args.get("names") or [] if str(n).strip()]
     if not raw:
         raise ToolError("names is empty")
-    etype = EntityType.PERSON if args.get("type") == "person" else EntityType.COMPANY
-    entities = [Entity(id=f"mcp:{i}", type=etype, name=n) for i, n in enumerate(raw[:60])]
-    hits, notes = _service().screen_entities(entities)
-    by_id: dict[str, list] = {}
-    for h in hits:
-        if h.score >= 70 and h.triage not in ("namesake", "dismissed"):
-            by_id.setdefault(h.entity_id, []).append(h)
-    return {
-        "screened": len(entities),
-        "results": [
-            {
-                "name": e.name,
-                "matches": [
-                    {
-                        "list": h.dataset,
-                        "type": h.list_type.value,
-                        "listed_as": h.matched_name,
-                        "score": h.score,
-                        "why": h.explanation[:2],
-                    }
-                    for h in sorted(by_id.get(e.id, []), key=lambda h: -h.score)[:5]
-                ],
-            }
-            for e in entities
-        ],
-        "notes": notes,
-        "disclaimer": DISCLAIMER,
-    }
+    kind = args.get("type") if args.get("type") in ("person", "company") else "auto"
+    res = screen_list([{"name": n, "type": kind} for n in raw], _service().screen_entities)
+    return {**res, "disclaimer": DISCLAIMER}
 
 
 def _checks(args: dict) -> dict:

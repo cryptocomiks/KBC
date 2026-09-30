@@ -1,6 +1,8 @@
 import Toaster from "./components/Toaster";
 import SourcesPage from "./components/SourcesPage";
 import UnderTheHood from "./components/UnderTheHood";
+import ScreenListPage from "./components/ScreenListPage";
+import DesignationsPage from "./components/DesignationsPage";
 import ValidationPage from "./components/ValidationPage";
 import { toast } from "./lib/toast";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -30,7 +32,7 @@ export default function App() {
     route.name === "search" ? { q: route.q, type: route.type, depth: route.depth, maxNodes: route.maxNodes } : null;
   const target: InvestigationParams | null =
     route.name === "investigate" ? { record_ids: route.ids, depth: route.depth, max_nodes: route.maxNodes } : null;
-  const page = route.name === "cases" || route.name === "case" ? "cases" : route.name === "validation" ? "validation" : route.name === "sources" ? "sources" : route.name === "hood" ? "hood" : "main";
+  const page = route.name === "cases" || route.name === "case" ? "cases" : route.name === "validation" ? "validation" : route.name === "sources" ? "sources" : route.name === "hood" ? "hood" : route.name === "screen" ? "screen" : route.name === "designations" ? "designations" : "main";
   const caseId = route.name === "case" ? route.id : null;
   const [saveError, setSaveError] = useState<string | null>(null);
   const [palette, setPalette] = useState(false);
@@ -143,6 +145,10 @@ export default function App() {
         casesActive={page === "cases"}
         onSources={() => navigate({ name: "sources" })}
         sourcesActive={page === "sources"}
+        onScreen={() => navigate({ name: "screen" })}
+        screenActive={page === "screen"}
+        onDesignations={() => navigate({ name: "designations" })}
+        designationsActive={page === "designations"}
         onQuickOpen={() => setPalette(true)}
       />
       {palette && (
@@ -162,6 +168,8 @@ export default function App() {
         {page === "validation" && <ValidationPage />}
         {page === "sources" && <SourcesPage meta={meta.data} />}
         {page === "hood" && <UnderTheHood />}
+        {page === "screen" && <ScreenListPage />}
+        {page === "designations" && <DesignationsPage />}
         {route.name === "case" && (
           <CaseScreen
             key={route.id}

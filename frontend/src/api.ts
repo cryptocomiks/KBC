@@ -28,6 +28,9 @@ import type {
   QuickCheckRequest,
   QuickCheckResult,
   ValidationReport,
+  ScreenRow,
+  ScreenResult,
+  Designations,
 } from "./types";
 
 const BASE = import.meta.env.VITE_API_BASE ?? "/api";
@@ -142,6 +145,8 @@ export const api = {
   },
   sow: (id: string) => request<SowData>(`/cases/${id}/sow`),
   validation: () => request<ValidationReport>("/validation"),
+  screen: (rows: ScreenRow[]) => request<{ screened: number; results: ScreenResult[]; notes: string[] }>("/screen", { method: "POST", body: JSON.stringify({ rows }) }),
+  designations: (days: number) => request<Designations>(`/designations?days=${days}`),
   checks: (body: QuickCheckRequest) => request<QuickCheckResult>("/checks", { method: "POST", body: JSON.stringify(body) }),
   saveSow: (id: string, data: Record<string, unknown>, by: string) =>
     request<SowData>(`/cases/${id}/sow`, { method: "PUT", body: JSON.stringify({ data, by }) }),

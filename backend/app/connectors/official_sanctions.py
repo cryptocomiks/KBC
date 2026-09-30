@@ -368,6 +368,7 @@ def _load_eu(index: _Index, timeout: float) -> None:
         births: list[str] = []
         nats: list[str] = []
         program, act_url, remark = "", "", ""
+        published: list[str] = []
         for c in el:
             tag = _local(c.tag)
             if tag == "nameAlias":
@@ -382,7 +383,9 @@ def _load_eu(index: _Index, timeout: float) -> None:
                 iso = (c.get("countryIso2Code") or "").strip().upper()
                 if len(iso) == 2 and iso != "00" and iso not in nats:
                     nats.append(iso)
-            elif tag == "regulation" and not program:
+            elif tag == "regulation" and c.get("publicationDate"):
+                published.append(c.get("publicationDate"))
+            if tag == "regulation" and not program:
                 program = c.get("programme") or ""
                 act_url = next(
                     ((u.text or "").strip() for u in c if _local(u.tag) == "publicationUrl"), ""
@@ -404,7 +407,12 @@ def _load_eu(index: _Index, timeout: float) -> None:
                     dataset="EU consolidated financial sanctions list (European Commission)",
                     url=act_url or EU_UI,
                     program=program or None,
-                    details={"reference": ref or None, "remarks": remark[:300] or None},
+                    details={
+                        "reference": ref or None,
+                        "remarks": remark[:300] or None,
+                        "listed_on": (el.get("designationDate") or min(published, default=""))
+                        or None,
+                    },
                 )
             )
             added += 1
@@ -422,6 +430,12 @@ def _uk_dob(raw: str) -> str | None:
     if not month.isdigit():
         return year
     return f"{year}-{month}" + (f"-{day}" if day.isdigit() else "")
+
+
+def _uk_date(raw: str) -> str | None:
+    """'08/09/2026' -> '2026-09-08' (a complete date only)."""
+    m = re.fullmatch(r"(\d{2})/(\d{2})/(\d{4})", raw.strip())
+    return f"{m.group(3)}-{m.group(2)}-{m.group(1)}" if m else None
 
 
 def _load_uk(index: _Index, timeout: float) -> None:
@@ -467,7 +481,7 @@ def _load_uk(index: _Index, timeout: float) -> None:
                     details={
                         "reference": uid or None,
                         "sanctions": (el.findtext("SanctionsImposed") or "").strip() or None,
-                        "listed_on": (el.findtext("DateDesignated") or "").strip() or None,
+                        "listed_on": _uk_date(el.findtext("DateDesignated") or ""),
                     },
                 )
             )

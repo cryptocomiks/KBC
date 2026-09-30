@@ -846,3 +846,47 @@ export interface LegalItem {
   en: string | null;
   fr: string | null;
 }
+
+/* ------------------------------------------------------------ list screening, new designations */
+export interface ScreenRow {
+  name: string;
+  type?: "person" | "company" | "auto";
+  country?: string;
+  reference?: string;
+}
+export interface ScreenMatch {
+  list: string;
+  type: string;
+  listed_as: string;
+  score: number;
+  why?: string[];
+  program?: string | null;
+  source?: string | null;
+}
+export interface ScreenResult {
+  name: string;
+  reference?: string | null;
+  type: "person" | "company";
+  country?: string | null;
+  status: "strong" | "possible" | "incomplete" | "clear";
+  matches: ScreenMatch[];
+}
+export interface Designation {
+  listed_on: string;
+  name: string;
+  type: string;
+  list: string;
+  program?: string | null;
+  nationalities?: string[];
+  birth_date?: string | null;
+  reference?: string | null;
+  source?: string | null;
+}
+export interface Designations {
+  since: string;
+  until: string;
+  total: number;
+  by_list: Record<string, number>;
+  items: Designation[];
+  loading: string[];
+}
