@@ -89,6 +89,11 @@ def snapshot(inv: Investigation) -> dict[str, Any]:
         "links": links,
         "documents": documents,
         "flows": flows,
+        # documents to ask the client for (back office: requests and receptions)
+        "requests": [
+            {"document": r.document, "reason": r.reason, "priority": r.priority}
+            for r in inv.requests
+        ],
     }
 
 

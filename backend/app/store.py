@@ -76,6 +76,16 @@ SCHEMA = [
         description TEXT NOT NULL,
         seen INTEGER NOT NULL DEFAULT 0
     )""",
+    # Back office: tasks, outgoing e-mails and document requests (one JSON document per item)
+    """CREATE TABLE IF NOT EXISTS bo_items (
+        id TEXT PRIMARY KEY,
+        kind TEXT NOT NULL,
+        case_id TEXT NOT NULL DEFAULT '',
+        auto_key TEXT NOT NULL DEFAULT '',
+        data TEXT NOT NULL DEFAULT '{}',
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+    )""",
 ]
 CASE_FIELDS = (
     "id", "title", "subject_name", "subject_type", "record_ids", "depth", "max_nodes", "demo",
@@ -227,7 +237,9 @@ class Store:
         out = []
         for r in rows:
             r = self._decode(r)
-            r["factors"] = (r.pop("snapshot", None) or {}).get("factors") or []
+            snap = r.pop("snapshot", None) or {}
+            r["factors"] = snap.get("factors") or []
+            r["requests"] = snap.get("requests")  # None: case saved before the back office
             for heavy in ("memo", "cdb", "sow"):
                 r.pop(heavy, None)
             r["unseen_changes"] = int(unseen.get(r["id"], 0))
@@ -374,6 +386,59 @@ class Store:
 
     def mark_seen(self, case_id: str) -> None:
         self._exec("UPDATE changes SET seen = 1 WHERE case_id = ?", (case_id,))
+
+    # ------------------------------------------------------------ back office
+    @staticmethod
+    def _bo(row: dict[str, Any]) -> dict[str, Any]:
+        data = (
+            json.loads(row["data"]) if isinstance(row.get("data"), str) else row.get("data") or {}
+        )
+        return {
+            **data,
+            "id": row["id"],
+            "kind": row["kind"],
+            "case_id": row["case_id"] or None,
+            "auto_key": row["auto_key"] or None,
+            "created_at": row["created_at"],
+            "updated_at": row["updated_at"],
+        }
+
+    def bo_list(self, kind: str) -> list[dict[str, Any]]:
+        rows = self._exec("SELECT * FROM bo_items WHERE kind = ? ORDER BY created_at", (kind,))
+        return [self._bo(r) for r in rows]
+
+    def bo_get(self, item_id: str) -> dict[str, Any] | None:
+        rows = self._exec("SELECT * FROM bo_items WHERE id = ?", (item_id,))
+        return self._bo(rows[0]) if rows else None
+
+    def bo_save(
+        self,
+        kind: str,
+        data: dict[str, Any],
+        item_id: str | None = None,
+        case_id: str | None = None,
+        auto_key: str | None = None,
+    ) -> dict[str, Any]:
+        """Create or replace an item (tasks, e-mails, document requests)."""
+        meta = {"id", "kind", "case_id", "auto_key", "created_at", "updated_at"}
+        body = json.dumps({k: v for k, v in data.items() if k not in meta}, default=str)
+        stamp = now()
+        existing = self.bo_get(item_id) if item_id else None
+        if existing:
+            self._exec(
+                "UPDATE bo_items SET data = ?, updated_at = ? WHERE id = ?", (body, stamp, item_id)
+            )
+        else:
+            item_id = item_id or uuid.uuid4().hex[:12]
+            self._exec(
+                "INSERT INTO bo_items (id, kind, case_id, auto_key, data, created_at, updated_at)"
+                " VALUES (?, ?, ?, ?, ?, ?, ?)",
+                (item_id, kind, case_id or "", auto_key or "", body, stamp, stamp),
+            )
+        return self.bo_get(item_id)  # type: ignore[return-value]
+
+    def bo_delete(self, item_id: str) -> None:
+        self._exec("DELETE FROM bo_items WHERE id = ?", (item_id,))
 
 
 _store: Store | None = None

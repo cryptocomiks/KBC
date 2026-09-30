@@ -13,6 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app import __version__
+from app.api.backoffice_routes import router as backoffice_router
 from app.api.cases_routes import monitor_router
 from app.api.cases_routes import router as cases_router
 from app.api.documents_routes import router as documents_router
@@ -37,6 +38,7 @@ app.add_middleware(
 )
 app.include_router(router, prefix="/api")
 app.include_router(cases_router, prefix="/api")
+app.include_router(backoffice_router, prefix="/api")
 app.include_router(monitor_router, prefix="/api")
 app.include_router(documents_router, prefix="/api")
 app.include_router(mcp_router, prefix="/api")
