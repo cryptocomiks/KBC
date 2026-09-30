@@ -336,3 +336,101 @@ def test_european_download_is_retried_and_last_good_copy_kept(monkeypatch):
     assert conn.screen(lukashenko)
     [err] = osl._INDEX_EUROPE.errors
     assert err.startswith("CH list unavailable") and "the copy downloaded on" in err
+
+
+CSL = {
+    "results": [
+        {
+            "id": "e1",
+            "name": "Huawei Technologies Co., Ltd.",
+            "alt_names": ["Huawei"],
+            "source": "Entity List (EL) - Bureau of Industry and Security",
+            "addresses": [{"country": "CN"}],
+            "start_date": "2019-05-16",
+            "source_information_url": "https://www.bis.gov/entity-list",
+        },
+        {
+            "id": "p1",
+            "name": "Chris Tang",
+            "type": "Individual",
+            "dates_of_birth": ["1965-07-04"],
+            "source": "Non-SDN Menu-Based Sanctions List (NS-MBS List) - Treasury Department",
+            "programs": ["HKAA"],
+        },
+        {
+            "id": "u1",
+            "name": "Mystery Buyer",
+            "source": "Unverified List (UVL) - Bureau of Industry and Security",
+        },
+        {
+            "id": "s1",
+            "name": "Already On SDN",
+            "type": "Individual",
+            "source": "Specially Designated Nationals (SDN) - Treasury Department",
+        },
+    ]
+}
+FR = {
+    "Publications": {
+        "PublicationDetail": [
+            {
+                "IdRegistre": 4240,
+                "Nature": "Personne physique",
+                "Nom": "SHILKIN",
+                "RegistreDetail": [
+                    {"TypeChamp": "PRENOM", "Valeur": [{"Prenom": "Grigory Vladimirovich"}]},
+                    {
+                        "TypeChamp": "DATE_DE_NAISSANCE",
+                        "Valeur": [{"Jour": "20", "Mois": "10", "Annee": "1976"}],
+                    },
+                    {"TypeChamp": "NATIONALITE", "Valeur": [{"Pays": "RUSSIE"}]},
+                    {
+                        "TypeChamp": "FONDEMENT_JURIDIQUE",
+                        "Valeur": [{"FondementJuridiqueLabel": "(UE) 2022/332 du 25/02/2022"}],
+                    },
+                ],
+            },
+            {
+                "IdRegistre": 7805,
+                "Nature": "Personne morale",
+                "Nom": "JSC Gruppa Kremniy El",
+                "RegistreDetail": [
+                    {
+                        "TypeChamp": "FONDEMENT_JURIDIQUE",
+                        "Valeur": [{"FondementJuridiqueLabel": "Arrêté national du 1er mars 2024"}],
+                    },
+                ],
+            },
+            {"IdRegistre": 9, "Nature": "Navire", "Nom": "Some Tanker", "RegistreDetail": []},
+        ]
+    }
+}
+
+
+@respx.mock
+def test_us_screening_list_and_french_freezes(monkeypatch):
+    monkeypatch.setattr(osl, "_INDEX_NATIONAL", osl._Index())
+    respx.get(osl.US_CSL).mock(return_value=httpx.Response(200, json=CSL))
+    respx.get(osl.FR_GELS).mock(return_value=httpx.Response(200, json=FR))
+    conn = osl.NationalSanctionsConnector(LIVE)
+
+    [huawei] = conn.screen(company("Huawei Technologies Co Ltd"))
+    assert huawei.dataset.startswith("US Entity List") and huawei.details["countries"] == "CN"
+    [tang] = conn.screen(Entity(id="t", type=EntityType.PERSON, name="Chris Tang"))
+    assert tang.details["program"] == "HKAA" and tang.details["birth_date"] == "1965-07-04"
+    # no type on the Commerce lists: found as a person and as a company, flagged as a watchlist
+    assert conn.screen(company("Mystery Buyer"))[0].list_type.value == "adverse"
+    assert conn.screen(Entity(id="m", type=EntityType.PERSON, name="Mystery Buyer"))
+    assert (
+        conn.screen(Entity(id="s", type=EntityType.PERSON, name="Already On SDN")) == []
+    )  # read from OFAC
+
+    [shilkin] = conn.screen(Entity(id="g", type=EntityType.PERSON, name="Grigory Shilkin"))
+    assert shilkin.dataset.startswith("France asset freezes")
+    assert shilkin.details["birth_date"] == "1976-10-20" and shilkin.details["nationalities"] == [
+        "RU"
+    ]
+    assert "national_measure" not in shilkin.details  # an EU measure
+    [kremniy] = conn.screen(company("JSC Gruppa Kremniy El"))
+    assert kremniy.details["national_measure"] == "yes"
+    assert conn.screen(company("Some Tanker")) == []  # ships are not indexed

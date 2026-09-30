@@ -37,6 +37,7 @@ from app.connectors.gleif import GleifConnector  # noqa: E402
 from app.connectors.icij import RECONCILE, IcijReconcileConnector  # noqa: E402
 from app.connectors.official_sanctions import (  # noqa: E402
     EuropeanSanctionsConnector,
+    NationalSanctionsConnector,
     OfficialSanctionsConnector,
 )
 from app.connectors.open_datasets import OpenDatasetsConnector  # noqa: E402
@@ -248,6 +249,35 @@ def check_european_sanctions() -> None:
     if down:
         print("      download errors: " + "; ".join(_INDEX_EUROPE.errors))
     expect("European lists: no parsing error", not other, "; ".join(other))
+
+
+def check_national_sanctions() -> None:
+    conn = NationalSanctionsConnector(settings)
+    conn.wait_seconds = 120
+    huawei = conn.screen(
+        Entity(id="h", type=EntityType.COMPANY, name="Huawei Technologies Co., Ltd.")
+    )
+    for h in huawei[:3]:
+        print(f"      hit: {h.matched_name} | {h.dataset} | {h.score}")
+    from app.connectors.official_sanctions import _INDEX_NATIONAL
+
+    errors = _INDEX_NATIONAL.errors
+    if errors:
+        print("      download errors: " + "; ".join(errors))
+    us_down = any(e.startswith("US_CSL") for e in errors)
+    fr_down = any(e.startswith("FR_GELS") for e in errors)
+    if us_down:
+        print("WARN  US screening list: trade.gov unavailable (outage, not a code error)")
+    else:
+        expect(
+            "US Entity List: Huawei found",
+            any(h.score >= 85 and h.dataset.startswith("US Entity List") for h in huawei),
+        )
+    if fr_down:
+        print("WARN  French freezes register: DG Tresor unavailable (outage, not a code error)")
+    else:
+        fr = [e for e in _INDEX_NATIONAL.entries if e.dataset.startswith("France asset freezes")]
+        expect("French freezes register loaded", len(fr) > 1000, f"{len(fr)} entries")
 
 
 def check_official_sanctions() -> None:
@@ -1035,6 +1065,10 @@ guarded("GLEIF (LEI + parent companies)", check_gleif)
 guarded("BODACC legal announcements", check_bodacc)
 guarded("Official sanctions lists (OFAC SDN + UN)", check_official_sanctions)
 guarded("Official sanctions lists (EU, UK, Switzerland)", check_european_sanctions)
+guarded(
+    "Official lists (US export and trade restrictions, France asset freezes)",
+    check_national_sanctions,
+)
 guarded("Crypto: OFAC addresses + BTC/ETH/TRON explorers", check_crypto)
 guarded("Open watchlists (EU / UK / CH / World Bank / Interpol)", check_open_watchlists)
 guarded("Wikidata (PEP, relatives, contacts)", check_wikidata)

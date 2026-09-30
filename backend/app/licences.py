@@ -96,6 +96,11 @@ LICENCES: dict[str, tuple[Category, str, str]] = {
         "EU (Commission reuse policy), UK (Open Government Licence v3.0), Switzerland (SECO, free reuse)",
         "",
     ),
+    "official_sanctions_national": (
+        "open",
+        "US public domain (trade.gov Consolidated Screening List); Licence Ouverte / Etalab 2.0 (DG Trésor)",
+        "",
+    ),
     "open_watchlists": ("non_commercial", OSN, ""),
     "open_watchlists_extended": ("non_commercial", OSN, ""),
     "wikidata": ("open", "CC0 1.0", ""),

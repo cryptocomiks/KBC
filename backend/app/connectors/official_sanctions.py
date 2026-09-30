@@ -54,6 +54,10 @@ OFAC_ALT = "https://www.treasury.gov/ofac/downloads/alt.csv"
 UN_XML = "https://scsanctions.un.org/resources/xml/en/consolidated.xml"
 OFAC_UI = "https://sanctionssearch.ofac.treas.gov/Details.aspx?id={id}"
 UN_UI = "https://main.un.org/securitycouncil/en/content/un-sc-consolidated-list"
+US_CSL = "https://data.trade.gov/downloadable_consolidated_screening_list/v1/consolidated.json"
+US_CSL_UI = "https://www.trade.gov/consolidated-screening-list"
+FR_GELS = "https://gels-avoirs.dgtresor.gouv.fr/ApiPublic/api/v1/publication/derniere-publication-fichier-json"
+FR_GELS_UI = "https://gels-avoirs.dgtresor.gouv.fr/"
 # EU consolidated list of financial sanctions (European Commission, FSF). The token is the
 # public one published on data.europa.eu for anonymous downloads.
 EU_XML = (
@@ -719,7 +723,7 @@ class OfficialSanctionsConnector(BaseConnector):
             hits.append(
                 ScreeningHit(
                     entity_id=entity.id,
-                    list_type=ListType.SANCTION,
+                    list_type=entry.list_type,
                     dataset=entry.dataset,
                     matched_name=listed.name,
                     score=result.score,
@@ -905,3 +909,201 @@ class EuropeanSanctionsConnector(OfficialSanctionsConnector):
         self, entity: Entity, include_transfers: bool = True
     ) -> list[LinkedEntity]:
         return []
+
+
+# ------------------------------------------------------------ US and French national lists
+# Short names of the US Consolidated Screening List sources (the SDN list is read from OFAC).
+_CSL_LISTS = {
+    "Entity List": "US Entity List (Commerce, BIS): export restrictions",
+    "Denied Persons": "US Denied Persons List (Commerce, BIS): export privileges denied",
+    "Unverified List": "US Unverified List (Commerce, BIS): end use not verified",
+    "Military End User": "US Military End User List (Commerce, BIS)",
+    "ITAR Debarred": "US ITAR debarments (State Department): arms exports",
+    "Nonproliferation": "US Nonproliferation sanctions (State Department)",
+    "Sectoral Sanctions": "US Sectoral Sanctions Identifications (OFAC SSI)",
+    "Chinese Military-Industrial": "US Chinese Military-Industrial Complex companies (OFAC CMIC)",
+    "Menu-Based": "US Non-SDN Menu-Based Sanctions (OFAC)",
+    "Palestinian Legislative Council": "US Palestinian Legislative Council list (OFAC)",
+    "Capta": "US CAPTA list (OFAC): correspondent account restrictions",
+}
+_COMPANY_WORDS = re.compile(
+    r"\b(ltd|limited|llc|inc|corp|corporation|co|company|gmbh|ag|sa|sarl|sas|srl|spa|bv|nv|plc"
+    r"|jsc|ojsc|pjsc|ooo|oao|zao|llp|lp|group|holding|holdings|trading|industries|industry"
+    r"|technology|technologies|institute|university|academy|bureau|center|centre|factory"
+    r"|plant|bank|enterprise|enterprises|international|electronics|systems|laboratory|research)\b",
+    re.I,
+)
+
+
+def _csl_types(item: dict) -> list[EntityType]:
+    kind = (item.get("type") or "").lower()
+    if kind == "individual":
+        return [EntityType.PERSON]
+    if kind == "entity":
+        return [EntityType.COMPANY]
+    if kind in ("vessel", "aircraft"):
+        return []
+    # The Commerce lists give no type: a company word decides, a birth date means a person,
+    # otherwise the entry is indexed both ways so that neither kind of query misses it.
+    if item.get("dates_of_birth"):
+        return [EntityType.PERSON]
+    if _COMPANY_WORDS.search(item.get("name") or ""):
+        return [EntityType.COMPANY]
+    return [EntityType.COMPANY, EntityType.PERSON]
+
+
+def _load_us_csl(index: _Index, timeout: float) -> None:
+    """US Consolidated Screening List (trade.gov): the export and trade lists of Commerce,
+    State and Treasury. The SDN list is skipped: it is read directly from OFAC."""
+    import json
+
+    data = json.loads(_download_bytes(US_CSL, timeout))
+    added = 0
+    for item in data.get("results") or []:
+        source = item.get("source") or ""
+        label = next((v for k, v in _CSL_LISTS.items() if k in source), None)
+        name = (item.get("name") or "").strip()
+        if not label or not name:
+            continue
+        aliases = [a.strip() for a in item.get("alt_names") or [] if a and a.strip() != name]
+        countries = sorted(
+            {
+                (a.get("country") or "").upper()
+                for a in item.get("addresses") or []
+                if a.get("country")
+            }
+        )
+        for etype in _csl_types(item):
+            is_person = etype == EntityType.PERSON
+            index.add(
+                ListedEntry(
+                    entity=Entity(
+                        id=f"us_csl:{item.get('id')}",
+                        type=etype,
+                        name=name,
+                        aliases=aliases[:30],
+                        birth_date=(
+                            (item.get("dates_of_birth") or [None])[0] if is_person else None
+                        ),
+                        nationalities=nationality_iso(
+                            " / ".join(item.get("nationalities") or item.get("citizenships") or [])
+                        )
+                        if is_person
+                        else [],
+                        jurisdiction=None if is_person or len(countries) != 1 else countries[0],
+                    ),
+                    dataset=label,
+                    url=item.get("source_information_url") or US_CSL_UI,
+                    program=", ".join(item.get("programs") or []) or None,
+                    details={
+                        "reference": item.get("id"),
+                        "countries": ", ".join(countries) or None,
+                        "listed_on": item.get("start_date"),
+                        "federal_register": item.get("federal_register_notice"),
+                        "license_requirement": item.get("license_requirement"),
+                        "remarks": (item.get("remarks") or "")[:300] or None,
+                    },
+                    list_type=ListType.ADVERSE if "Unverified" in source else ListType.SANCTION,
+                )
+            )
+            added += 1
+    if not added:
+        raise ValueError("US screening list downloaded but empty")
+
+
+def _fr_field(record: dict, field: str) -> list[dict]:
+    return [
+        v
+        for d in record.get("RegistreDetail") or []
+        if d.get("TypeChamp") == field
+        for v in d.get("Valeur") or []
+    ]
+
+
+def _load_fr_gels(index: _Index, timeout: float) -> None:
+    """France: Registre national des gels (DG Trésor), every asset freeze applicable in France,
+    EU, UN and national measures alike."""
+    import json
+
+    data = json.loads(_download_bytes(FR_GELS, timeout))
+    records = (data.get("Publications") or {}).get("PublicationDetail") or []
+    added = 0
+    for rec in records:
+        nature = rec.get("Nature") or ""
+        if nature not in ("Personne physique", "Personne morale"):
+            continue  # ships
+        is_person = nature == "Personne physique"
+        last = (rec.get("Nom") or "").strip()
+        first = " ".join((v.get("Prenom") or "").strip() for v in _fr_field(rec, "PRENOM")).strip()
+        name = f"{first} {last}".strip() if is_person else last
+        if not name:
+            continue
+        aliases = [(v.get("Alias") or "").strip() for v in _fr_field(rec, "ALIAS")]
+        dob = None
+        for v in _fr_field(rec, "DATE_DE_NAISSANCE"):
+            y, m, d = (
+                (v.get("Annee") or "").strip(),
+                (v.get("Mois") or "").strip(),
+                (v.get("Jour") or "").strip(),
+            )
+            if y:
+                dob = "-".join(
+                    x for x in (y, m.zfill(2) if m else "", d.zfill(2) if m and d else "") if x
+                )
+                break
+        bases = [
+            (v.get("FondementJuridiqueLabel") or "").strip()
+            for v in _fr_field(rec, "FONDEMENT_JURIDIQUE")
+        ]
+        national = any(
+            b and "(UE)" not in b and "comité des sanctions" not in b.lower() for b in bases
+        )
+        index.add(
+            ListedEntry(
+                entity=Entity(
+                    id=f"fr_gels:{rec.get('IdRegistre')}",
+                    type=EntityType.PERSON if is_person else EntityType.COMPANY,
+                    name=name,
+                    aliases=[a for a in aliases if a and a != name][:30],
+                    birth_date=dob if is_person else None,
+                    nationalities=nationality_iso(
+                        " / ".join((v.get("Pays") or "") for v in _fr_field(rec, "NATIONALITE"))
+                    )
+                    if is_person
+                    else [],
+                ),
+                dataset="France asset freezes register (DG Trésor)",
+                url=FR_GELS_UI,
+                program="; ".join(b for b in bases if b)[:300] or None,
+                details={
+                    "reference": str(rec.get("IdRegistre")),
+                    "national_measure": "yes" if national else None,
+                    "grounds": ((_fr_field(rec, "MOTIFS") or [{}])[0].get("Motifs") or "")[:300]
+                    or None,
+                },
+            )
+        )
+        added += 1
+    if not added:
+        raise ValueError("French register downloaded but empty")
+
+
+_INDEX_NATIONAL = _Index()
+
+
+class NationalSanctionsConnector(EuropeanSanctionsConnector):
+    """US export and trade restriction lists (Commerce, State, Treasury beyond the SDN list)
+    and the French national asset freezes register, downloaded from the authorities. Both are
+    open government data: they stay on in commercial mode."""
+
+    name = "official_sanctions_national"
+    label = "Official lists: US export and trade restrictions (Commerce, State, Treasury), France asset freezes (DG Trésor)"
+    homepage = US_CSL_UI
+    wait_seconds = 20.0
+
+    @property
+    def _state(self) -> _Index:
+        return _INDEX_NATIONAL
+
+    def _loaders(self) -> list:
+        return [_load_us_csl, _load_fr_gels]

@@ -56,6 +56,7 @@ def _connector_classes() -> list[type[BaseConnector]]:
     )
     from app.connectors.official_sanctions import (
         EuropeanSanctionsConnector,
+        NationalSanctionsConnector,
         OfficialSanctionsConnector,
     )
     from app.connectors.open_datasets import OpenDatasetsConnector, OpenDatasetsExtendedConnector
@@ -110,6 +111,7 @@ def _connector_classes() -> list[type[BaseConnector]]:
         OpenSanctionsConnector,
         OfficialSanctionsConnector,
         EuropeanSanctionsConnector,
+        NationalSanctionsConnector,
         OpenDatasetsConnector,
         OpenDatasetsExtendedConnector,
         WikidataConnector,
