@@ -8,11 +8,14 @@ import { useCallback, useEffect, useState } from "react";
  *  #/cases                             cases dashboard
  *  #/sources                           data sources and their reuse terms
  *  #/validation                        matching validation report
+ *  #/workspace[/<tab>]                back office (tab: tasks | mail | receptions | time)
  *  #/screen                           list screening (customer list, counterparties)
  *  #/designations                     new entries on the official sanctions lists
  *  #/under-the-hood                    how it is built and verified, MCP server for AI agents
  *  #/cases/<id>[/<tab>]                a case (tab: kyc | alerts | cdb | sow | review | investigation | memo | history)
  */
+export type WorkspaceTab = "tasks" | "mail" | "receptions" | "time";
+const WS_TABS: WorkspaceTab[] = ["tasks", "mail", "receptions", "time"];
 export type SearchType = "any" | "person" | "company";
 export type CaseTab = "kyc" | "alerts" | "cdb" | "sow" | "transactions" | "checks" | "review" | "investigation" | "memo" | "history";
 export type Route =
@@ -24,6 +27,7 @@ export type Route =
   | { name: "sources" }
   | { name: "hood" }
   | { name: "screen" }
+  | { name: "workspace"; tab: WorkspaceTab }
   | { name: "designations" }
   | { name: "case"; id: string; tab: CaseTab };
 
@@ -56,6 +60,7 @@ export function parseRoute(hash: string): Route {
   if (parts[0] === "sources") return { name: "sources" };
   if (parts[0] === "under-the-hood") return { name: "hood" };
   if (parts[0] === "screen") return { name: "screen" };
+  if (parts[0] === "workspace") return { name: "workspace", tab: WS_TABS.includes(parts[1] as WorkspaceTab) ? (parts[1] as WorkspaceTab) : "tasks" };
   if (parts[0] === "designations") return { name: "designations" };
   if (parts[0] === "cases") {
     if (parts[1]) return { name: "case", id: parts[1], tab: TABS.includes(parts[2] as CaseTab) ? (parts[2] as CaseTab) : "kyc" };
@@ -80,6 +85,8 @@ export function formatRoute(r: Route): string {
       return "#/under-the-hood";
     case "screen":
       return "#/screen";
+    case "workspace":
+      return r.tab === "tasks" ? "#/workspace" : `#/workspace/${r.tab}`;
     case "designations":
       return "#/designations";
     case "case":

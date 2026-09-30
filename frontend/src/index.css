@@ -681,3 +681,43 @@ html.dark {
   --viz-track: #2c2c2e;
   --viz-accent: #2997ff;
 }
+
+/* ------------------------------------------------------------ workspace motion */
+.ws-pill {
+  transition:
+    left 320ms var(--ease-fluid),
+    width 320ms var(--ease-fluid);
+}
+.ws-panel {
+  animation: ws-in 360ms var(--ease-fluid) both;
+}
+.ws-card,
+.ws-row {
+  animation: ws-in 300ms var(--ease-fluid) both;
+}
+.ws-card:nth-child(2),
+.ws-row:nth-child(2) {
+  animation-delay: 30ms;
+}
+.ws-card:nth-child(3),
+.ws-row:nth-child(3) {
+  animation-delay: 60ms;
+}
+.ws-card:nth-child(4),
+.ws-row:nth-child(4) {
+  animation-delay: 90ms;
+}
+.ws-card:nth-child(n + 5),
+.ws-row:nth-child(n + 5) {
+  animation-delay: 120ms;
+}
+@keyframes ws-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

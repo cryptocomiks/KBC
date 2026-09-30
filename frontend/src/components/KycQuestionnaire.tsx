@@ -56,6 +56,7 @@ function Countries({ value, onChange }: { value: string[]; onChange: (v: string[
       ))}
       <input
         className="input w-36 py-1 text-xs"
+        aria-label="Add a country (ISO code)"
         placeholder="Add: FR, CH, AE…"
         value={text}
         onChange={(e) => setText(e.target.value)}
@@ -118,6 +119,7 @@ function Question({
       {q.type === "text" && (
         <textarea
           className="input h-16 w-full resize-y text-sm"
+          aria-label={q.label}
           value={(value as string) ?? ""}
           onChange={(e) => onChange(e.target.value)}
         />
@@ -267,7 +269,7 @@ export default function KycQuestionnaire({ caseId, data }: Props) {
                 </p>
               )}
             </div>
-            <input className="input w-full text-sm" placeholder="Analyst name (audit trail)" value={author} onChange={(e) => { setAuthor(e.target.value); setDirty(true); }} />
+            <input className="input w-full text-sm" aria-label="Analyst name (audit trail)" placeholder="Analyst name (audit trail)" value={author} onChange={(e) => { setAuthor(e.target.value); setDirty(true); }} />
             <button className="btn-primary w-full justify-center" disabled={save.isPending} onClick={() => save.mutate()}>
               {save.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
               Save and assess

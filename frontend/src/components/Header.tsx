@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { BellRing, FolderOpen, ListChecks, Moon, Plug, Search, Sun, Trash2 } from "lucide-react";
+import { BellRing, FolderOpen, KanbanSquare, ListChecks, Moon, Plug, Search, Sun, Trash2 } from "lucide-react";
 import { api } from "../api";
 import { toast } from "../lib/toast";
 import Logo from "./Logo";
@@ -17,12 +17,14 @@ interface Props {
   onScreen: () => void;
   screenActive: boolean;
   onDesignations: () => void;
+  onWorkspace: () => void;
+  workspaceActive: boolean;
   designationsActive: boolean;
   sourcesActive: boolean;
   onQuickOpen: () => void;
 }
 
-export default function Header({ meta, theme, onToggleTheme, onHome, onCases, casesActive, onSources, sourcesActive, onScreen, screenActive, onDesignations, designationsActive, onQuickOpen }: Props) {
+export default function Header({ meta, theme, onToggleTheme, onHome, onCases, casesActive, onSources, sourcesActive, onScreen, screenActive, onDesignations, designationsActive, onWorkspace, workspaceActive, onQuickOpen }: Props) {
   const mac = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform);
   const qc = useQueryClient();
   const connectors = useQuery({ queryKey: ["connectors"], queryFn: api.connectors });
@@ -52,6 +54,7 @@ export default function Header({ meta, theme, onToggleTheme, onHome, onCases, ca
           </span>
         )}
         <nav className="ml-auto flex items-center gap-0.5">
+          <NavLink active={workspaceActive} onClick={onWorkspace} Icon={KanbanSquare} label="Workspace" />
           <NavLink active={casesActive} onClick={onCases} Icon={FolderOpen} label="Cases" tour="cases" />
           <NavLink active={screenActive} onClick={onScreen} Icon={ListChecks} label="Screen a list" />
           <NavLink active={designationsActive} onClick={onDesignations} Icon={BellRing} label="New listings" />

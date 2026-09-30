@@ -1,20 +1,12 @@
 import Toaster from "./components/Toaster";
-import SourcesPage from "./components/SourcesPage";
-import UnderTheHood from "./components/UnderTheHood";
-import ScreenListPage from "./components/ScreenListPage";
-import DesignationsPage from "./components/DesignationsPage";
-import ValidationPage from "./components/ValidationPage";
 import { toast } from "./lib/toast";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { api, auth, AuthError } from "./api";
-import CaseScreen from "./components/CaseScreen";
-import Dashboard from "./components/Dashboard";
 import CandidateList from "./components/CandidateList";
 import Disclaimer from "./components/Disclaimer";
 import Header from "./components/Header";
-import InvestigationView from "./components/InvestigationView";
 import Landing from "./components/Landing";
 import LoadingInvestigation from "./components/LoadingInvestigation";
 import CommandPalette from "./components/CommandPalette";
@@ -22,6 +14,17 @@ import SearchPanel, { type SearchParams } from "./components/SearchPanel";
 import { type Route, useRoute } from "./lib/route";
 import { useTheme } from "./lib/theme";
 import type { Entity, InvestigationParams } from "./types";
+
+/* Screens loaded on demand: the home page and search stay light. */
+const SourcesPage = lazy(() => import("./components/SourcesPage"));
+const UnderTheHood = lazy(() => import("./components/UnderTheHood"));
+const ScreenListPage = lazy(() => import("./components/ScreenListPage"));
+const DesignationsPage = lazy(() => import("./components/DesignationsPage"));
+const ValidationPage = lazy(() => import("./components/ValidationPage"));
+const CaseScreen = lazy(() => import("./components/CaseScreen"));
+const Dashboard = lazy(() => import("./components/Dashboard"));
+const InvestigationView = lazy(() => import("./components/InvestigationView"));
+const WorkspacePage = lazy(() => import("./components/workspace/WorkspacePage"));
 
 const DEFAULT_SEARCH: SearchParams = { q: "", type: "any", depth: 2, maxNodes: 60 };
 
@@ -32,7 +35,7 @@ export default function App() {
     route.name === "search" ? { q: route.q, type: route.type, depth: route.depth, maxNodes: route.maxNodes } : null;
   const target: InvestigationParams | null =
     route.name === "investigate" ? { record_ids: route.ids, depth: route.depth, max_nodes: route.maxNodes } : null;
-  const page = route.name === "cases" || route.name === "case" ? "cases" : route.name === "validation" ? "validation" : route.name === "sources" ? "sources" : route.name === "hood" ? "hood" : route.name === "screen" ? "screen" : route.name === "designations" ? "designations" : "main";
+  const page = route.name === "cases" || route.name === "case" ? "cases" : route.name === "validation" ? "validation" : route.name === "sources" ? "sources" : route.name === "hood" ? "hood" : route.name === "screen" ? "screen" : route.name === "designations" ? "designations" : route.name === "workspace" ? "workspace" : "main";
   const caseId = route.name === "case" ? route.id : null;
   const [saveError, setSaveError] = useState<string | null>(null);
   const [palette, setPalette] = useState(false);
@@ -149,6 +152,8 @@ export default function App() {
         screenActive={page === "screen"}
         onDesignations={() => navigate({ name: "designations" })}
         designationsActive={page === "designations"}
+        onWorkspace={() => navigate({ name: "workspace", tab: "tasks" })}
+        workspaceActive={page === "workspace"}
         onQuickOpen={() => setPalette(true)}
       />
       {palette && (
@@ -164,12 +169,14 @@ export default function App() {
       <Toaster />
       <Disclaimer text={meta.data?.disclaimer} />
       <main id="main" tabIndex={-1} className="mx-auto w-full max-w-[1600px] flex-1 space-y-5 px-4 py-5 outline-none">
+        <Suspense fallback={<PageLoading />}>
         {page === "cases" && !caseId && <Dashboard status={casesStatus} onOpenCase={openCase} />}
         {page === "validation" && <ValidationPage />}
         {page === "sources" && <SourcesPage meta={meta.data} />}
         {page === "hood" && <UnderTheHood />}
         {page === "screen" && <ScreenListPage />}
         {page === "designations" && <DesignationsPage />}
+        {route.name === "workspace" && <WorkspacePage tab={route.tab} onTab={(tab) => navigate({ name: "workspace", tab }, { replace: true })} status={casesStatus} />}
         {route.name === "case" && (
           <CaseScreen
             key={route.id}
@@ -250,6 +257,7 @@ export default function App() {
             )}
           </>
         )}
+        </Suspense>
       </main>
       <footer className="border-t border-slate-200 py-3 text-center text-[11px] text-slate-500 dark:border-slate-800">
         KYC 1 CLICK v{meta.data?.version ?? "…"} · public & lawfully accessible sources only · personal data kept only in the
@@ -258,6 +266,14 @@ export default function App() {
           Under the hood
         </a>
       </footer>
+    </div>
+  );
+}
+
+function PageLoading() {
+  return (
+    <div className="flex justify-center py-24" role="status" aria-label="Loading">
+      <Loader2 className="h-6 w-6 animate-spin text-slate-500" />
     </div>
   );
 }

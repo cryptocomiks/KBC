@@ -1,4 +1,4 @@
-import { BadgeCheck, Banknote, BellRing, Bot, Building2, ChevronRight, ClipboardCheck, FileText, Fingerprint, Gauge, Globe2, ListChecks, Lock, Network, Newspaper, Scale, Search, ShieldAlert, Users } from "lucide-react";
+import { BadgeCheck, Banknote, BellRing, Bot, Building2, ChevronRight, ClipboardCheck, FileText, Fingerprint, Gauge, Globe2, KanbanSquare, ListChecks, Lock, Network, Newspaper, Scale, Search, ShieldAlert, Users } from "lucide-react";
 import { useRef, type ReactNode } from "react";
 import { useReveal } from "../lib/reveal";
 import type { ConnectorStatus } from "../types";
@@ -66,6 +66,12 @@ const WHAT = [
     title: "Why it scores that way",
     text: "No black box: each point of the score comes from a named factor, its weight and its distance to the client, with the legal basis and a justification ready for the file.",
   },  {
+    Icon: KanbanSquare,
+    title: "The team's back office",
+    text: "Tasks drawn from every case, letters to clients drafted for you, every document tracked until it arrives, and the hours saved per collaborator.",
+    href: "#/workspace",
+  },
+  {
     Icon: ListChecks,
     title: "A whole list at once",
     text: "Paste or drop a customer list or the counterparties of a payment run: up to 500 names screened against every list, with a CSV to file. Nothing is stored.",

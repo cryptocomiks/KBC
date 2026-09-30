@@ -890,3 +890,83 @@ export interface Designations {
   items: Designation[];
   loading: string[];
 }
+
+/* ------------------------------------------------------------ back office */
+export type TaskStatus = "todo" | "doing" | "waiting" | "done";
+export interface BoTask {
+  id: string;
+  title: string;
+  detail?: string;
+  status: TaskStatus;
+  priority: "high" | "medium" | "low";
+  source: "auto" | "manual";
+  rule?: string;
+  tab?: string;
+  case_id?: string | null;
+  case_title?: string;
+  assignee?: string;
+  due?: string | null;
+  created_at: string;
+  created_by?: string;
+  done_at?: string | null;
+  done_by?: string | null;
+  reopened?: boolean;
+}
+export interface BoMail {
+  id: string;
+  type: "request" | "reminder" | "review" | "custom";
+  status: "draft" | "sent";
+  to: string;
+  subject: string;
+  body: string;
+  documents: string[];
+  case_id?: string | null;
+  case_title?: string;
+  reminder?: number;
+  edited?: boolean;
+  lang?: string;
+  created_at: string;
+  sent_at?: string | null;
+  sent_by?: string | null;
+  follow_up?: string | null;
+}
+export type ReceptionStatus = "to_request" | "awaited" | "overdue" | "received";
+export interface BoReception {
+  case_id: string;
+  case_title: string;
+  key: string;
+  document: string;
+  reason: string;
+  required: boolean;
+  status: ReceptionStatus;
+  requested_at?: string | null;
+  due_at?: string | null;
+  reminders: number;
+  last_reminder_at?: string | null;
+  received_at?: string | null;
+  received_by?: string | null;
+}
+export interface BoStats {
+  cases: number;
+  tasks_open: number;
+  tasks_high: number;
+  tasks_done_week: number;
+  mails_draft: number;
+  mails_sent_week: number;
+  follow_ups_due: number;
+  docs_total: number;
+  docs_received: number;
+  docs_received_month: number;
+  docs_awaited: number;
+  docs_overdue: number;
+  docs_to_request: number;
+  median_days_to_receive: number | null;
+}
+export interface BoBoard {
+  generated_at: string;
+  stats: BoStats;
+  tasks: BoTask[];
+  mails: BoMail[];
+  receptions: BoReception[];
+  cases: { id: string; title: string }[];
+}

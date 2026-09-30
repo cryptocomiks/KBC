@@ -31,6 +31,9 @@ import type {
   ScreenRow,
   ScreenResult,
   Designations,
+  BoBoard,
+  BoTask,
+  BoMail,
 } from "./types";
 
 const BASE = import.meta.env.VITE_API_BASE ?? "/api";
@@ -147,6 +150,17 @@ export const api = {
   validation: () => request<ValidationReport>("/validation"),
   screen: (rows: ScreenRow[]) => request<{ screened: number; results: ScreenResult[]; notes: string[] }>("/screen", { method: "POST", body: JSON.stringify({ rows }) }),
   designations: (days: number) => request<Designations>(`/designations?days=${days}`),
+
+  backoffice: (lang: string) => request<BoBoard>(`/backoffice?lang=${lang}`),
+  addTask: (t: Partial<BoTask> & { by?: string }) => request<BoTask>("/backoffice/tasks", { method: "POST", body: JSON.stringify(t) }),
+  updateTask: (id: string, t: Partial<BoTask> & { by?: string }) => request<BoTask>(`/backoffice/tasks/${id}`, { method: "PATCH", body: JSON.stringify(t) }),
+  deleteTask: (id: string) => request<{ deleted: string }>(`/backoffice/tasks/${id}`, { method: "DELETE" }),
+  newMail: (m: Partial<BoMail> & { by?: string }) => request<BoMail>("/backoffice/mails", { method: "POST", body: JSON.stringify(m) }),
+  editMail: (id: string, m: Partial<BoMail>) => request<BoMail>(`/backoffice/mails/${id}`, { method: "PATCH", body: JSON.stringify(m) }),
+  mailSent: (id: string, by: string) => request<BoMail>(`/backoffice/mails/${id}/sent`, { method: "POST", body: JSON.stringify({ by }) }),
+  deleteMail: (id: string) => request<{ deleted: string }>(`/backoffice/mails/${id}`, { method: "DELETE" }),
+  received: (case_id: string, key: string, received: boolean, by: string) =>
+    request<unknown>("/backoffice/receptions", { method: "POST", body: JSON.stringify({ case_id, key, received, by }) }),
   checks: (body: QuickCheckRequest) => request<QuickCheckResult>("/checks", { method: "POST", body: JSON.stringify(body) }),
   saveSow: (id: string, data: Record<string, unknown>, by: string) =>
     request<SowData>(`/cases/${id}/sow`, { method: "PUT", body: JSON.stringify({ data, by }) }),
