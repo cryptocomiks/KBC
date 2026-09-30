@@ -8,6 +8,7 @@ import { useCallback, useEffect, useState } from "react";
  *  #/cases                             cases dashboard
  *  #/sources                           data sources and their reuse terms
  *  #/validation                        matching validation report
+ *  #/under-the-hood                    how it is built and verified, MCP server for AI agents
  *  #/cases/<id>[/<tab>]                a case (tab: kyc | alerts | cdb | sow | review | investigation | memo | history)
  */
 export type SearchType = "any" | "person" | "company";
@@ -19,6 +20,7 @@ export type Route =
   | { name: "cases" }
   | { name: "validation" }
   | { name: "sources" }
+  | { name: "hood" }
   | { name: "case"; id: string; tab: CaseTab };
 
 const TABS: CaseTab[] = ["kyc", "alerts", "cdb", "sow", "transactions", "checks", "review", "investigation", "memo", "history"];
@@ -48,6 +50,7 @@ export function parseRoute(hash: string): Route {
   }
   if (parts[0] === "validation") return { name: "validation" };
   if (parts[0] === "sources") return { name: "sources" };
+  if (parts[0] === "under-the-hood") return { name: "hood" };
   if (parts[0] === "cases") {
     if (parts[1]) return { name: "case", id: parts[1], tab: TABS.includes(parts[2] as CaseTab) ? (parts[2] as CaseTab) : "kyc" };
     return { name: "cases" };
@@ -67,6 +70,8 @@ export function formatRoute(r: Route): string {
       return "#/validation";
     case "sources":
       return "#/sources";
+    case "hood":
+      return "#/under-the-hood";
     case "case":
       return `#/cases/${encodeURIComponent(r.id)}${r.tab === "kyc" ? "" : `/${r.tab}`}`;
     default:

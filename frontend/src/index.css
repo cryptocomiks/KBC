@@ -307,7 +307,7 @@ h3 {
   @apply btn text-white;
   background: #0071e3;
   &:hover:not(:disabled) {
-    background: #0077ed;
+    background: #0066cc; /* darker on hover: white text keeps 4.5:1 */
   }
   &:active:not(:disabled) {
     background: #006edb;

@@ -1,5 +1,6 @@
 import Toaster from "./components/Toaster";
 import SourcesPage from "./components/SourcesPage";
+import UnderTheHood from "./components/UnderTheHood";
 import ValidationPage from "./components/ValidationPage";
 import { toast } from "./lib/toast";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -29,7 +30,7 @@ export default function App() {
     route.name === "search" ? { q: route.q, type: route.type, depth: route.depth, maxNodes: route.maxNodes } : null;
   const target: InvestigationParams | null =
     route.name === "investigate" ? { record_ids: route.ids, depth: route.depth, max_nodes: route.maxNodes } : null;
-  const page = route.name === "cases" || route.name === "case" ? "cases" : route.name === "validation" ? "validation" : route.name === "sources" ? "sources" : "main";
+  const page = route.name === "cases" || route.name === "case" ? "cases" : route.name === "validation" ? "validation" : route.name === "sources" ? "sources" : route.name === "hood" ? "hood" : "main";
   const caseId = route.name === "case" ? route.id : null;
   const [saveError, setSaveError] = useState<string | null>(null);
   const [palette, setPalette] = useState(false);
@@ -160,6 +161,7 @@ export default function App() {
         {page === "cases" && !caseId && <Dashboard status={casesStatus} onOpenCase={openCase} />}
         {page === "validation" && <ValidationPage />}
         {page === "sources" && <SourcesPage meta={meta.data} />}
+        {page === "hood" && <UnderTheHood />}
         {route.name === "case" && (
           <CaseScreen
             key={route.id}
@@ -243,7 +245,10 @@ export default function App() {
       </main>
       <footer className="border-t border-slate-200 py-3 text-center text-[11px] text-slate-500 dark:border-slate-800">
         KYC 1 CLICK v{meta.data?.version ?? "…"} · public & lawfully accessible sources only · personal data kept only in the
-        local cache (clearable) · not legal advice
+        local cache (clearable) · not legal advice ·{" "}
+        <a href="#/under-the-hood" className="text-brand-600 underline underline-offset-2">
+          Under the hood
+        </a>
       </footer>
     </div>
   );

@@ -270,9 +270,14 @@ export default function Landing({ search, connectors, onCases }: Props) {
         tag="Method & limits"
         title="An analytical aid. Not a verdict."
         intro={
-          <a href="#/validation" className="link-more">
-            Read the matching validation report <ChevronRight className="h-4 w-4" />
-          </a>
+          <span className="flex flex-wrap justify-center gap-x-6 gap-y-2">
+            <a href="#/validation" className="link-more">
+              Read the matching validation report <ChevronRight className="h-4 w-4" />
+            </a>
+            <a href="#/under-the-hood" className="link-more">
+              Under the hood: how it is built, and how AI agents use it <ChevronRight className="h-4 w-4" />
+            </a>
+          </span>
         }
         className="bg-white dark:bg-black"
       >
