@@ -1,6 +1,6 @@
 # Runtime dependencies of the backend (also read by Vercel's Python runtime).
 fastapi>=0.115
-uvicorn[standard]>=0.30
+uvicorn>=0.30  # plain: the [standard] extras (uvloop, watchfiles...) weigh ~19 MB and Vercel does not use them
 pydantic>=2.7
 pydantic-settings>=2.3
 httpx>=0.27

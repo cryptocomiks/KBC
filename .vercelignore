@@ -6,3 +6,5 @@
 /backend/tests
 /frontend/node_modules
 **/__pycache__
+/scripts
+/.github

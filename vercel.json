@@ -4,6 +4,7 @@
   "installCommand": "cd frontend && npm ci",
   "buildCommand": "cd frontend && npm run build",
   "outputDirectory": "frontend/dist",
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- api backend/app config frontend requirements.txt vercel.json .vercelignore",
   "functions": {
     "api/index.py": {
       "includeFiles": "{backend/app/**,config/**}",
